@@ -4,15 +4,18 @@ import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.x.group2_timtro.entity.User;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class JwtService {
 
-private String secretKey = "CGS/drH3KcTzGTKr2rs0ngj50XfRkhxAofbyqCWXhMQCHyuVGesvi/hKxpj0MDw16cfaCzk+mvND77sqbbjX3A==";
+    @Value("${jwt.secret-key}")
+    private String secretKey;
 
 public String generateAccessToken(User user) {
 
@@ -26,6 +29,7 @@ public String generateAccessToken(User user) {
             .issueTime(issueTime)
             .expirationTime(new Date(issueTime.toInstant().plus(30, ChronoUnit.MINUTES).toEpochMilli()))
             .claim("id", user.getId())
+            .jwtID(UUID.randomUUID().toString())
             .build();
 
     Payload payload = new Payload(claimsSet.toJSONObject());
@@ -53,6 +57,7 @@ public String generateRefreshToken(User user) {
             .issueTime(issueTime)
             .expirationTime(new Date(issueTime.toInstant().plus(14, ChronoUnit.DAYS).toEpochMilli()))
             .claim("id", user.getId())
+            .jwtID(UUID.randomUUID().toString())
             .build();
 
     Payload payload = new Payload(claimsSet.toJSONObject());
