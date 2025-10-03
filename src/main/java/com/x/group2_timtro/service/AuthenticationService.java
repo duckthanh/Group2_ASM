@@ -7,6 +7,7 @@ import com.x.group2_timtro.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,26 +17,27 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthenticationService {
 
-
-    private final UserRepository userRepository;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     public LoginResponse login(LoginRequest request) {
-        String email = request.getEmail();
-        String password = request.getPassword();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-        String passwordHash = user.getPassword();
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        UsernamePasswordAuthenticationToken authenticationRequest = new UsernamePasswordAuthenticationToken(request.email(), request.password());
 
-        if (!passwordEncoder.matches(password, passwordHash)) {
-            throw new RuntimeException("Invalid password");
-        }
+        Authentication authentication = authenticationManager.authenticate(authenticationRequest);
+
+        User user = (User) authentication.getPrincipal();
+
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+
+
 
 
         // tao token
         return LoginResponse.builder()
-                .token("Token123456")
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 }

@@ -1,9 +1,11 @@
 package com.x.group2_timtro.configuration;
 
+import com.x.group2_timtro.service.UserDetailServiceCustomizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,13 +21,15 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
-    private final UserDetailsService userDetailsService;
+    private final UserDetailServiceCustomizer userDetailService;
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -52,10 +56,10 @@ public class SecurityConfiguration {
 
     @Bean
     public AuthenticationManager authenticationManager() {
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder());
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider(userDetailService);
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
 
-        return
+        return new ProviderManager(authenticationProvider);
     }
 
 }
