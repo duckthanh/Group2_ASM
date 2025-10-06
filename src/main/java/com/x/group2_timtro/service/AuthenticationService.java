@@ -49,7 +49,7 @@ public class AuthenticationService {
     SignedJWT signedJWT = SignedJWT.parse(accessToken);
     String jwtID = signedJWT.getJWTClaimsSet().getJWTID();
 
-Token token = Token.builder()
+    Token token = Token.builder()
         .tokenId(jwtID)
         .build();
 

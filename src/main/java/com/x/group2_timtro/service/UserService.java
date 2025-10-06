@@ -5,9 +5,12 @@ import com.x.group2_timtro.dto.response.CreateUserResponse;
 import com.x.group2_timtro.entity.User;
 import com.x.group2_timtro.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,5 +38,10 @@ public class UserService {
                 .username(user.getUsername())
                 .build();
     }
+
+@PreAuthorize("hasAuthority('ADMIN')")
+    public List<User> getUsers() {
+        return userRepository.findAll();
+}
 
 }
