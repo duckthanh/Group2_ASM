@@ -15,5 +15,5 @@ import lombok.*;
 
 public class Token {
     @Id
-    private int tokenID;
+    private String tokenId;
 }

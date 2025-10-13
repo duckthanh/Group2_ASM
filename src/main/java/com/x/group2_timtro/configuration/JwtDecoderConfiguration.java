@@ -1,12 +1,14 @@
 package com.x.group2_timtro.configuration;
 
-import ch.qos.logback.core.subst.Token;
+
 import com.nimbusds.jwt.SignedJWT;
+import com.x.group2_timtro.entity.Token;
 import com.x.group2_timtro.repository.TokenRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -52,13 +54,14 @@ public class JwtDecoderConfiguration implements JwtDecoder {
             }
 
             //decode, verify token
-            SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), "HS5121");
+            SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), "HS512");
             if (nimbusJwtDecoder == null) {
                 nimbusJwtDecoder = NimbusJwtDecoder.withSecretKey(secretKeySpec)
                         .macAlgorithm(MacAlgorithm.HS512)
                         .build();
             }
             return nimbusJwtDecoder.decode(token);
+
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }

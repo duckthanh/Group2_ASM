@@ -1,6 +1,7 @@
 package com.x.group2_timtro.repository;
 
-import ch.qos.logback.core.subst.Token;
+
+import com.x.group2_timtro.entity.Token;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

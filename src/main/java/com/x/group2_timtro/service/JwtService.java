@@ -66,12 +66,12 @@ public String generateRefreshToken(User user) {
     JWSObject jwsObject = new JWSObject(header, payload);
     try {
         jwsObject.sign(new MACSigner(secretKey));
-    } catch (JOSEException e) {
-        throw new RuntimeException(e);
-    }
-    return jwsObject.serialize();
+        }   catch (JOSEException e) {
+                 throw new RuntimeException(e);
+     }
+            return jwsObject.serialize();
 
-}
+    }
 
 
 }
