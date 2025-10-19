@@ -5,11 +5,14 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.x.group2_timtro.entity.User;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class JwtService {
@@ -24,11 +27,15 @@ public String generateAccessToken(User user) {
     //.Payload
     Date issueTime = new Date();
 
+    List<String> authorities = user.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority).toList(); //ca 3 role user admin owner
+
     JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
             .subject(user.getEmail())
             .issueTime(issueTime)
             .expirationTime(new Date(issueTime.toInstant().plus(30, ChronoUnit.MINUTES).toEpochMilli()))
             .claim("id", user.getId())
+            .claim("authorities", authorities)
             .jwtID(UUID.randomUUID().toString())
             .build();
 
