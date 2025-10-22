@@ -30,12 +30,17 @@ public class UserService {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setUsername(request.getUsername());
+        user.setPhoneNumber(request.getPhoneNumber());
+        user.setAddress(request.getAddress());
+        user.setRole("USER");
 
         userRepository.save(user);
 
         return CreateUserResponse.builder()
+                .id(user.getId())
                 .email(user.getEmail())
                 .username(user.getUsername())
+                .message("User created successfully")
                 .build();
     }
 
