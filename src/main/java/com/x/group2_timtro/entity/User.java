@@ -34,6 +34,12 @@
 
         private String password;
 
+        @Column(name = "mfa_secret")
+        private String mfaSecret;
+
+        @Column(name = "mfa_enabled")
+        private boolean mfaEnabled = false;
+
         @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
         private List<UserHasRole> userHasRoles;
 

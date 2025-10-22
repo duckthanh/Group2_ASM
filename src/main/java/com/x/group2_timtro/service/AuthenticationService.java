@@ -8,6 +8,8 @@ import com.x.group2_timtro.entity.Token;
 import com.x.group2_timtro.entity.User;
 import com.x.group2_timtro.repository.TokenRepository;
 import com.x.group2_timtro.service.JwtService;
+import dev.samstevens.totp.secret.DefaultSecretGenerator;
+import dev.samstevens.totp.secret.SecretGenerator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -52,5 +54,9 @@ public class AuthenticationService {
 
         tokenRepository.save(token);
     }
+
+    //2FA
+//    public SetupMFAResponse setupMfa
+
 
 }
