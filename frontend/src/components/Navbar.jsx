@@ -1,9 +1,11 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState } from 'react'
 
 function Navbar({ currentUser, onLogout }) {
   const [keyword, setKeyword] = useState('')
+  const [showUserDropdown, setShowUserDropdown] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
 
   const handleSearch = (e) => {
     e.preventDefault()
@@ -14,28 +16,70 @@ function Navbar({ currentUser, onLogout }) {
     }
   }
 
+  const handleProfileClick = () => {
+    setShowUserDropdown(false)
+    navigate('/profile')
+  }
+
+  const handleLogout = () => {
+    setShowUserDropdown(false)
+    onLogout()
+  }
+
+  const handleContactClick = (e) => {
+    e.preventDefault()
+    
+    // Nếu đang ở trang chủ, scroll xuống phần liên hệ
+    if (location.pathname === '/') {
+      const contactSection = document.querySelector('.contact-section')
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    } else {
+      // Nếu đang ở trang khác, chuyển về trang chủ với hash #contact
+      navigate('/#contact')
+      // Sau khi navigate, scroll xuống
+      setTimeout(() => {
+        const contactSection = document.querySelector('.contact-section')
+        if (contactSection) {
+          contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 100)
+    }
+  }
+
+  const handleAboutClick = (e) => {
+    e.preventDefault()
+    
+    // Nếu đang ở trang chủ, scroll xuống phần giới thiệu
+    if (location.pathname === '/') {
+      const aboutSection = document.getElementById('about')
+      if (aboutSection) {
+        aboutSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    } else {
+      // Nếu đang ở trang khác, chuyển về trang chủ với hash #about
+      navigate('/#about')
+      // Sau khi navigate, scroll xuống
+      setTimeout(() => {
+        const aboutSection = document.getElementById('about')
+        if (aboutSection) {
+          aboutSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 100)
+    }
+  }
+
   return (
     <header className="nav">
       <div className="container nav-inner">
         <Link to="/" className="brand">✨ Tìm Trọ</Link>
         <nav className="nav-menu">
           <div className="main-menu">
-            <Link to="/rooms/phong-tro" className="nav-link">Thuê phòng trọ</Link>
-            
-            <form onSubmit={handleSearch} className="nav-search-form">
-              <input
-                type="text"
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                placeholder="Tìm kiếm"
-                className="nav-search-input"
-              />
-              <button type="submit" className="btn-nav-search">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-            </form>
+            <Link to="/" className="nav-link">Trang chủ</Link>
+            <Link to="/rooms/phong-tro" className="nav-link">Tìm trọ</Link>
+            <a href="#about" onClick={handleAboutClick} className="nav-link">Giới thiệu</a>
+            <a href="#contact" onClick={handleContactClick} className="nav-link">Liên hệ</a>
           </div>
           
           {!currentUser ? (
@@ -44,11 +88,30 @@ function Navbar({ currentUser, onLogout }) {
               <Link to="/register" className="btn">Đăng ký</Link>
             </div>
           ) : (
-            <div className="user-info">
-              <span className="user-name">
+            <div className="user-info-dropdown">
+              <button 
+                className="user-name-btn"
+                onClick={() => setShowUserDropdown(!showUserDropdown)}
+              >
                 👤 <span>{currentUser.username}</span>
-              </span>
-              <button onClick={onLogout} className="btn btn-ghost btn-logout">Đăng xuất</button>
+                {currentUser.role === 'ADMIN' && (
+                  <span className="admin-badge">ADMIN</span>
+                )}
+                <span className="dropdown-arrow">▼</span>
+              </button>
+              
+              {showUserDropdown && (
+                <div className="user-dropdown-menu">
+                  <button onClick={handleProfileClick} className="dropdown-item">
+                    <span className="dropdown-icon">👤</span>
+                    Hồ sơ của tôi
+                  </button>
+                  <button onClick={handleLogout} className="dropdown-item logout">
+                    <span className="dropdown-icon">🚪</span>
+                    Đăng xuất
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </nav>

@@ -7,7 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class LoginResponse {
+public class UserResponse {
     private Long id;
     private String username;
     private String email;
@@ -15,3 +15,4 @@ public class LoginResponse {
     private String address;
     private String role;
 }
+

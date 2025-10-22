@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import RoomList from './pages/RoomList'
+import Profile from './pages/Profile'
 import './App.css'
 
 function App() {
@@ -11,7 +12,7 @@ function App() {
 
   useEffect(() => {
     // Check localStorage for user session
-    const user = localStorage.getItem('currentUser')
+    const user = localStorage.getItem('user')
     if (user) {
       setCurrentUser(JSON.parse(user))
     }
@@ -19,12 +20,12 @@ function App() {
 
   const handleLogin = (user) => {
     setCurrentUser(user)
-    localStorage.setItem('currentUser', JSON.stringify(user))
+    localStorage.setItem('user', JSON.stringify(user))
   }
 
   const handleLogout = () => {
     setCurrentUser(null)
-    localStorage.removeItem('currentUser')
+    localStorage.removeItem('user')
   }
 
   return (
@@ -53,6 +54,14 @@ function App() {
         <Route 
           path="/rooms/phong-tro" 
           element={<RoomList currentUser={currentUser} onLogout={handleLogout} />} 
+        />
+        <Route 
+          path="/profile" 
+          element={
+            currentUser ? 
+            <Profile currentUser={currentUser} onLogout={handleLogout} /> : 
+            <Navigate to="/login" replace />
+          } 
         />
       </Routes>
     </Router>

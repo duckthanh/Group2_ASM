@@ -1,0 +1,252 @@
+.rent-modal-container {
+  background: #ffffff;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.rent-modal-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rent-modal-header h2 {
+  color: #333;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.rent-modal-header .close-btn {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.rent-modal-header .close-btn:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+/* Tabs */
+.rent-tabs {
+  display: flex;
+  padding: 0 24px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #fff;
+}
+
+.rent-tab {
+  padding: 14px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #666;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.rent-tab:hover {
+  color: #ff6b35;
+}
+
+.rent-tab.active {
+  color: #ff6b35;
+  border-bottom-color: #ff6b35;
+  font-weight: 600;
+}
+
+.rent-room-form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background: #fff;
+}
+
+/* Form row split (2 columns) */
+.form-row-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group-half {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group-half label,
+.rent-room-form .form-group label {
+  color: #333;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.form-group-half input,
+.form-group-half select,
+.rent-room-form .form-group input,
+.rent-room-form .form-group select,
+.rent-room-form .form-group textarea {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 10px 14px;
+  color: #333;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.form-group-half select,
+.rent-room-form .form-group select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23666' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+  appearance: none;
+}
+
+.form-group-half input:focus,
+.form-group-half select:focus,
+.rent-room-form .form-group input:focus,
+.rent-room-form .form-group select:focus,
+.rent-room-form .form-group textarea:focus {
+  outline: none;
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.form-group-half input::placeholder,
+.rent-room-form .form-group input::placeholder,
+.rent-room-form .form-group textarea::placeholder {
+  color: #999;
+}
+
+.rent-room-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rent-room-form .form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+  line-height: 1.5;
+}
+
+.rent-room-form .error-message {
+  background: #fff3f3;
+  border: 1px solid #ffcccb;
+  color: #d32f2f;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.required {
+  color: #ff6b35;
+  margin-left: 2px;
+}
+
+/* Modern Actions */
+.form-actions-modern {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.btn-cancel-modern {
+  flex: 0 0 auto;
+  padding: 12px 32px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  color: #666;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-cancel-modern:hover {
+  background: #f5f5f5;
+  border-color: #bbb;
+}
+
+.btn-confirm-modern {
+  flex: 1;
+  padding: 12px 32px;
+  background: #ff6b35;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+}
+
+.btn-confirm-modern:hover:not(:disabled) {
+  background: #ff5722;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-confirm-modern:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .form-row-split {
+    grid-template-columns: 1fr;
+  }
+  
+  .rent-modal-container {
+    width: 95%;
+    max-height: 95vh;
+  }
+  
+  .rent-room-form {
+    padding: 16px;
+  }
+  
+  .form-actions-modern {
+    flex-direction: column-reverse;
+  }
+  
+  .btn-cancel-modern,
+  .btn-confirm-modern {
+    width: 100%;
+  }
+}
+
