@@ -1,4 +1,4 @@
-# 🏠 Hệ Thống Tìm Trọ - Group 6
+# 🏠 WEBSITE TÌM TRỌ - Group 6
 
 ## 📋 Mô Tả Dự Án
 
@@ -65,7 +65,7 @@ npm install
 npm run dev
 ```
 
-Frontend sẽ chạy tại: `http://localhost:5173`
+Frontend sẽ chạy tại: `http://localhost:3000`
 
 ## 👤 Tạo Tài Khoản Admin
 
@@ -161,7 +161,7 @@ Group6_ASM/
 
 ## 👥 Nhóm Phát Triển
 
-**Group 6 - ASM Project**
+**Group 6 - Website Tìm Trọ**
 
 ## 📄 License
 
