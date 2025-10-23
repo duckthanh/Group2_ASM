@@ -9,6 +9,20 @@ const api = axios.create({
   },
 })
 
+// Add JWT token to all requests
+api.interceptors.request.use((config) => {
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  if (user.accessToken) {
+    config.headers.Authorization = `Bearer ${user.accessToken}`
+    console.log('JWT Token added to request:', user.accessToken.substring(0, 20) + '...')
+  } else {
+    console.log('No JWT token found in localStorage')
+  }
+  return config
+}, (error) => {
+  return Promise.reject(error)
+})
+
 // Helper function to add user ID header
 const getUserId = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}')
@@ -18,7 +32,7 @@ const getUserId = () => {
 export const authAPI = {
   login: async (email, password) => {
     const response = await api.post('/auth/login', { email, password })
-    return response.data  // Returns { id, username, email }
+    return response.data  // Returns { id, username, email, phoneNumber, address, role, accessToken, refreshToken }
   },
   
   register: async (userData) => {
@@ -90,21 +104,32 @@ export const roomAPI = {
   },
 }
 
-export const uploadAPI = {
-  uploadImage: async (file) => {
-    const formData = new FormData()
-    formData.append('file', file)
-    
-    const response = await api.post('/upload/image', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
+export const userAPI = {
+  getAllUsers: async () => {
+    const userId = getUserId()
+    const response = await api.get('/users', {
+      headers: { 'X-User-Id': userId }
     })
     return response.data
   },
-}
 
-export const userAPI = {
+  deleteUser: async (userId) => {
+    const currentUserId = getUserId()
+    const response = await api.delete(`/users/${userId}`, {
+      headers: { 'X-User-Id': currentUserId }
+    })
+    return response.data
+  },
+
+  updateUserRole: async (userId, role) => {
+    const currentUserId = getUserId()
+    const response = await api.put(`/users/${userId}/role`, 
+      { role },
+      { headers: { 'X-User-Id': currentUserId } }
+    )
+    return response.data
+  },
+
   getUserById: async (userId) => {
     const response = await api.get(`/users/${userId}`)
     return response.data
@@ -124,6 +149,21 @@ export const userAPI = {
     return response.data
   },
 }
+
+export const uploadAPI = {
+  uploadImage: async (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    
+    const response = await api.post('/upload/image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+    return response.data
+  },
+}
+
 
 export const bookingAPI = {
   createBooking: async (bookingData) => {

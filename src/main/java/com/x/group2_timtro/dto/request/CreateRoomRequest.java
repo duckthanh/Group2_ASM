@@ -12,5 +12,12 @@ public class CreateRoomRequest {
     private Double price;
     private String location;
     private String contact;
+    
+    // Filter fields
+    private String roomType;
+    private Double area;
+    private Integer capacity;
+    private String amenities;
+    private String availability;
 }
 

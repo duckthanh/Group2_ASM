@@ -4,7 +4,9 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import RoomList from './pages/RoomList'
+import RoomDetail from './pages/RoomDetail'
 import Profile from './pages/Profile'
+import UserManagement from './pages/UserManagement'
 import './App.css'
 
 function App() {
@@ -51,17 +53,29 @@ function App() {
             <Register />
           } 
         />
-        <Route 
-          path="/rooms/phong-tro" 
-          element={<RoomList currentUser={currentUser} onLogout={handleLogout} />} 
+        <Route
+          path="/rooms/phong-tro"
+          element={<RoomList currentUser={currentUser} onLogout={handleLogout} />}
         />
-        <Route 
-          path="/profile" 
+        <Route
+          path="/room/:id"
+          element={<RoomDetail currentUser={currentUser} onLogout={handleLogout} />}
+        />
+        <Route
+          path="/profile"
           element={
-            currentUser ? 
-            <Profile currentUser={currentUser} onLogout={handleLogout} /> : 
+            currentUser ?
+            <Profile currentUser={currentUser} onLogout={handleLogout} /> :
             <Navigate to="/login" replace />
-          } 
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            currentUser && currentUser.role === 'ADMIN' ?
+            <UserManagement currentUser={currentUser} onLogout={handleLogout} /> :
+            <Navigate to="/" replace />
+          }
         />
       </Routes>
     </Router>

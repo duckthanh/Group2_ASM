@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import GlowEffects from '../components/GlowEffects'
@@ -23,6 +23,10 @@ function RoomList({ currentUser, onLogout }) {
   const [deleting, setDeleting] = useState(false)
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1)
+  const [roomsPerPage] = useState(4)
 
   const fetchRooms = async () => {
     setLoading(true)
@@ -73,6 +77,10 @@ function RoomList({ currentUser, onLogout }) {
     setShowCreateModal(true)
   }
 
+  const handleViewDetail = (room) => {
+    navigate(`/room/${room.id}`)
+  }
+
   const handleRentRoom = (room, deposit = false) => {
     if (!currentUser) {
       alert('Vui lòng đăng nhập để thuê phòng')
@@ -96,17 +104,20 @@ function RoomList({ currentUser, onLogout }) {
 
   const handleSearch = async (e) => {
     e.preventDefault()
+    setCurrentPage(1) // Reset to first page when searching
     await handleSearchWithParams(searchKeyword, searchDistrict)
   }
 
   const handleReset = () => {
     setSearchKeyword('')
     setSearchDistrict('')
+    setCurrentPage(1) // Reset to first page when resetting
     fetchRooms()
   }
 
   const handleFilter = async (filters) => {
     setLoading(true)
+    setCurrentPage(1) // Reset to first page when filtering
     try {
       console.log('Filtering with:', filters)
       const data = await roomAPI.filterRooms(filters)
@@ -170,11 +181,45 @@ function RoomList({ currentUser, onLogout }) {
 
   // Check if current user is owner of the room or admin
   const canManageRoom = (room) => {
-    if (!currentUser) return false
+    console.log('=== CAN MANAGE ROOM DEBUG ===')
+    console.log('currentUser:', currentUser)
+    console.log('room.ownerId:', room.ownerId)
+    console.log('currentUser.id:', currentUser?.id)
+    console.log('currentUser.role:', currentUser?.role)
+
+    if (!currentUser) {
+      console.log('No currentUser -> false')
+      return false
+    }
     // Admin có thể quản lý tất cả phòng
-    if (currentUser.role === 'ADMIN') return true
+    if (currentUser.role === 'ADMIN') {
+      console.log('User is ADMIN -> true')
+      return true
+    }
     // User thường chỉ quản lý được phòng của mình
-    return room.ownerId === currentUser.id
+    const canManage = room.ownerId === currentUser.id
+    console.log('User is owner?', canManage)
+    console.log('=============================')
+    return canManage
+  }
+
+  // Pagination logic
+  const indexOfLastRoom = currentPage * roomsPerPage
+  const indexOfFirstRoom = indexOfLastRoom - roomsPerPage
+  const currentRooms = rooms.slice(indexOfFirstRoom, indexOfLastRoom)
+  const totalPages = Math.ceil(rooms.length / roomsPerPage)
+  
+  // Debug pagination
+  console.log('Pagination Debug:', {
+    totalRooms: rooms.length,
+    currentPage,
+    roomsPerPage,
+    totalPages,
+    currentRoomsCount: currentRooms.length
+  })
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber)
   }
 
   return (
@@ -241,17 +286,20 @@ function RoomList({ currentUser, onLogout }) {
             Đang tải...
           </div>
         ) : rooms.length > 0 ? (
+          <>
           <div className="room-grid">
-            {rooms.map((room) => (
+            {currentRooms.map((room) => (
               <div key={room.id} className="room-card-modern">
-                <div className="room-image-wrapper">
+                <Link to={`/room/${room.id}`} className="room-image-wrapper">
                   <img src={room.imageUrl || 'https://via.placeholder.com/400x300?text=Phòng+Trọ'} alt={room.name} />
                   <span className="room-badge-modern">
                     Còn trống
                   </span>
-                </div>
+                </Link>
                 <div className="room-content-modern">
-                  <h3 className="room-name">{room.name}</h3>
+                  <Link to={`/room/${room.id}`} className="room-name-link">
+                    <h3 className="room-name">{room.name}</h3>
+                  </Link>
                   <p className="room-location-modern">
                     <span className="location-icon">📍</span>
                     {room.location}
@@ -261,7 +309,7 @@ function RoomList({ currentUser, onLogout }) {
                       {room.detail.length > 50 ? room.detail.substring(0, 50) + '...' : room.detail}
                     </p>
                   )}
-                  
+
                   <div className="room-price-contact">
                     <span className="room-price-modern">
                       {formatPrice(room.price)} <br/>
@@ -271,40 +319,86 @@ function RoomList({ currentUser, onLogout }) {
                       📞 {room.contact}
                     </span>
                   </div>
-                  
+
                   <p className="room-owner-modern">Chủ trọ: {room.ownerUsername}</p>
-                  
-                  {/* Nút Thuê ngay và Đặt cọc */}
+
+                  {/* Nút Xem chi tiết */}
                   <div className="room-actions-modern">
-                    <button 
-                      className="btn-rent-modern" 
-                      onClick={() => handleRentRoom(room, false)}
-                    >
-                      🏠 Thuê ngay
-                    </button>
-                    <button 
-                      className="btn-deposit-modern" 
-                      onClick={() => handleRentRoom(room, true)}
-                    >
-                      💰 Đặt cọc
-                    </button>
+                    <Link to={`/room/${room.id}`} className="btn-view-detail">
+                      👁️ Xem chi tiết
+                    </Link>
                   </div>
 
                   {/* Hiển thị nút xóa ở dưới nếu là chủ phòng hoặc admin */}
                   {canManageRoom(room) && (
                     <div className="room-actions-delete">
-                      <button 
-                        className="btn-delete-room" 
+                      <button
+                        className="btn-delete-room"
                         onClick={() => handleDeleteClick(room)}
                       >
                         🗑️ Xóa phòng
                       </button>
                     </div>
                   )}
+
+                  {/* Debug info - chỉ hiện khi có nút xóa */}
+
+                  {/* Info cho user chưa đăng nhập */}
+                  {!currentUser && (
+                    <div style={{
+                      marginTop: '8px',
+                      padding: '8px',
+                      background: 'rgba(59, 130, 246, 0.1)',
+                      border: '1px solid rgba(59, 130, 246, 0.3)',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      color: '#3b82f6',
+                      textAlign: 'center'
+                    }}>
+                      💡 Click "Xem chi tiết" để thuê phòng
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
           </div>
+          
+          {/* Pagination */}
+          <div style={{ marginTop: '20px', textAlign: 'center', color: 'white' }}>
+            <p>Trang {currentPage} / {totalPages} - Tổng {rooms.length} phòng trọ</p>
+          </div>
+          {totalPages >= 1 && (
+            <div className="pagination">
+              <button
+                className="pagination-btn"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                ← Trước
+              </button>
+              
+              <div className="pagination-numbers">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                  <button
+                    key={number}
+                    className={`pagination-number ${currentPage === number ? 'active' : ''}`}
+                    onClick={() => handlePageChange(number)}
+                  >
+                    {number}
+                  </button>
+                ))}
+              </div>
+              
+              <button
+                className="pagination-btn"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Sau →
+              </button>
+            </div>
+          )}
+          </>
         ) : (
           <div className="empty-state">
             <div className="empty-icon">🏠</div>
@@ -322,14 +416,14 @@ function RoomList({ currentUser, onLogout }) {
 
       {/* Modals */}
       {showCreateModal && (
-        <CreateRoom 
-          onClose={handleModalClose} 
-          onSuccess={handleSuccess} 
+        <CreateRoom
+          onClose={handleModalClose}
+          onSuccess={handleSuccess}
         />
       )}
 
       {showRentModal && selectedRoom && (
-        <RentRoom 
+        <RentRoom
           room={selectedRoom}
           onClose={handleModalClose}
           onSuccess={handleSuccess}

@@ -103,7 +103,13 @@ const CreateRoom = ({ onClose, onSuccess }) => {
         capacity: formData.capacity ? parseInt(formData.capacity) : null,
         amenities: formData.amenities.join(', ') // Convert array to comma-separated string
       }
-      
+
+      console.log('=== FRONTEND CREATE ROOM DEBUG ===')
+      console.log('Sending room data:', roomData)
+      console.log('amenities array:', formData.amenities)
+      console.log('amenities string:', formData.amenities.join(', '))
+      console.log('=================================')
+
       await roomAPI.createRoom(roomData)
       alert('Tạo phòng trọ thành công!')
       if (onSuccess) onSuccess()
@@ -117,8 +123,8 @@ const CreateRoom = ({ onClose, onSuccess }) => {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay">
+      <div className="modal-container">
         <div className="modal-header">
           <h2>Thêm Phòng Trọ Mới</h2>
           <button className="close-btn" onClick={onClose}>&times;</button>

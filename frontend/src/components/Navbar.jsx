@@ -77,7 +77,7 @@ function Navbar({ currentUser, onLogout }) {
         <nav className="nav-menu">
           <div className="main-menu">
             <Link to="/" className="nav-link">Trang chủ</Link>
-            <Link to="/rooms/phong-tro" className="nav-link">Tìm trọ</Link>
+            <Link to="/rooms/phong-tro" className="nav-link">Danh sách trọ</Link>
             <a href="#about" onClick={handleAboutClick} className="nav-link">Giới thiệu</a>
             <a href="#contact" onClick={handleContactClick} className="nav-link">Liên hệ</a>
           </div>
@@ -106,6 +106,12 @@ function Navbar({ currentUser, onLogout }) {
                     <span className="dropdown-icon">👤</span>
                     Hồ sơ của tôi
                   </button>
+                  {currentUser.role === 'ADMIN' && (
+                    <Link to="/admin/users" className="dropdown-item">
+                      <span className="dropdown-icon">👥</span>
+                      Quản lý người dùng
+                    </Link>
+                  )}
                   <button onClick={handleLogout} className="dropdown-item logout">
                     <span className="dropdown-icon">🚪</span>
                     Đăng xuất

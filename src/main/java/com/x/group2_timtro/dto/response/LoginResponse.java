@@ -8,10 +8,15 @@ import lombok.Setter;
 @Setter
 @Builder
 public class LoginResponse {
+    // User info
     private Long id;
     private String username;
     private String email;
     private String phoneNumber;
     private String address;
     private String role;
+    
+    // JWT tokens
+    private String accessToken;
+    private String refreshToken;
 }

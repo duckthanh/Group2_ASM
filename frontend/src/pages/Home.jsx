@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import GlowEffects from '../components/GlowEffects'
@@ -164,6 +164,11 @@ function Home({ currentUser, onLogout }) {
                     <div className="home-room-price-new">
                       {formatPrice(room.price)} đ/tháng
                     </div>
+                    <div style={{ marginTop: '12px' }}>
+                      <Link to={`/room/${room.id}`} className="btn-view-detail">
+                        👁️ Xem chi tiết
+                      </Link>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -313,7 +318,7 @@ function Home({ currentUser, onLogout }) {
               </div>
               
               <div className="stat-card">
-                <div className="stat-number">87%</div>
+                <div className="stat-number">36%</div>
                 <p className="stat-label">Tin đã xác thực</p>
                 <div className="stat-icon">✅</div>
               </div>

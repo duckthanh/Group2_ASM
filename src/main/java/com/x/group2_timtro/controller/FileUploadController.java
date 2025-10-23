@@ -52,14 +52,14 @@ public class FileUploadController {
             Path filePath = uploadPath.resolve(filename);
             Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-            // Trả về URL
+            // Trả về relative URL (frontend sẽ thêm baseURL)
             String imageUrl = "/uploads/images/" + filename;
             
             Map<String, String> response = new HashMap<>();
             response.put("url", imageUrl);
             response.put("filename", filename);
             
-            log.info("Uploaded image: {}", filename);
+            log.info("Uploaded image: {} - Relative URL: {}", filename, imageUrl);
             return ResponseEntity.ok(response);
 
         } catch (IOException e) {

@@ -24,7 +24,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
-        log.info("Login attempt for email: {}", request.getEmail());
+        log.info("Login attempt for email: {}", request.email());
         try {
             LoginResponse response = authenticationService.login(request);
             return ResponseEntity.ok(response);
@@ -42,18 +42,11 @@ public class AuthController {
     }
 
     @PostMapping("/create-admin")
-    public ResponseEntity<String> createAdmin() {
-        log.info("Creating default admin account");
+    public ResponseEntity<String> createAdmin(@RequestBody CreateUserRequest request) {
+        log.info("Creating admin account: {}", request.getEmail());
         try {
-            CreateUserRequest adminRequest = new CreateUserRequest();
-            adminRequest.setUsername("admin");
-            adminRequest.setEmail("admin@timtro.com");
-            adminRequest.setPassword("admin123");
-            adminRequest.setPhoneNumber("0123456789");
-            adminRequest.setAddress("Hòa Lạc, Hà Nội");
-            
-            userService.createAdmin(adminRequest);
-            return ResponseEntity.ok("Admin account created successfully! Email: admin@timtro.com, Password: admin123");
+            userService.createAdmin(request);
+            return ResponseEntity.ok("Admin account created successfully! Email: " + request.getEmail() + ", Username: " + request.getUsername());
         } catch (Exception e) {
             log.error("Failed to create admin: {}", e.getMessage());
             return ResponseEntity.badRequest().body("Failed to create admin: " + e.getMessage());

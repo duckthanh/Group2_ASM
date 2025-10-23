@@ -28,6 +28,16 @@ public class RoomService {
         User owner = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        System.out.println("=== BACKEND CREATE ROOM DEBUG ===");
+        System.out.println("Received request data:");
+        System.out.println("Name: " + request.getName());
+        System.out.println("RoomType: " + request.getRoomType());
+        System.out.println("Area: " + request.getArea());
+        System.out.println("Capacity: " + request.getCapacity());
+        System.out.println("Amenities: " + request.getAmenities());
+        System.out.println("Availability: " + request.getAvailability());
+        System.out.println("=================================");
+
         Room room = new Room();
         room.setName(request.getName());
         room.setImageUrl(request.getImageUrl());
@@ -38,7 +48,26 @@ public class RoomService {
         room.setOwner(owner);
         room.setIsAvailable(true);
 
+        // ✅ LƯU CÁC THÔNG TIN FILTER
+        room.setRoomType(request.getRoomType());
+        room.setArea(request.getArea());
+        room.setCapacity(request.getCapacity());
+        room.setAmenities(request.getAmenities());
+        room.setAvailability(request.getAvailability());
+
         Room savedRoom = roomRepository.save(room);
+
+        System.out.println("=== SAVED ROOM DEBUG ===");
+        System.out.println("Saved room data:");
+        System.out.println("ID: " + savedRoom.getId());
+        System.out.println("RoomType: " + savedRoom.getRoomType());
+        System.out.println("Area: " + savedRoom.getArea());
+        System.out.println("Capacity: " + savedRoom.getCapacity());
+        System.out.println("Amenities: " + savedRoom.getAmenities());
+        System.out.println("Availability: " + savedRoom.getAvailability());
+        System.out.println("IsAvailable: " + savedRoom.getIsAvailable());
+        System.out.println("=========================");
+
         return mapToResponse(savedRoom);
     }
 
@@ -140,31 +169,63 @@ public class RoomService {
 
     public List<RoomResponse> filterRooms(RoomFilterRequest filter) {
         List<Room> rooms = roomRepository.findByIsAvailable(true);
-        
-        return rooms.stream()
-                .filter(room -> matchesFilter(room, filter))
+
+        System.out.println("=== FILTER DEBUG ===");
+        System.out.println("Total available rooms: " + rooms.size());
+        System.out.println("Filter roomTypes: " + filter.getRoomTypes());
+        System.out.println("Filter areas: " + filter.getAreas());
+        System.out.println("Filter amenities: " + filter.getAmenities());
+        System.out.println("Filter capacity: " + filter.getCapacity());
+        System.out.println("Filter availability: " + filter.getAvailability());
+
+        List<RoomResponse> result = rooms.stream()
+                .filter(room -> {
+                    boolean matches = matchesFilter(room, filter);
+                    if (!matches) {
+                        System.out.println("Room " + room.getId() + " filtered out - roomType: " + room.getRoomType() + ", area: " + room.getArea() + ", amenities: " + room.getAmenities() + ", capacity: " + room.getCapacity() + ", availability: " + room.getAvailability());
+                    }
+                    return matches;
+                })
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+
+        System.out.println("Result: " + result.size() + " rooms matched");
+        System.out.println("===================");
+        return result;
     }
 
     private boolean matchesFilter(Room room, RoomFilterRequest filter) {
-        // Filter by room type
+        // Kiểm tra xem có filter nào được áp dụng không
+        boolean hasAnyFilter = false;
+        
+        // Filter by room type - STRICT: nếu filter được set và room KHÔNG có giá trị → LOẠI BỎ
         if (filter.getRoomTypes() != null && !filter.getRoomTypes().isEmpty()) {
+            hasAnyFilter = true;
             if (room.getRoomType() == null || !filter.getRoomTypes().contains(room.getRoomType())) {
                 return false;
             }
         }
 
-        // Filter by price range
-        if (filter.getMinPrice() != null && room.getPrice() < filter.getMinPrice()) {
-            return false;
+        // Filter by price range (price luôn có giá trị)
+        if (filter.getMinPrice() != null) {
+            hasAnyFilter = true;
+            if (room.getPrice() < filter.getMinPrice()) {
+                return false;
+            }
         }
-        if (filter.getMaxPrice() != null && room.getPrice() > filter.getMaxPrice()) {
-            return false;
+        if (filter.getMaxPrice() != null) {
+            hasAnyFilter = true;
+            if (room.getPrice() > filter.getMaxPrice()) {
+                return false;
+            }
         }
 
-        // Filter by area
-        if (filter.getAreas() != null && !filter.getAreas().isEmpty() && room.getArea() != null) {
+        // Filter by area - STRICT
+        if (filter.getAreas() != null && !filter.getAreas().isEmpty()) {
+            hasAnyFilter = true;
+            if (room.getArea() == null) {
+                return false;  // Loại bỏ phòng không có area
+            }
             boolean matchesArea = false;
             for (String areaRange : filter.getAreas()) {
                 if (matchesAreaRange(room.getArea(), areaRange)) {
@@ -177,10 +238,11 @@ public class RoomService {
             }
         }
 
-        // Filter by amenities
+        // Filter by amenities - STRICT
         if (filter.getAmenities() != null && !filter.getAmenities().isEmpty()) {
+            hasAnyFilter = true;
             if (room.getAmenities() == null) {
-                return false;
+                return false;  // Loại bỏ phòng không có amenities
             }
             for (String amenity : filter.getAmenities()) {
                 if (!room.getAmenities().contains(amenity)) {
@@ -189,10 +251,11 @@ public class RoomService {
             }
         }
 
-        // Filter by capacity
+        // Filter by capacity - STRICT
         if (filter.getCapacity() != null) {
+            hasAnyFilter = true;
             if (room.getCapacity() == null) {
-                return false;
+                return false;  // Loại bỏ phòng không có capacity
             }
             // Handle "4+ người" case (capacity = 4 means 4 or more)
             if (filter.getCapacity() == 4) {
@@ -211,8 +274,9 @@ public class RoomService {
             }
         }
 
-        // Filter by availability
+        // Filter by availability - STRICT
         if (filter.getAvailability() != null && !filter.getAvailability().isEmpty()) {
+            hasAnyFilter = true;
             if (room.getAvailability() == null || !room.getAvailability().equals(filter.getAvailability())) {
                 return false;
             }
