@@ -1,4 +1,4 @@
-# 🏠 HỆ THỐNG QUẢN LÝ PHÒNG TRỌ - GROUP 2
+# 🏠 WEBSITE TÌM TRỌ - GROUP 6
 
 Ứng dụng web quản lý và cho thuê phòng trọ được xây dựng bằng Spring Boot và React.
 
@@ -74,7 +74,7 @@ cd frontend
 npm install
 npm run dev
 ```
-Frontend chạy tại: `http://localhost:5173`
+Frontend chạy tại: `http://localhost:3000`
 
 ## 📖 Hướng Dẫn Sử Dụng
 
@@ -124,7 +124,7 @@ Modern UI với gradient effects và animations
 
 ## 👥 Nhóm Phát Triển
 
-**Group 2 - ASM Project**
+**Group 6 - Website Tìm Trọ**
 
 ## 📄 License
 
