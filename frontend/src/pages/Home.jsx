@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import GlowEffects from '../components/GlowEffects'
 import { roomAPI } from '../services/api'
 import '../styles/Contact.css'
 import '../styles/About.css'
@@ -97,12 +96,11 @@ function Home({ currentUser, onLogout }) {
   return (
     <div className="bg-gradient">
       <Navbar currentUser={currentUser} onLogout={onLogout} />
-      <GlowEffects />
 
       <main className="container">
         {/* Hero Section */}
         <section className="hero-modern">
-          <h1 className="hero-title">Tìm phòng trọ hoàn hảo cho bạn<br/>NHANH NHẤT</h1>
+          <h1 className="hero-title">Tìm phòng trọ hoàn hảo cho bạn</h1>
           <p className="hero-subtitle">Kết nối với hàng ngàn chủ trọ uy tín trong khu vực Hòa Lạc</p>
 
           {/* Search Box */}

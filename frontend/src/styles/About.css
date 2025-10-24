@@ -1,11 +1,13 @@
 /* About Section Styles */
 .about-section {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(30, 41, 59, 0.95) 100%);
+  background: white;
   padding: 80px 0;
   margin-top: 80px;
   border-radius: 24px;
   position: relative;
   overflow: hidden;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .about-section::before {
@@ -16,8 +18,8 @@
   right: 0;
   bottom: 0;
   background: 
-    radial-gradient(circle at 10% 20%, rgba(255, 111, 0, 0.08) 0%, transparent 50%),
-    radial-gradient(circle at 90% 80%, rgba(0, 122, 255, 0.08) 0%, transparent 50%);
+    radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(34, 197, 94, 0.03) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -32,7 +34,7 @@
 .about-hero-title {
   font-size: 3rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--orange-primary) 0%, #ff8c42 50%, var(--blue-primary) 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -42,7 +44,7 @@
 
 .about-hero-subtitle {
   font-size: 1.3rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   max-width: 700px;
   margin: 0 auto 40px;
   line-height: 1.6;
@@ -91,7 +93,7 @@
 .about-section-title {
   font-size: 2.2rem;
   font-weight: 700;
-  color: white;
+  color: var(--text-primary);
   margin-bottom: 30px;
   position: relative;
   display: inline-block;
@@ -105,20 +107,20 @@
   transform: translateX(-50%);
   width: 80px;
   height: 4px;
-  background: linear-gradient(90deg, var(--orange-primary), var(--blue-primary));
+  background: linear-gradient(90deg, var(--primary), var(--accent));
   border-radius: 2px;
 }
 
 .about-description {
   font-size: 1.1rem;
   line-height: 1.8;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   margin-bottom: 50px;
   text-align: left;
 }
 
 .about-description strong {
-  color: var(--orange-primary);
+  color: var(--primary);
   font-weight: 600;
 }
 
@@ -142,8 +144,8 @@
   font-size: 3rem;
   width: 80px;
   height: 80px;
-  background: rgba(255, 111, 0, 0.1);
-  border: 2px solid rgba(255, 111, 0, 0.3);
+  background: rgba(37, 99, 235, 0.08);
+  border: 2px solid rgba(37, 99, 235, 0.2);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -153,20 +155,20 @@
 
 .timeline-item:hover .timeline-icon {
   transform: scale(1.1) rotate(5deg);
-  background: rgba(255, 111, 0, 0.2);
-  border-color: var(--orange-primary);
+  background: rgba(37, 99, 235, 0.15);
+  border-color: var(--primary);
 }
 
 .timeline-content h3 {
   font-size: 1.8rem;
   font-weight: 700;
-  color: white;
+  color: var(--text-primary);
   margin-bottom: 5px;
 }
 
 .timeline-content p {
   font-size: 1rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 /* Core Values */
@@ -187,14 +189,14 @@
 }
 
 .value-card {
-  background: rgba(30, 41, 59, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: white;
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 40px 30px;
   transition: all 0.4s ease;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .value-card::before {
@@ -204,7 +206,7 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--orange-primary), var(--blue-primary));
+  background: linear-gradient(90deg, var(--primary), var(--accent));
   transform: translateX(-100%);
   transition: transform 0.4s ease;
 }
@@ -215,8 +217,8 @@
 
 .value-card:hover {
   transform: translateY(-10px);
-  border-color: rgba(255, 111, 0, 0.4);
-  box-shadow: 0 15px 40px rgba(255, 111, 0, 0.25);
+  border-color: var(--primary);
+  box-shadow: 0 15px 40px rgba(37, 99, 235, 0.15);
 }
 
 .value-icon {
@@ -227,21 +229,21 @@
 .value-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
   margin-bottom: 16px;
 }
 
 .value-description {
   font-size: 1rem;
   line-height: 1.7;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 /* How It Works */
 .how-it-works {
   padding: 80px 20px;
   text-align: center;
-  background: rgba(15, 23, 42, 0.4);
+  background: var(--bg-light);
   position: relative;
   z-index: 1;
 }
@@ -256,19 +258,19 @@
 }
 
 .step-card {
-  background: rgba(30, 41, 59, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: white;
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 40px 30px;
   transition: all 0.4s ease;
   position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .step-card:hover {
   transform: translateY(-10px);
-  border-color: rgba(0, 122, 255, 0.4);
-  box-shadow: 0 15px 40px rgba(0, 122, 255, 0.25);
+  border-color: var(--primary);
+  box-shadow: 0 15px 40px rgba(37, 99, 235, 0.15);
 }
 
 .step-number {
@@ -277,7 +279,7 @@
   right: 20px;
   width: 50px;
   height: 50px;
-  background: linear-gradient(135deg, var(--orange-primary), #ff8c42);
+  background: linear-gradient(135deg, var(--primary), var(--accent));
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -285,7 +287,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   color: white;
-  box-shadow: 0 5px 15px rgba(255, 111, 0, 0.4);
+  box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
 }
 
 .step-icon {
@@ -296,14 +298,14 @@
 .step-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
   margin-bottom: 16px;
 }
 
 .step-description {
   font-size: 1rem;
   line-height: 1.7;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 /* Highlights */
@@ -324,14 +326,14 @@
 }
 
 .stat-card {
-  background: linear-gradient(135deg, rgba(255, 111, 0, 0.1) 0%, rgba(0, 122, 255, 0.1) 100%);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 111, 0, 0.3);
+  background: white;
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 50px 30px;
   transition: all 0.4s ease;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .stat-card::before {
@@ -341,7 +343,7 @@
   left: -50%;
   width: 200%;
   height: 200%;
-  background: linear-gradient(45deg, transparent, rgba(255, 111, 0, 0.1), transparent);
+  background: linear-gradient(45deg, transparent, rgba(37, 99, 235, 0.05), transparent);
   transform: rotate(45deg);
   transition: all 0.6s ease;
 }
@@ -352,14 +354,14 @@
 
 .stat-card:hover {
   transform: translateY(-10px) scale(1.05);
-  border-color: var(--orange-primary);
-  box-shadow: 0 20px 50px rgba(255, 111, 0, 0.3);
+  border-color: var(--primary);
+  box-shadow: 0 20px 50px rgba(37, 99, 235, 0.15);
 }
 
 .stat-number {
   font-size: 3rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--orange-primary) 0%, #ff8c42 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -370,7 +372,7 @@
 
 .stat-label {
   font-size: 1.1rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   font-weight: 500;
   margin-bottom: 20px;
   position: relative;
@@ -387,7 +389,7 @@
 .team-section {
   padding: 80px 20px;
   text-align: center;
-  background: rgba(15, 23, 42, 0.4);
+  background: var(--bg-light);
   position: relative;
   z-index: 1;
 }
@@ -395,7 +397,7 @@
 .team-description {
   font-size: 1.1rem;
   line-height: 1.8;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   max-width: 800px;
   margin: 0 auto 50px;
 }
@@ -409,18 +411,18 @@
 }
 
 .team-member {
-  background: rgba(30, 41, 59, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: white;
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 40px 30px;
   transition: all 0.4s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .team-member:hover {
   transform: translateY(-10px);
-  border-color: rgba(255, 111, 0, 0.4);
-  box-shadow: 0 15px 40px rgba(255, 111, 0, 0.25);
+  border-color: var(--primary);
+  box-shadow: 0 15px 40px rgba(37, 99, 235, 0.15);
 }
 
 .member-avatar {
@@ -444,31 +446,31 @@
 .member-name {
   font-size: 1.3rem;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
   margin-bottom: 8px;
 }
 
 .member-role {
   font-size: 1rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 /* Team Commitment */
 .team-commitment {
-  background: rgba(30, 41, 59, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 111, 0, 0.3);
+  background: white;
+  border: 1px solid var(--border-color);
   border-radius: 20px;
   padding: 40px;
   max-width: 800px;
   margin: 0 auto;
   text-align: left;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .commitment-title {
   font-size: 1.5rem;
   font-weight: 600;
-  color: white;
+  color: var(--text-primary);
   margin-bottom: 20px;
   text-align: center;
 }
@@ -476,7 +478,7 @@
 .commitment-text {
   font-size: 1.05rem;
   line-height: 2;
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 /* Responsive Design */

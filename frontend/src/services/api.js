@@ -23,6 +23,21 @@ api.interceptors.request.use((config) => {
   return Promise.reject(error)
 })
 
+// Handle token expiration and 401 errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Token expired or invalid - clear localStorage and reload
+      console.error('Token expired or unauthorized. Logging out...')
+      localStorage.removeItem('user')
+      localStorage.removeItem('token')
+      window.location.href = '/login'
+    }
+    return Promise.reject(error)
+  }
+)
+
 // Helper function to add user ID header
 const getUserId = () => {
   const user = JSON.parse(localStorage.getItem('user') || '{}')
@@ -198,6 +213,201 @@ export const bookingAPI = {
   cancelBooking: async (bookingId) => {
     const userId = getUserId()
     const response = await api.put(`/bookings/${bookingId}/cancel`, {}, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+}
+
+// Saved Rooms API
+export const savedRoomAPI = {
+  saveRoom: async (roomId) => {
+    const response = await api.post(`/saved-rooms/${roomId}`)
+    return response.data
+  },
+
+  unsaveRoom: async (roomId) => {
+    const response = await api.delete(`/saved-rooms/${roomId}`)
+    return response.data
+  },
+
+  getSavedRooms: async () => {
+    const response = await api.get('/saved-rooms')
+    return response.data
+  },
+
+  checkIfSaved: async (roomId) => {
+    const response = await api.get(`/saved-rooms/${roomId}/check`)
+    return response.data
+  },
+}
+
+// Room Reports API
+export const roomReportAPI = {
+  createReport: async (roomId, reportData) => {
+    const response = await api.post(`/reports/rooms/${roomId}`, reportData)
+    return response.data
+  },
+
+  getAllReports: async () => {
+    const response = await api.get('/reports')
+    return response.data
+  },
+
+  getReportsByStatus: async (status) => {
+    const response = await api.get(`/reports/status/${status}`)
+    return response.data
+  },
+
+  getReportsByRoom: async (roomId) => {
+    const response = await api.get(`/reports/rooms/${roomId}`)
+    return response.data
+  },
+
+  updateReportStatus: async (reportId, status) => {
+    const response = await api.put(`/reports/${reportId}/status`, null, {
+      params: { status }
+    })
+    return response.data
+  },
+}
+
+// Viewing Schedules API
+export const viewingScheduleAPI = {
+  createSchedule: async (roomId, scheduleData) => {
+    const response = await api.post(`/viewing-schedules/rooms/${roomId}`, scheduleData)
+    return response.data
+  },
+
+  getMySchedules: async () => {
+    const response = await api.get('/viewing-schedules/my-schedules')
+    return response.data
+  },
+
+  getRoomSchedules: async (roomId) => {
+    const response = await api.get(`/viewing-schedules/rooms/${roomId}`)
+    return response.data
+  },
+
+  getSchedulesByStatus: async (status) => {
+    const response = await api.get(`/viewing-schedules/status/${status}`)
+    return response.data
+  },
+
+  updateScheduleStatus: async (scheduleId, status) => {
+    const response = await api.put(`/viewing-schedules/${scheduleId}/status`, null, {
+      params: { status }
+    })
+    return response.data
+  },
+
+  deleteSchedule: async (scheduleId) => {
+    const response = await api.delete(`/viewing-schedules/${scheduleId}`)
+    return response.data
+  },
+}
+
+// My Rooms API
+export const myRoomsAPI = {
+  // Get all my rooms
+  getMyRooms: async (status = null, keyword = null) => {
+    const userId = getUserId()
+    const params = {}
+    if (status) params.status = status
+    if (keyword) params.q = keyword
+    
+    const response = await api.get('/me/rooms', {
+      params,
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  // Get room detail
+  getMyRoomDetail: async (bookingId) => {
+    const userId = getUserId()
+    const response = await api.get(`/me/rooms/${bookingId}`, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  // Create booking (HOLD or DEPOSIT)
+  createBooking: async (bookingData) => {
+    const userId = getUserId()
+    const response = await api.post('/me/rooms', bookingData, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  // Make payment
+  makePayment: async (bookingId, paymentData) => {
+    const userId = getUserId()
+    const response = await api.post(`/me/rooms/${bookingId}/payments`, paymentData, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  // Get payments
+  getPayments: async (bookingId) => {
+    const userId = getUserId()
+    const response = await api.get(`/me/rooms/${bookingId}/payments`, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  // Sign contract
+  signContract: async (bookingId) => {
+    const userId = getUserId()
+    const response = await api.post(`/me/rooms/${bookingId}/contract/sign`, {}, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  // Cancel booking
+  cancelBooking: async (bookingId, reason) => {
+    const userId = getUserId()
+    const response = await api.post(`/me/rooms/${bookingId}/cancel`, { reason }, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  // Renew lease
+  renewLease: async (bookingId, months) => {
+    const userId = getUserId()
+    const response = await api.post(`/me/rooms/${bookingId}/renew`, { months }, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  // End lease
+  endLease: async (bookingId) => {
+    const userId = getUserId()
+    const response = await api.post(`/me/rooms/${bookingId}/handover`, {}, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  // Create issue
+  createIssue: async (bookingId, issueData) => {
+    const userId = getUserId()
+    const response = await api.post(`/me/rooms/${bookingId}/issues`, issueData, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  // Upload document
+  uploadDocument: async (bookingId, documentData) => {
+    const userId = getUserId()
+    const response = await api.post(`/me/rooms/${bookingId}/documents`, documentData, {
       headers: { 'X-User-Id': userId }
     })
     return response.data

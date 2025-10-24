@@ -25,6 +25,9 @@ public class Room {
 
     @Column(columnDefinition = "TEXT")
     private String imageUrl;
+    
+    @Column(name = "additional_images", columnDefinition = "TEXT")
+    private String additionalImages; // JSON array of additional image URLs
 
     @Column(columnDefinition = "TEXT")
     private String detail;
@@ -60,6 +63,25 @@ public class Room {
     
     @Column
     private String availability; // "Còn trống", "Sắp trống"
+    
+    // Cost fields
+    @Column
+    private Double electricityCost; // Tiền điện (VNĐ/kWh hoặc cố định)
+    
+    @Column
+    private Double waterCost; // Tiền nước (VNĐ/m³ hoặc cố định)
+    
+    @Column
+    private Double internetCost; // Tiền internet (VNĐ/tháng)
+    
+    @Column
+    private Double parkingFee; // Phí giữ xe (VNĐ/tháng)
+    
+    @Column
+    private Double deposit; // Tiền cọc (VNĐ hoặc số tháng)
+    
+    @Column
+    private String depositType; // "FIXED" (cố định) hoặc "MONTHS" (số tháng)
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

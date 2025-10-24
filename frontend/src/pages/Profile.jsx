@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import GlowEffects from '../components/GlowEffects'
-import { userAPI } from '../services/api'
+import { userAPI, savedRoomAPI } from '../services/api'
+import toast from 'react-hot-toast'
 import './Profile.css'
 
 function Profile({ currentUser, onLogout }) {
-  const [activeTab, setActiveTab] = useState('info') // info, card, identity, security, password
+  const [activeTab, setActiveTab] = useState('info') // info, card, identity, security, password, saved-rooms
   const [userInfo, setUserInfo] = useState({
     phoneNumber: '',
     address: ''
@@ -17,6 +18,8 @@ function Profile({ currentUser, onLogout }) {
     newPassword: '',
     confirmPassword: ''
   })
+  const [savedRooms, setSavedRooms] = useState([])
+  const [loadingSavedRooms, setLoadingSavedRooms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const navigate = useNavigate()
@@ -30,7 +33,39 @@ function Profile({ currentUser, onLogout }) {
   useEffect(() => {
     // Reset message khi đổi tab
     setMessage('')
+    // Load saved rooms khi vào tab saved-rooms
+    if (activeTab === 'saved-rooms') {
+      loadSavedRooms()
+    }
   }, [activeTab])
+
+  const loadSavedRooms = async () => {
+    setLoadingSavedRooms(true)
+    try {
+      const data = await savedRoomAPI.getSavedRooms()
+      setSavedRooms(data)
+    } catch (err) {
+      console.error('Error loading saved rooms:', err)
+      toast.error('Không thể tải danh sách phòng đã lưu')
+    } finally {
+      setLoadingSavedRooms(false)
+    }
+  }
+
+  const handleUnsaveRoom = async (roomId) => {
+    try {
+      await savedRoomAPI.unsaveRoom(roomId)
+      toast.success('Đã bỏ lưu phòng')
+      loadSavedRooms() // Reload list
+    } catch (err) {
+      console.error('Error unsaving room:', err)
+      toast.error('Có lỗi xảy ra')
+    }
+  }
+
+  const formatPrice = (price) => {
+    return new Intl.NumberFormat('vi-VN').format(price)
+  }
 
   const loadUserInfo = async () => {
     try {
@@ -169,6 +204,13 @@ function Profile({ currentUser, onLogout }) {
               >
                 <span className="menu-icon">🔑</span>
                 Đổi mật khẩu
+              </button>
+              <button 
+                className={`profile-menu-item ${activeTab === 'saved-rooms' ? 'active' : ''}`}
+                onClick={() => setActiveTab('saved-rooms')}
+              >
+                <span className="menu-icon">❤️</span>
+                Phòng đã lưu
               </button>
             </nav>
           </aside>
@@ -343,6 +385,59 @@ function Profile({ currentUser, onLogout }) {
                   <p>Chưa xác thực danh tính</p>
                   <button className="btn-verify">Xác thực ngay</button>
                 </div>
+              </div>
+            )}
+
+            {activeTab === 'saved-rooms' && (
+              <div className="profile-section">
+                <h2 className="section-title-profile">Phòng đã lưu</h2>
+                
+                {loadingSavedRooms ? (
+                  <div className="loading-saved-rooms">
+                    <p>Đang tải...</p>
+                  </div>
+                ) : savedRooms.length === 0 ? (
+                  <div className="empty-state-profile">
+                    <p>❤️</p>
+                    <p>Chưa có phòng nào được lưu</p>
+                    <Link to="/rooms/phong-tro" className="btn-browse-rooms">
+                      Tìm phòng ngay
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="saved-rooms-grid">
+                    {savedRooms.map((item) => (
+                      <div key={item.id} className="saved-room-card">
+                        <Link to={`/room/${item.room.id}`} className="saved-room-image-link">
+                          <img 
+                            src={item.room.imageUrl || 'https://via.placeholder.com/400x300?text=Phòng+Trọ'} 
+                            alt={item.room.name}
+                            className="saved-room-image"
+                          />
+                        </Link>
+                        <div className="saved-room-info">
+                          <Link to={`/room/${item.room.id}`} className="saved-room-title-link">
+                            <h3 className="saved-room-title">{item.room.name}</h3>
+                          </Link>
+                          <p className="saved-room-location">📍 {item.room.location}</p>
+                          <p className="saved-room-price">{formatPrice(item.room.price)}đ/tháng</p>
+                          <p className="saved-room-date">Lưu ngày: {new Date(item.savedAt).toLocaleDateString('vi-VN')}</p>
+                          <div className="saved-room-actions">
+                            <Link to={`/room/${item.room.id}`} className="btn-view-saved-room">
+                              Xem chi tiết
+                            </Link>
+                            <button 
+                              className="btn-unsave-room"
+                              onClick={() => handleUnsaveRoom(item.room.id)}
+                            >
+                              ❌ Bỏ lưu
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

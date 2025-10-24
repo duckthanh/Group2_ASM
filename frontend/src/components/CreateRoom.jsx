@@ -6,6 +6,7 @@ const CreateRoom = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
     name: '',
     imageUrl: '',
+    additionalImages: [],
     detail: '',
     price: '',
     location: '',
@@ -69,10 +70,16 @@ const CreateRoom = ({ onClose, onSuccess }) => {
     setError('')
     try {
       const result = await uploadAPI.uploadImage(file)
+      // Backend trả về relative URL, cần thêm base URL
+      const fullImageUrl = result.url.startsWith('http') 
+        ? result.url 
+        : `http://localhost:8080${result.url}`
+      
       setFormData(prev => ({
         ...prev,
-        imageUrl: 'http://localhost:8080' + result.url
+        imageUrl: fullImageUrl
       }))
+      console.log('Image uploaded:', fullImageUrl)
     } catch (err) {
       console.error('Error uploading image:', err)
       setError('Không thể upload ảnh. Vui lòng thử lại!')
@@ -81,6 +88,50 @@ const CreateRoom = ({ onClose, onSuccess }) => {
     } finally {
       setUploading(false)
     }
+  }
+
+  const handleAdditionalImagesUpload = async (e) => {
+    const files = Array.from(e.target.files)
+    if (files.length === 0) return
+
+    // Validate total images
+    const currentTotal = formData.additionalImages.length + (formData.imageUrl ? 1 : 0)
+    if (currentTotal + files.length > 10) {
+      setError('Tối đa 10 ảnh (1 ảnh chính + 9 ảnh phụ)')
+      return
+    }
+
+    setUploading(true)
+    setError('')
+    try {
+      const uploadPromises = files.map(file => uploadAPI.uploadImage(file))
+      const results = await Promise.all(uploadPromises)
+      
+      const newImageUrls = results.map(result => {
+        return result.url.startsWith('http') 
+          ? result.url 
+          : `http://localhost:8080${result.url}`
+      })
+
+      setFormData(prev => ({
+        ...prev,
+        additionalImages: [...prev.additionalImages, ...newImageUrls]
+      }))
+      
+      console.log(`Uploaded ${files.length} additional images`)
+    } catch (err) {
+      console.error('Error uploading images:', err)
+      setError('Không thể upload ảnh. Vui lòng thử lại!')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleRemoveAdditionalImage = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      additionalImages: prev.additionalImages.filter((_, i) => i !== index)
+    }))
   }
 
   const handleSubmit = async (e) => {
@@ -101,7 +152,8 @@ const CreateRoom = ({ onClose, onSuccess }) => {
         price: parseFloat(formData.price),
         area: formData.area ? parseFloat(formData.area) : null,
         capacity: formData.capacity ? parseInt(formData.capacity) : null,
-        amenities: formData.amenities.join(', ') // Convert array to comma-separated string
+        amenities: formData.amenities.join(', '), // Convert array to comma-separated string
+        additionalImages: JSON.stringify(formData.additionalImages) // Convert array to JSON string
       }
 
       console.log('=== FRONTEND CREATE ROOM DEBUG ===')
@@ -168,6 +220,41 @@ const CreateRoom = ({ onClose, onSuccess }) => {
                 <img src={previewUrl} alt="Preview" />
               </div>
             )}
+          </div>
+
+          {/* Additional Images */}
+          <div className="form-group">
+            <label>Ảnh phụ (tối đa 9 ảnh)</label>
+            
+            {formData.additionalImages.length > 0 && (
+              <div className="additional-images-grid">
+                {formData.additionalImages.map((imageUrl, index) => (
+                  <div key={index} className="additional-image-item">
+                    <img src={imageUrl} alt={`Additional ${index + 1}`} />
+                    <button
+                      type="button"
+                      className="btn-remove-additional-image"
+                      onClick={() => handleRemoveAdditionalImage(index)}
+                      title="Xóa ảnh"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleAdditionalImagesUpload}
+              disabled={uploading || formData.additionalImages.length >= 9}
+            />
+            {uploading && <p className="uploading-text">⏳ Đang tải ảnh lên...</p>}
+            <small style={{ display: 'block', marginTop: '8px', color: 'var(--text-secondary)' }}>
+              Đã upload: {formData.additionalImages.length}/9 ảnh phụ
+            </small>
           </div>
 
           <div className="form-group">

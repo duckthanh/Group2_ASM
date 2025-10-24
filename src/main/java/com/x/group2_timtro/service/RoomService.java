@@ -41,6 +41,7 @@ public class RoomService {
         Room room = new Room();
         room.setName(request.getName());
         room.setImageUrl(request.getImageUrl());
+        room.setAdditionalImages(request.getAdditionalImages());
         room.setDetail(request.getDetail());
         room.setPrice(request.getPrice());
         room.setLocation(request.getLocation());
@@ -85,11 +86,25 @@ public class RoomService {
 
         if (request.getName() != null) room.setName(request.getName());
         if (request.getImageUrl() != null) room.setImageUrl(request.getImageUrl());
+        if (request.getAdditionalImages() != null) room.setAdditionalImages(request.getAdditionalImages());
         if (request.getDetail() != null) room.setDetail(request.getDetail());
         if (request.getPrice() != null) room.setPrice(request.getPrice());
         if (request.getLocation() != null) room.setLocation(request.getLocation());
         if (request.getContact() != null) room.setContact(request.getContact());
         if (request.getIsAvailable() != null) room.setIsAvailable(request.getIsAvailable());
+        if (request.getRoomType() != null) room.setRoomType(request.getRoomType());
+        if (request.getArea() != null) room.setArea(request.getArea());
+        if (request.getCapacity() != null) room.setCapacity(request.getCapacity());
+        if (request.getAmenities() != null) room.setAmenities(request.getAmenities());
+        if (request.getAvailability() != null) room.setAvailability(request.getAvailability());
+        
+        // Cost fields
+        if (request.getElectricityCost() != null) room.setElectricityCost(request.getElectricityCost());
+        if (request.getWaterCost() != null) room.setWaterCost(request.getWaterCost());
+        if (request.getInternetCost() != null) room.setInternetCost(request.getInternetCost());
+        if (request.getParkingFee() != null) room.setParkingFee(request.getParkingFee());
+        if (request.getDeposit() != null) room.setDeposit(request.getDeposit());
+        if (request.getDepositType() != null) room.setDepositType(request.getDepositType());
 
         Room updatedRoom = roomRepository.save(room);
         return mapToResponse(updatedRoom);
@@ -195,12 +210,8 @@ public class RoomService {
     }
 
     private boolean matchesFilter(Room room, RoomFilterRequest filter) {
-        // Kiểm tra xem có filter nào được áp dụng không
-        boolean hasAnyFilter = false;
-        
         // Filter by room type - STRICT: nếu filter được set và room KHÔNG có giá trị → LOẠI BỎ
         if (filter.getRoomTypes() != null && !filter.getRoomTypes().isEmpty()) {
-            hasAnyFilter = true;
             if (room.getRoomType() == null || !filter.getRoomTypes().contains(room.getRoomType())) {
                 return false;
             }
@@ -208,13 +219,11 @@ public class RoomService {
 
         // Filter by price range (price luôn có giá trị)
         if (filter.getMinPrice() != null) {
-            hasAnyFilter = true;
             if (room.getPrice() < filter.getMinPrice()) {
                 return false;
             }
         }
         if (filter.getMaxPrice() != null) {
-            hasAnyFilter = true;
             if (room.getPrice() > filter.getMaxPrice()) {
                 return false;
             }
@@ -222,7 +231,6 @@ public class RoomService {
 
         // Filter by area - STRICT
         if (filter.getAreas() != null && !filter.getAreas().isEmpty()) {
-            hasAnyFilter = true;
             if (room.getArea() == null) {
                 return false;  // Loại bỏ phòng không có area
             }
@@ -240,7 +248,6 @@ public class RoomService {
 
         // Filter by amenities - STRICT
         if (filter.getAmenities() != null && !filter.getAmenities().isEmpty()) {
-            hasAnyFilter = true;
             if (room.getAmenities() == null) {
                 return false;  // Loại bỏ phòng không có amenities
             }
@@ -253,7 +260,6 @@ public class RoomService {
 
         // Filter by capacity - STRICT
         if (filter.getCapacity() != null) {
-            hasAnyFilter = true;
             if (room.getCapacity() == null) {
                 return false;  // Loại bỏ phòng không có capacity
             }
@@ -276,7 +282,6 @@ public class RoomService {
 
         // Filter by availability - STRICT
         if (filter.getAvailability() != null && !filter.getAvailability().isEmpty()) {
-            hasAnyFilter = true;
             if (room.getAvailability() == null || !room.getAvailability().equals(filter.getAvailability())) {
                 return false;
             }
@@ -301,10 +306,16 @@ public class RoomService {
     }
 
     private RoomResponse mapToResponse(Room room) {
+        return mapToRoomResponse(room);
+    }
+
+    // Public method for other services to use
+    public RoomResponse mapToRoomResponse(Room room) {
         return RoomResponse.builder()
                 .id(room.getId())
                 .name(room.getName())
                 .imageUrl(room.getImageUrl())
+                .additionalImages(room.getAdditionalImages())
                 .detail(room.getDetail())
                 .price(room.getPrice())
                 .location(room.getLocation())
@@ -319,6 +330,12 @@ public class RoomService {
                 .capacity(room.getCapacity())
                 .amenities(room.getAmenities())
                 .availability(room.getAvailability())
+                .electricityCost(room.getElectricityCost())
+                .waterCost(room.getWaterCost())
+                .internetCost(room.getInternetCost())
+                .parkingFee(room.getParkingFee())
+                .deposit(room.getDeposit())
+                .depositType(room.getDepositType())
                 .build();
     }
 }

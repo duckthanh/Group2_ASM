@@ -8,6 +8,7 @@ import lombok.Setter;
 public class CreateRoomRequest {
     private String name;
     private String imageUrl;
+    private String additionalImages; // JSON array string
     private String detail;
     private Double price;
     private String location;
