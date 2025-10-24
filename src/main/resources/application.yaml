@@ -14,5 +14,13 @@ spring:
     hibernate:
       ddl-auto: update
 
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
 jwt:
   secret-key: eqS5fqwmlhALPxmsrbNZOX8/INdAm9RQcaT9brFuk3VOMRrj1ITddcm+QwSWVLhP4arkHnya6naMKSNVUiPJb0p+0SjhkKKmXPTuJtsL96w=
+

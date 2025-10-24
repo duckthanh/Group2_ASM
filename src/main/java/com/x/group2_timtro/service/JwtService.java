@@ -33,7 +33,7 @@ public String generateAccessToken(User user) {
     JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
             .subject(user.getEmail())
             .issueTime(issueTime)
-            .expirationTime(new Date(issueTime.toInstant().plus(30, ChronoUnit.MINUTES).toEpochMilli()))
+            .expirationTime(new Date(issueTime.toInstant().plus(24, ChronoUnit.HOURS).toEpochMilli()))  // 24 hours instead of 30 minutes
             .claim("id", user.getId())
             .claim("authorities", authorities)
             .jwtID(UUID.randomUUID().toString())

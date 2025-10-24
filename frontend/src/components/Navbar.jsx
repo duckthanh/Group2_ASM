@@ -1,61 +1,228 @@
-import { Link, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Search, Home, Building2, Info, Mail, User, LogOut, Users, Menu, X } from 'lucide-react'
 
 function Navbar({ currentUser, onLogout }) {
-  const [keyword, setKeyword] = useState('')
+  const [showUserDropdown, setShowUserDropdown] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
 
-  const handleSearch = (e) => {
-    e.preventDefault()
-    if (keyword.trim()) {
-      navigate(`/rooms/phong-tro?keyword=${keyword}`)
-    } else {
-      navigate('/rooms/phong-tro')
+  // Sticky navbar with blur on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20)
     }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const handleProfileClick = () => {
+    setShowUserDropdown(false)
+    navigate('/profile')
+  }
+
+  const handleLogout = () => {
+    setShowUserDropdown(false)
+    onLogout()
+  }
+
+  const handleContactClick = (e) => {
+    e.preventDefault()
+    if (location.pathname === '/') {
+      const contactSection = document.querySelector('.contact-section')
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    } else {
+      navigate('/#contact')
+      setTimeout(() => {
+        const contactSection = document.querySelector('.contact-section')
+        if (contactSection) {
+          contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 100)
+    }
+    setShowMobileMenu(false)
+  }
+
+  const handleAboutClick = (e) => {
+    e.preventDefault()
+    if (location.pathname === '/') {
+      const aboutSection = document.getElementById('about')
+      if (aboutSection) {
+        aboutSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    } else {
+      navigate('/#about')
+      setTimeout(() => {
+        const aboutSection = document.getElementById('about')
+        if (aboutSection) {
+          aboutSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 100)
+    }
+    setShowMobileMenu(false)
+  }
+
+  const isActive = (path) => {
+    return location.pathname === path
   }
 
   return (
-    <header className="nav">
-      <div className="container nav-inner">
-        <Link to="/" className="brand">✨ Tìm Trọ</Link>
-        <nav className="nav-menu">
-          <div className="main-menu">
-            <Link to="/rooms/phong-tro" className="nav-link">Thuê phòng trọ</Link>
-            
-            <form onSubmit={handleSearch} className="nav-search-form">
-              <input
-                type="text"
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                placeholder="Tìm kiếm"
-                className="nav-search-input"
-              />
-              <button type="submit" className="btn-nav-search">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-            </form>
-          </div>
-          
+    <header 
+      className={`navbar-new ${isScrolled ? 'navbar-scrolled' : ''}`}
+      style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 1000,
+        background: isScrolled ? 'rgba(255, 255, 255, 0.9)' : 'white',
+        backdropFilter: isScrolled ? 'blur(12px)' : 'none',
+        borderBottom: '1px solid var(--border-color)',
+        boxShadow: isScrolled ? '0 4px 12px rgba(0, 0, 0, 0.05)' : 'none',
+        transition: 'all 0.3s ease'
+      }}
+    >
+      <div className="navbar-container">
+        {/* Logo */}
+        <Link to="/" className="navbar-logo">
+          <Building2 size={24} strokeWidth={2.5} />
+          <span>Tìm Trọ</span>
+        </Link>
+
+        {/* Desktop Navigation */}
+        <nav className="navbar-nav-desktop">
+          <Link 
+            to="/" 
+            className={`navbar-link ${isActive('/') ? 'navbar-link-active' : ''}`}
+          >
+            <Home size={18} />
+            Trang chủ
+          </Link>
+          <Link 
+            to="/rooms/phong-tro" 
+            className={`navbar-link ${isActive('/rooms/phong-tro') ? 'navbar-link-active' : ''}`}
+          >
+            <Building2 size={18} />
+            Danh sách trọ
+          </Link>
+          <a href="#about" onClick={handleAboutClick} className="navbar-link">
+            <Info size={18} />
+            Giới thiệu
+          </a>
+          <a href="#contact" onClick={handleContactClick} className="navbar-link">
+            <Mail size={18} />
+            Liên hệ
+          </a>
+        </nav>
+
+        {/* Right side */}
+        <div className="navbar-right">
           {!currentUser ? (
-            <div className="auth-buttons">
-              <Link to="/login" className="btn btn-ghost">Đăng nhập</Link>
-              <Link to="/register" className="btn">Đăng ký</Link>
+            <div className="navbar-auth-buttons">
+              <Link to="/login" className="navbar-btn-ghost">Đăng nhập</Link>
+              <Link to="/register" className="navbar-btn-primary">Đăng ký</Link>
             </div>
           ) : (
-            <div className="user-info">
-              <span className="user-name">
-                👤 <span>{currentUser.username}</span>
-              </span>
-              <button onClick={onLogout} className="btn btn-ghost btn-logout">Đăng xuất</button>
+            <div className="navbar-user-dropdown">
+              <button 
+                className="navbar-user-btn"
+                onClick={() => setShowUserDropdown(!showUserDropdown)}
+              >
+                <div className="navbar-user-avatar">
+                  <User size={18} />
+                </div>
+                <span className="navbar-user-name">{currentUser.username}</span>
+                {currentUser.role === 'ADMIN' && (
+                  <span className="navbar-admin-badge">ADMIN</span>
+                )}
+              </button>
+              
+              {showUserDropdown && (
+                <div className="navbar-dropdown-menu">
+                  <button onClick={handleProfileClick} className="navbar-dropdown-item">
+                    <User size={18} />
+                    Hồ sơ của tôi
+                  </button>
+                  {(currentUser.role === 'ADMIN' || currentUser.role === 'HOST') && (
+                    <Link to="/admin/users" className="navbar-dropdown-item">
+                      <Users size={18} />
+                      Quản lý người dùng
+                    </Link>
+                  )}
+                  <div className="navbar-dropdown-divider"></div>
+                  <button onClick={handleLogout} className="navbar-dropdown-item navbar-dropdown-item-logout">
+                    <LogOut size={18} />
+                    Đăng xuất
+                  </button>
+                </div>
+              )}
             </div>
           )}
-        </nav>
+
+          {/* Mobile Menu Button */}
+          <button 
+            className="navbar-mobile-toggle"
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+          >
+            {showMobileMenu ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile Menu */}
+      {showMobileMenu && (
+        <div className="navbar-mobile-menu">
+          <Link 
+            to="/" 
+            className={`navbar-mobile-link ${isActive('/') ? 'navbar-mobile-link-active' : ''}`}
+            onClick={() => setShowMobileMenu(false)}
+          >
+            <Home size={20} />
+            Trang chủ
+          </Link>
+          <Link 
+            to="/rooms/phong-tro" 
+            className={`navbar-mobile-link ${isActive('/rooms/phong-tro') ? 'navbar-mobile-link-active' : ''}`}
+            onClick={() => setShowMobileMenu(false)}
+          >
+            <Building2 size={20} />
+            Danh sách trọ
+          </Link>
+          <a href="#about" onClick={handleAboutClick} className="navbar-mobile-link">
+            <Info size={20} />
+            Giới thiệu
+          </a>
+          <a href="#contact" onClick={handleContactClick} className="navbar-mobile-link">
+            <Mail size={20} />
+            Liên hệ
+          </a>
+          
+          {!currentUser && (
+            <>
+              <div className="navbar-mobile-divider"></div>
+              <Link 
+                to="/login" 
+                className="navbar-mobile-link"
+                onClick={() => setShowMobileMenu(false)}
+              >
+                <User size={20} />
+                Đăng nhập
+              </Link>
+              <Link 
+                to="/register" 
+                className="navbar-mobile-link navbar-mobile-link-primary"
+                onClick={() => setShowMobileMenu(false)}
+              >
+                Đăng ký
+              </Link>
+            </>
+          )}
+        </div>
+      )}
     </header>
   )
 }
 
 export default Navbar
-

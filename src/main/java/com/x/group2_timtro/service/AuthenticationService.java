@@ -39,9 +39,16 @@ public class AuthenticationService {
         String refreshToken = jwtService.generateRefreshToken(user);
 
         return LoginResponse.builder()
+                .id(user.getId())
+                .username(user.getName())  // Use getName() to get actual username
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .address(user.getAddress())
+                .role(user.getRole())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
+
     }
 
     public void logout(String accessToken) throws ParseException {

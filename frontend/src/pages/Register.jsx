@@ -8,7 +8,8 @@ function Register() {
     username: '',
     email: '',
     password: '',
-    phoneNumber: ''
+    phoneNumber: '',
+    address: ''
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -27,8 +28,16 @@ function Register() {
     setLoading(true)
 
     try {
-      await authAPI.register(formData)
-      navigate('/login')
+      const registerResponse = await authAPI.register(formData)
+      
+      // Auto login để lấy JWT token
+      const loginResponse = await authAPI.login(formData.email, formData.password)
+      
+      // Lưu thông tin user + JWT token
+      localStorage.setItem('user', JSON.stringify(loginResponse))
+      
+      // Chuyển đến trang profile
+      window.location.href = '/profile'
     } catch (err) {
       setError(err.response?.data?.message || 'Email đã tồn tại hoặc thông tin không hợp lệ')
     } finally {
@@ -97,6 +106,20 @@ function Register() {
                 onChange={handleChange}
                 className="form-input"
                 placeholder="0912345678"
+                required
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="address" className="form-label">Địa chỉ</label>
+              <input
+                type="text"
+                id="address"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                className="form-input"
+                placeholder="Số nhà, đường, quận, thành phố"
                 required
               />
             </div>
