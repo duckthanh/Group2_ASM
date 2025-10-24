@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Search, UserCog, Users as UsersIcon, Shield, Edit2, Trash2, X } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import GlowEffects from '../components/GlowEffects'
 import { userAPI } from '../services/api'
 
 function UserManagement({ currentUser, onLogout }) {
@@ -18,16 +18,16 @@ function UserManagement({ currentUser, onLogout }) {
   
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
-  const [usersPerPage] = useState(6)
+  const [usersPerPage] = useState(10)
   
-  // Search states
+  // Search & Filter states
   const [searchTerm, setSearchTerm] = useState('')
+  const [roleFilter, setRoleFilter] = useState('all')
   const [filteredUsers, setFilteredUsers] = useState([])
   
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Kiểm tra quyền admin
     if (!currentUser || currentUser.role !== 'ADMIN') {
       navigate('/')
       return
@@ -35,27 +35,34 @@ function UserManagement({ currentUser, onLogout }) {
     fetchUsers()
   }, [currentUser, navigate])
 
-  // Filter users based on search term
+  // Filter users
   useEffect(() => {
-    if (searchTerm.trim() === '') {
-      setFilteredUsers(users)
-    } else {
-      const filtered = users.filter(user => 
-        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.phoneNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.address?.toLowerCase().includes(searchTerm.toLowerCase())
+    let result = users
+
+    // Search filter
+    if (searchTerm.trim()) {
+      result = result.filter(user => 
+        user.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.phoneNumber?.toLowerCase().includes(searchTerm.toLowerCase())
       )
-      setFilteredUsers(filtered)
     }
-    setCurrentPage(1) // Reset to first page when searching
-  }, [searchTerm, users])
+
+    // Role filter
+    if (roleFilter !== 'all') {
+      result = result.filter(user => user.role === roleFilter)
+    }
+
+    setFilteredUsers(result)
+    setCurrentPage(1)
+  }, [searchTerm, roleFilter, users])
 
   const fetchUsers = async () => {
     setLoading(true)
     try {
       const data = await userAPI.getAllUsers()
       setUsers(data)
+      setFilteredUsers(data)
     } catch (err) {
       console.error('Error fetching users:', err)
       setError('Không thể tải danh sách người dùng')
@@ -64,7 +71,7 @@ function UserManagement({ currentUser, onLogout }) {
     }
   }
 
-  // Pagination logic
+  // Pagination
   const indexOfLastUser = currentPage * usersPerPage
   const indexOfFirstUser = indexOfLastUser - usersPerPage
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser)
@@ -72,26 +79,20 @@ function UserManagement({ currentUser, onLogout }) {
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleDeleteUser = (user) => {
-    console.log('Opening delete modal for user:', user)
     setSelectedUser(user)
     setShowDeleteModal(true)
   }
 
   const handleConfirmDelete = async () => {
-    if (!selectedUser) {
-      alert('Không tìm thấy người dùng để xóa')
-      return
-    }
+    if (!selectedUser) return
     
     setDeleting(true)
     try {
-      console.log('Deleting user:', selectedUser.id)
       await userAPI.deleteUser(selectedUser.id)
-      console.log('User deleted successfully')
-      
       setUsers(users.filter(user => user.id !== selectedUser.id))
       alert('Xóa người dùng thành công!')
     } catch (err) {
@@ -105,24 +106,17 @@ function UserManagement({ currentUser, onLogout }) {
   }
 
   const handleUpdateRole = (user) => {
-    console.log('Opening role update modal for user:', user)
     setSelectedUser(user)
     setNewRole(user.role)
     setShowRoleModal(true)
   }
 
   const handleConfirmRoleUpdate = async () => {
-    if (!selectedUser || !newRole) {
-      alert('Vui lòng chọn quyền mới')
-      return
-    }
+    if (!selectedUser || !newRole) return
     
     setUpdating(true)
     try {
-      console.log('Updating role for user:', selectedUser.id, 'to role:', newRole)
       const updatedUser = await userAPI.updateUserRole(selectedUser.id, newRole)
-      console.log('Role updated successfully:', updatedUser)
-      
       setUsers(users.map(user => 
         user.id === selectedUser.id ? updatedUser : user
       ))
@@ -138,23 +132,39 @@ function UserManagement({ currentUser, onLogout }) {
     }
   }
 
-  const getRoleBadgeClass = (role) => {
-    return role === 'ADMIN' ? 'role-badge-admin' : 'role-badge-user'
+  const getRoleBadge = (role) => {
+    return role === 'ADMIN' ? (
+      <span className="user-badge-admin">
+        <Shield size={14} />
+        Admin
+      </span>
+    ) : (
+      <span className="user-badge-user">
+        <UsersIcon size={14} />
+        User
+      </span>
+    )
   }
 
-  const getRoleDisplayName = (role) => {
-    return role === 'ADMIN' ? 'Quản trị viên' : 'Người dùng'
+  const getStats = () => {
+    return {
+      total: users.length,
+      admins: users.filter(u => u.role === 'ADMIN').length,
+      users: users.filter(u => u.role === 'USER').length
+    }
   }
+
+  const stats = getStats()
 
   if (loading) {
     return (
-      <div className="bg-gradient">
+      <div className="user-management-page-new">
         <Navbar currentUser={currentUser} onLogout={onLogout} />
-        <GlowEffects />
         <main className="container" style={{ padding: '100px 0', textAlign: 'center' }}>
-          <div style={{ color: 'var(--text-muted)', fontSize: '1.5rem' }}>
+          <div className="loading-spinner"></div>
+          <p style={{ marginTop: '20px', color: 'var(--text-secondary)' }}>
             Đang tải danh sách người dùng...
-          </div>
+          </p>
         </main>
         <Footer />
       </div>
@@ -162,203 +172,229 @@ function UserManagement({ currentUser, onLogout }) {
   }
 
   return (
-    <div className="bg-gradient">
+    <div className="user-management-page-new">
       <Navbar currentUser={currentUser} onLogout={onLogout} />
-      <GlowEffects />
 
-      <main className="container" style={{ padding: '100px 0' }}>
-        <div className="user-management-container">
-          <div className="user-management-header">
-            <h1 className="user-management-title">Quản lý người dùng</h1>
-            <p className="user-management-subtitle">
-              Quản lý tài khoản và phân quyền người dùng trong hệ thống
-            </p>
+      <main className="container user-management-main">
+        {/* Header */}
+        <div className="um-header">
+          <div className="um-header-content">
+            <div className="um-title-section">
+              <h1 className="um-title">Quản lý người dùng</h1>
+              <p className="um-subtitle">Quản lý tài khoản và phân quyền người dùng trong hệ thống</p>
+            </div>
           </div>
 
-          {/* Search Bar */}
-          <div className="user-search-container">
-            <div className="search-input-wrapper">
+          {/* Stats */}
+          <div className="um-stats">
+            <div className="stat-card-new">
+              <div className="stat-icon" style={{ background: 'rgba(37, 99, 235, 0.1)', color: '#2563EB' }}>
+                <UsersIcon size={24} />
+              </div>
+              <div className="stat-info">
+                <div className="stat-value">{stats.total}</div>
+                <div className="stat-label">Tổng người dùng</div>
+              </div>
+            </div>
+            <div className="stat-card-new">
+              <div className="stat-icon" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444' }}>
+                <Shield size={24} />
+              </div>
+              <div className="stat-info">
+                <div className="stat-value">{stats.admins}</div>
+                <div className="stat-label">Quản trị viên</div>
+              </div>
+            </div>
+            <div className="stat-card-new">
+              <div className="stat-icon" style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22C55E' }}>
+                <UserCog size={24} />
+              </div>
+              <div className="stat-info">
+                <div className="stat-value">{stats.users}</div>
+                <div className="stat-label">Người dùng</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Search & Filter */}
+          <div className="um-controls">
+            <div className="um-search">
+              <Search size={20} className="search-icon-um" />
               <input
                 type="text"
-                placeholder="Tìm kiếm theo tên, email, số điện thoại hoặc địa chỉ..."
+                placeholder="Tìm kiếm theo tên, email, số điện thoại..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="search-input"
+                className="um-search-input"
               />
-              <div className="search-icon">🔍</div>
             </div>
-            {searchTerm && (
-              <div className="search-results-info">
-                Tìm thấy {filteredUsers.length} kết quả cho "{searchTerm}"
-              </div>
-            )}
+            
+            <div className="um-filters">
+              <select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                className="um-filter-select"
+              >
+                <option value="all">Tất cả vai trò</option>
+                <option value="ADMIN">Quản trị viên</option>
+                <option value="USER">Người dùng</option>
+              </select>
+            </div>
           </div>
 
-          {error && (
-            <div className="error-message" style={{
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              color: '#ef4444',
-              padding: '12px',
-              borderRadius: '8px',
-              marginBottom: '20px',
-              textAlign: 'center'
-            }}>
-              {error}
+          {searchTerm && (
+            <div className="um-search-info">
+              Tìm thấy {filteredUsers.length} kết quả cho "{searchTerm}"
             </div>
           )}
+        </div>
 
-          <div className="user-management-stats">
-            <div className="stat-card">
-              <div className="stat-number">{users.length}</div>
-              <div className="stat-label">Tổng người dùng</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">{users.filter(u => u.role === 'ADMIN').length}</div>
-              <div className="stat-label">Quản trị viên</div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-number">{users.filter(u => u.role === 'USER').length}</div>
-              <div className="stat-label">Người dùng</div>
-            </div>
+        {error && (
+          <div className="um-error">
+            {error}
           </div>
+        )}
 
-          <div className="user-list">
-            {users.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-icon">👥</div>
-                <h3>Chưa có người dùng nào</h3>
-                <p>Hiện tại chưa có người dùng nào trong hệ thống.</p>
-              </div>
-            ) : (
-              <>
-                <div className="user-grid">
+        {/* User Table */}
+        {filteredUsers.length === 0 ? (
+          <div className="empty-state-new">
+            <UsersIcon size={64} strokeWidth={1.5} className="empty-icon-new" />
+            <h3>Không tìm thấy người dùng</h3>
+            <p>Thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm</p>
+          </div>
+        ) : (
+          <>
+            <div className="um-table-wrapper">
+              <table className="um-table">
+                <thead>
+                  <tr>
+                    <th>STT</th>
+                    <th>Người dùng</th>
+                    <th>Email</th>
+                    <th>Vai trò</th>
+                    <th>Số điện thoại</th>
+                    <th>Địa chỉ</th>
+                    <th className="text-center">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
                   {currentUsers.map((user, index) => (
-                  <div key={user.id} className="user-card">
-                    <div className="user-number">
-                      #{indexOfFirstUser + index + 1}
-                    </div>
-                    <div className="user-card-header">
-                      <div className="user-info">
-                        <h3 className="user-name">{user.username || 'Chưa có tên'}</h3>
-                        <p className="user-email">{user.email}</p>
-                        <div className={`role-badge ${getRoleBadgeClass(user.role)}`}>
-                          {getRoleDisplayName(user.role)}
+                    <tr key={user.id} className={user.id === currentUser.id ? 'current-user-row' : ''}>
+                      <td className="td-number">{indexOfFirstUser + index + 1}</td>
+                      <td>
+                        <div className="user-cell">
+                          <div className="user-avatar-table">
+                            {user.username?.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="user-name-table">{user.username || 'Chưa có tên'}</div>
+                            {user.id === currentUser.id && (
+                              <span className="current-user-label">Tài khoản hiện tại</span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </div>
+                      </td>
+                      <td className="td-email">{user.email}</td>
+                      <td>{getRoleBadge(user.role)}</td>
+                      <td className="td-phone">{user.phoneNumber || '—'}</td>
+                      <td className="td-address">{user.address || '—'}</td>
+                      <td>
+                        <div className="um-table-actions">
+                          <button
+                            className="btn-table-action btn-edit"
+                            onClick={() => handleUpdateRole(user)}
+                            disabled={user.id === currentUser.id}
+                            title="Đổi quyền"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                          <button
+                            className="btn-table-action btn-delete"
+                            onClick={() => handleDeleteUser(user)}
+                            disabled={user.id === currentUser.id}
+                            title="Xóa người dùng"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-                    <div className="user-details">
-                      <div className="user-detail-item">
-                        <span className="detail-icon">📞</span>
-                        <span className="detail-label">SĐT:</span>
-                        <span className="detail-value">{user.phoneNumber || 'Chưa cập nhật'}</span>
-                      </div>
-                      <div className="user-detail-item">
-                        <span className="detail-icon">📍</span>
-                        <span className="detail-label">Địa chỉ:</span>
-                        <span className="detail-value">{user.address || 'Chưa cập nhật'}</span>
-                      </div>
-                    </div>
-
-                    <div className="user-actions">
-                      <button
-                        className="btn-change-role"
-                        onClick={() => handleUpdateRole(user)}
-                        disabled={user.id === currentUser.id}
-                      >
-                        🔄 Đổi quyền
-                      </button>
-                      <button
-                        className="btn-delete-user"
-                        onClick={() => handleDeleteUser(user)}
-                        disabled={user.id === currentUser.id}
-                      >
-                        🗑️ Xóa
-                      </button>
-                    </div>
-
-                    {user.id === currentUser.id && (
-                      <div className="current-user-notice">
-                        Tài khoản hiện tại
-                      </div>
-                    )}
-                  </div>
-                ))}
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="pagination-new">
+                <button
+                  className="pagination-btn-new"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  ← Trước
+                </button>
+                
+                <div className="pagination-numbers-new">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                    <button
+                      key={number}
+                      className={`pagination-number-new ${currentPage === number ? 'active' : ''}`}
+                      onClick={() => handlePageChange(number)}
+                    >
+                      {number}
+                    </button>
+                  ))}
                 </div>
                 
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="pagination">
-                    <button
-                      className="pagination-btn"
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      ← Trước
-                    </button>
-                    
-                    <div className="pagination-numbers">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                        <button
-                          key={number}
-                          className={`pagination-number ${currentPage === number ? 'active' : ''}`}
-                          onClick={() => handlePageChange(number)}
-                        >
-                          {number}
-                        </button>
-                      ))}
-                    </div>
-                    
-                    <button
-                      className="pagination-btn"
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                    >
-                      Sau →
-                    </button>
-                  </div>
-                )}
-              </>
+                <button
+                  className="pagination-btn-new"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Sau →
+                </button>
+              </div>
             )}
-          </div>
-        </div>
+          </>
+        )}
       </main>
 
       <Footer />
 
-      {/* Modal xác nhận xóa */}
+      {/* Delete Modal */}
       {showDeleteModal && selectedUser && (
-        <div className="modal-overlay">
-          <div className="modal-container">
-            <div className="modal-header">
+        <div className="modal-overlay-new" onClick={() => setShowDeleteModal(false)}>
+          <div className="modal-content-new" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-new">
               <h3>Xác nhận xóa người dùng</h3>
-              <button 
-                className="modal-close"
+              <button
+                className="modal-close-btn"
                 onClick={() => setShowDeleteModal(false)}
               >
-                ×
+                <X size={24} />
               </button>
             </div>
-            <div className="modal-body">
+            <div className="modal-body-new">
               <p>Bạn có chắc chắn muốn xóa người dùng:</p>
-              <div className="user-to-delete">
-                <strong>{selectedUser.username}</strong> ({selectedUser.email})
+              <div className="user-to-delete-box">
+                <strong>{selectedUser.username}</strong>
+                <span className="user-email-small">({selectedUser.email})</span>
               </div>
-              <p style={{ color: '#ef4444', marginTop: '10px' }}>
+              <div className="warning-box">
                 ⚠️ Hành động này không thể hoàn tác!
-              </p>
+              </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-new">
               <button
-                className="btn-cancel"
+                className="btn-modal-cancel"
                 onClick={() => setShowDeleteModal(false)}
                 disabled={deleting}
               >
                 Hủy
               </button>
               <button
-                className="btn-delete"
+                className="btn-modal-delete"
                 onClick={handleConfirmDelete}
                 disabled={deleting}
               >
@@ -369,44 +405,43 @@ function UserManagement({ currentUser, onLogout }) {
         </div>
       )}
 
-      {/* Modal đổi quyền */}
+      {/* Role Update Modal */}
       {showRoleModal && selectedUser && (
-        <div className="modal-overlay">
-          <div className="modal-container">
-            <div className="modal-header">
+        <div className="modal-overlay-new" onClick={() => setShowRoleModal(false)}>
+          <div className="modal-content-new" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-new">
               <h3>Đổi quyền người dùng</h3>
-              <button 
-                className="modal-close"
+              <button
+                className="modal-close-btn"
                 onClick={() => setShowRoleModal(false)}
               >
-                ×
+                <X size={24} />
               </button>
             </div>
-            <div className="modal-body">
+            <div className="modal-body-new">
               <p>Thay đổi quyền cho: <strong>{selectedUser.username}</strong></p>
-              <div className="form-group">
-                <label htmlFor="newRole" className="form-label">Quyền mới:</label>
+              <div className="form-group-new">
+                <label className="form-label-new">Vai trò mới:</label>
                 <select
-                  id="newRole"
                   value={newRole}
                   onChange={(e) => setNewRole(e.target.value)}
-                  className="form-select"
+                  className="form-select-new"
                 >
                   <option value="USER">Người dùng</option>
                   <option value="ADMIN">Quản trị viên</option>
                 </select>
               </div>
             </div>
-            <div className="modal-actions">
+            <div className="modal-actions-new">
               <button
-                className="btn-cancel"
+                className="btn-modal-cancel"
                 onClick={() => setShowRoleModal(false)}
                 disabled={updating}
               >
                 Hủy
               </button>
               <button
-                className="btn-primary"
+                className="btn-modal-primary"
                 onClick={handleConfirmRoleUpdate}
                 disabled={updating || newRole === selectedUser.role}
               >

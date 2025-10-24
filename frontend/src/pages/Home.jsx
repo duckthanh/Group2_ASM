@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import GlowEffects from '../components/GlowEffects'
 import { roomAPI } from '../services/api'
 import '../styles/Contact.css'
 import '../styles/About.css'
@@ -97,7 +96,6 @@ function Home({ currentUser, onLogout }) {
   return (
     <div className="bg-gradient">
       <Navbar currentUser={currentUser} onLogout={onLogout} />
-      <GlowEffects />
 
       <main className="container">
         {/* Hero Section */}

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
+import { Search, MapPin, SlidersHorizontal, Plus, Home, Users, Maximize, Phone, Eye, Trash2 } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import GlowEffects from '../components/GlowEffects'
 import CreateRoom from '../components/CreateRoom'
 import RentRoom from '../components/RentRoom'
 import RoomFilter from '../components/RoomFilter'
@@ -17,16 +17,17 @@ function RoomList({ currentUser, onLogout }) {
   const [selectedRoom, setSelectedRoom] = useState(null)
   const [isDeposit, setIsDeposit] = useState(false)
   const [searchKeyword, setSearchKeyword] = useState('')
-  const [searchDistrict, setSearchDistrict] = useState('')
+  const [searchLocation, setSearchLocation] = useState('')
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [roomToDelete, setRoomToDelete] = useState(null)
   const [deleting, setDeleting] = useState(false)
+  const [sortBy, setSortBy] = useState('default')
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1)
-  const [roomsPerPage] = useState(4)
+  const [roomsPerPage] = useState(9) // 3x3 grid
 
   const fetchRooms = async () => {
     setLoading(true)
@@ -54,7 +55,6 @@ function RoomList({ currentUser, onLogout }) {
   }
 
   useEffect(() => {
-    // Lấy keyword từ URL nếu có
     const keywordFromUrl = searchParams.get('keyword')
     if (keywordFromUrl) {
       setSearchKeyword(keywordFromUrl)
@@ -77,21 +77,6 @@ function RoomList({ currentUser, onLogout }) {
     setShowCreateModal(true)
   }
 
-  const handleViewDetail = (room) => {
-    navigate(`/room/${room.id}`)
-  }
-
-  const handleRentRoom = (room, deposit = false) => {
-    if (!currentUser) {
-      alert('Vui lòng đăng nhập để thuê phòng')
-      navigate('/login')
-      return
-    }
-    setSelectedRoom(room)
-    setIsDeposit(deposit)
-    setShowRentModal(true)
-  }
-
   const handleModalClose = () => {
     setShowCreateModal(false)
     setShowRentModal(false)
@@ -99,46 +84,37 @@ function RoomList({ currentUser, onLogout }) {
   }
 
   const handleSuccess = () => {
-    fetchRooms() // Refresh danh sách phòng
+    fetchRooms()
   }
 
   const handleSearch = async (e) => {
     e.preventDefault()
-    setCurrentPage(1) // Reset to first page when searching
-    await handleSearchWithParams(searchKeyword, searchDistrict)
+    setCurrentPage(1)
+    await handleSearchWithParams(searchKeyword, searchLocation)
   }
 
   const handleReset = () => {
     setSearchKeyword('')
-    setSearchDistrict('')
-    setCurrentPage(1) // Reset to first page when resetting
+    setSearchLocation('')
+    setCurrentPage(1)
     fetchRooms()
   }
 
   const handleFilter = async (filters) => {
     setLoading(true)
-    setCurrentPage(1) // Reset to first page when filtering
+    setCurrentPage(1)
     try {
-      console.log('Filtering with:', filters)
       const data = await roomAPI.filterRooms(filters)
-      console.log('Filter results:', data)
       setRooms(data)
-      
-      // Nếu không có kết quả, hiển thị thông báo
       if (data.length === 0) {
         alert('Không tìm thấy phòng nào phù hợp với bộ lọc của bạn.')
       }
     } catch (err) {
       console.error('Error filtering rooms:', err)
-      console.error('Error details:', err.response?.data || err.message)
-      
-      // Hiển thị thông báo lỗi chi tiết hơn
       if (err.response?.status === 500) {
         alert('Lỗi server. Vui lòng kiểm tra backend có đang chạy không.')
-      } else if (err.response?.status === 404) {
-        alert('Không tìm thấy endpoint filter. Vui lòng kiểm tra backend.')
       } else if (err.message === 'Network Error') {
-        alert('Không thể kết nối đến server. Vui lòng kiểm tra backend có đang chạy ở http://localhost:8080')
+        alert('Không thể kết nối đến server.')
       } else {
         alert('Có lỗi khi lọc: ' + (err.response?.data?.message || err.message))
       }
@@ -158,14 +134,13 @@ function RoomList({ currentUser, onLogout }) {
 
   const handleConfirmDelete = async () => {
     if (!roomToDelete) return
-
     setDeleting(true)
     try {
       await roomAPI.deleteRoom(roomToDelete.id)
       alert('Xóa phòng trọ thành công!')
       setShowDeleteModal(false)
       setRoomToDelete(null)
-      fetchRooms() // Refresh danh sách
+      fetchRooms()
     } catch (err) {
       console.error('Error deleting room:', err)
       alert('Có lỗi khi xóa phòng trọ: ' + (err.response?.data?.message || err.message))
@@ -179,236 +154,260 @@ function RoomList({ currentUser, onLogout }) {
     setRoomToDelete(null)
   }
 
-  // Check if current user is owner of the room or admin
   const canManageRoom = (room) => {
-    console.log('=== CAN MANAGE ROOM DEBUG ===')
-    console.log('currentUser:', currentUser)
-    console.log('room.ownerId:', room.ownerId)
-    console.log('currentUser.id:', currentUser?.id)
-    console.log('currentUser.role:', currentUser?.role)
-
-    if (!currentUser) {
-      console.log('No currentUser -> false')
-      return false
-    }
-    // Admin có thể quản lý tất cả phòng
-    if (currentUser.role === 'ADMIN') {
-      console.log('User is ADMIN -> true')
-      return true
-    }
-    // User thường chỉ quản lý được phòng của mình
-    const canManage = room.ownerId === currentUser.id
-    console.log('User is owner?', canManage)
-    console.log('=============================')
-    return canManage
+    if (!currentUser) return false
+    if (currentUser.role === 'ADMIN') return true
+    return room.ownerId === currentUser.id
   }
 
-  // Pagination logic
+  // Sort rooms
+  const getSortedRooms = (rooms) => {
+    const sorted = [...rooms]
+    switch (sortBy) {
+      case 'price-asc':
+        return sorted.sort((a, b) => a.price - b.price)
+      case 'price-desc':
+        return sorted.sort((a, b) => b.price - a.price)
+      case 'newest':
+        return sorted.reverse()
+      default:
+        return sorted
+    }
+  }
+
+  const sortedRooms = getSortedRooms(rooms)
+
+  // Pagination
   const indexOfLastRoom = currentPage * roomsPerPage
   const indexOfFirstRoom = indexOfLastRoom - roomsPerPage
-  const currentRooms = rooms.slice(indexOfFirstRoom, indexOfLastRoom)
-  const totalPages = Math.ceil(rooms.length / roomsPerPage)
-  
-  // Debug pagination
-  console.log('Pagination Debug:', {
-    totalRooms: rooms.length,
-    currentPage,
-    roomsPerPage,
-    totalPages,
-    currentRoomsCount: currentRooms.length
-  })
+  const currentRooms = sortedRooms.slice(indexOfFirstRoom, indexOfLastRoom)
+  const totalPages = Math.ceil(sortedRooms.length / roomsPerPage)
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
-    <div className="bg-gradient">
+    <div className="room-list-page-new">
       <Navbar currentUser={currentUser} onLogout={onLogout} />
-      <GlowEffects />
 
-      {/* Search Bar for Room List */}
-      <div className="search-bar-container">
+      {/* Hero Section */}
+      <div className="room-list-hero">
         <div className="container">
-          <form onSubmit={handleSearch} className="room-search-form">
-            <div className="search-input-group">
-              <span className="search-prefix-icon">🔍</span>
-              <input
-                type="text"
-                placeholder="Tìm kiếm nhà trọ, địa điểm, tiện ích..."
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                className="search-main-input"
-              />
+          <div className="hero-content-new">
+            <h1 className="hero-title-new">Tìm phòng trọ phù hợp với bạn</h1>
+            <p className="hero-subtitle-new">Khám phá hàng ngàn phòng trọ chất lượng, giá cả phải chăng</p>
+          </div>
+
+          {/* Search Bar */}
+          <div className="search-bar-new">
+            <form onSubmit={handleSearch} className="search-form-new">
+              <div className="search-input-wrapper-new">
+                <Search size={20} className="search-icon-new" />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm từ khóa: gần trường, có ban công..."
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  className="search-input-new"
+                />
+              </div>
+              <div className="search-input-wrapper-new">
+                <MapPin size={20} className="search-icon-new" />
+                <input
+                  type="text"
+                  placeholder="Địa điểm: quận, huyện, tuyến bus..."
+                  value={searchLocation}
+                  onChange={(e) => setSearchLocation(e.target.value)}
+                  className="search-input-new"
+                />
+              </div>
+              <button type="submit" className="btn-search-new">
+                <Search size={20} />
+                Tìm kiếm
+              </button>
+            </form>
+            
+            {/* Popular keywords */}
+            <div className="search-suggestions">
+              <span className="suggestions-label">Gợi ý:</span>
+              <button className="suggestion-chip" onClick={() => setSearchKeyword('gần FTU')}>gần FTU</button>
+              <button className="suggestion-chip" onClick={() => setSearchKeyword('có ban công')}>có ban công</button>
+              <button className="suggestion-chip" onClick={() => setSearchKeyword('dưới 3tr')}>dưới 3tr</button>
             </div>
-            <div className="search-input-group">
-              <span className="search-prefix-icon">📍</span>
-              <input
-                type="text"
-                placeholder="Tìm phường/xã"
-                value={searchDistrict}
-                onChange={(e) => setSearchDistrict(e.target.value)}
-                className="search-district-input"
-              />
-            </div>
-            <button type="submit" className="btn-search-orange">
-              Tìm kiếm
-            </button>
-            <button type="button" onClick={handleReset} className="btn-reset">
-              Đặt lại
-            </button>
-          </form>
+          </div>
         </div>
       </div>
 
-      <main className="container room-list-container-with-filter">
-        {/* Filter Sidebar */}
-        <aside className="filter-sidebar">
-          <RoomFilter onFilter={handleFilter} onReset={handleResetFilter} />
-        </aside>
+      {/* Main Content */}
+      <main className="container room-list-main">
+        <div className="room-list-layout">
+          {/* Filter Panel */}
+          <aside className="filter-sidebar-new">
+            <RoomFilter onFilter={handleFilter} onReset={handleResetFilter} />
+          </aside>
 
-        {/* Room Content */}
-        <div className="room-content-area">
-        <div className="page-header">
-          <div>
-            <h1>Thuê phòng trọ</h1>
-            <p className="subtitle">Khám phá những lựa chọn phù hợp với bạn</p>
-          </div>
-          {currentUser && (
-            <button className="btn btn-create-room" onClick={handleCreateRoom}>
-              ➕ Thêm Phòng Trọ
-            </button>
-          )}
-        </div>
-
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
-            Đang tải...
-          </div>
-        ) : rooms.length > 0 ? (
-          <>
-          <div className="room-grid">
-            {currentRooms.map((room) => (
-              <div key={room.id} className="room-card-modern">
-                <Link to={`/room/${room.id}`} className="room-image-wrapper">
-                  <img src={room.imageUrl || 'https://via.placeholder.com/400x300?text=Phòng+Trọ'} alt={room.name} />
-                  <span className="room-badge-modern">
-                    Còn trống
-                  </span>
-                </Link>
-                <div className="room-content-modern">
-                  <Link to={`/room/${room.id}`} className="room-name-link">
-                    <h3 className="room-name">{room.name}</h3>
-                  </Link>
-                  <p className="room-location-modern">
-                    <span className="location-icon">📍</span>
-                    {room.location}
-                  </p>
-                  {room.detail && (
-                    <p className="room-description">
-                      {room.detail.length > 50 ? room.detail.substring(0, 50) + '...' : room.detail}
-                    </p>
-                  )}
-
-                  <div className="room-price-contact">
-                    <span className="room-price-modern">
-                      {formatPrice(room.price)} <br/>
-                      <span className="price-unit">đ/tháng</span>
-                    </span>
-                    <span className="room-contact-modern">
-                      📞 {room.contact}
-                    </span>
-                  </div>
-
-                  <p className="room-owner-modern">Chủ trọ: {room.ownerUsername}</p>
-
-                  {/* Nút Xem chi tiết */}
-                  <div className="room-actions-modern">
-                    <Link to={`/room/${room.id}`} className="btn-view-detail">
-                      👁️ Xem chi tiết
-                    </Link>
-                  </div>
-
-                  {/* Hiển thị nút xóa ở dưới nếu là chủ phòng hoặc admin */}
-                  {canManageRoom(room) && (
-                    <div className="room-actions-delete">
-                      <button
-                        className="btn-delete-room"
-                        onClick={() => handleDeleteClick(room)}
-                      >
-                        🗑️ Xóa phòng
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Debug info - chỉ hiện khi có nút xóa */}
-
-                  {/* Info cho user chưa đăng nhập */}
-                  {!currentUser && (
-                    <div style={{
-                      marginTop: '8px',
-                      padding: '8px',
-                      background: 'rgba(59, 130, 246, 0.1)',
-                      border: '1px solid rgba(59, 130, 246, 0.3)',
-                      borderRadius: '8px',
-                      fontSize: '12px',
-                      color: '#3b82f6',
-                      textAlign: 'center'
-                    }}>
-                      💡 Click "Xem chi tiết" để thuê phòng
-                    </div>
-                  )}
-                </div>
+          {/* Room Content */}
+          <div className="room-content-new">
+            {/* Results Header */}
+            <div className="results-header">
+              <div className="results-info">
+                <h2 className="results-title">
+                  {loading ? 'Đang tải...' : `${sortedRooms.length} phòng trọ`}
+                </h2>
+                <p className="results-subtitle">Kết quả tìm kiếm</p>
               </div>
-            ))}
-          </div>
-          
-          {/* Pagination */}
-          <div style={{ marginTop: '20px', textAlign: 'center', color: 'white' }}>
-            <p>Trang {currentPage} / {totalPages} - Tổng {rooms.length} phòng trọ</p>
-          </div>
-          {totalPages >= 1 && (
-            <div className="pagination">
-              <button
-                className="pagination-btn"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                ← Trước
-              </button>
               
-              <div className="pagination-numbers">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                  <button
-                    key={number}
-                    className={`pagination-number ${currentPage === number ? 'active' : ''}`}
-                    onClick={() => handlePageChange(number)}
-                  >
-                    {number}
+              <div className="results-controls">
+                {currentUser && (
+                  <button className="btn-add-room" onClick={handleCreateRoom}>
+                    <Plus size={20} />
+                    Thêm phòng
                   </button>
-                ))}
+                )}
+                <select 
+                  className="sort-select"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="default">Phù hợp nhất</option>
+                  <option value="price-asc">Giá tăng dần</option>
+                  <option value="price-desc">Giá giảm dần</option>
+                  <option value="newest">Mới đăng</option>
+                </select>
               </div>
-              
-              <button
-                className="pagination-btn"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
-                Sau →
-              </button>
             </div>
-          )}
-          </>
-        ) : (
-          <div className="empty-state">
-            <div className="empty-icon">🏠</div>
-            <h3>Chưa có phòng trọ nào</h3>
-            <p>{currentUser ? 'Hãy là người đầu tiên thêm phòng trọ!' : 'Đăng nhập để thêm phòng trọ mới!'}</p>
-            {currentUser && (
-              <button className="btn" onClick={handleCreateRoom}>Thêm phòng trọ</button>
+
+            {/* Room Grid */}
+            {loading ? (
+              <div className="loading-state">
+                <div className="loading-spinner"></div>
+                <p>Đang tải danh sách phòng...</p>
+              </div>
+            ) : sortedRooms.length > 0 ? (
+              <>
+                <div className="room-grid-new">
+                  {currentRooms.map((room) => (
+                    <div key={room.id} className="room-card-new">
+                      {/* Room Image */}
+                      <Link to={`/room/${room.id}`} className="room-image-link">
+                        <img 
+                          src={room.imageUrl || 'https://via.placeholder.com/400x300?text=Phòng+Trọ'} 
+                          alt={room.name}
+                          className="room-image-new"
+                        />
+                        <div className="room-badge-new">Còn trống</div>
+                      </Link>
+
+                      {/* Room Info */}
+                      <div className="room-info-new">
+                        <Link to={`/room/${room.id}`} className="room-name-link">
+                          <h3 className="room-name-new">{room.name}</h3>
+                        </Link>
+                        
+                        <div className="room-location-new">
+                          <MapPin size={16} />
+                          <span>{room.location}</span>
+                        </div>
+
+                        <div className="room-meta-new">
+                          <div className="meta-item">
+                            <Maximize size={16} />
+                            <span>{room.area || 20}m²</span>
+                          </div>
+                          <div className="meta-item">
+                            <Users size={16} />
+                            <span>{room.capacity || 2} người</span>
+                          </div>
+                        </div>
+
+                        {/* Amenities chips */}
+                        <div className="room-amenities-chips">
+                          <span className="amenity-chip">❄️ Điều hòa</span>
+                          <span className="amenity-chip">🚿 WC riêng</span>
+                          <span className="amenity-chip">🌿 Ban công</span>
+                        </div>
+
+                        <div className="room-footer-new">
+                          <div className="room-price-new">
+                            <span className="price-amount">{formatPrice(room.price)}</span>
+                            <span className="price-unit">đ/tháng</span>
+                          </div>
+                          
+                          <Link to={`/room/${room.id}`} className="btn-view-detail-new">
+                            <Eye size={18} />
+                            Xem chi tiết
+                          </Link>
+                        </div>
+
+                        {/* Quick contact */}
+                        {room.contact && (
+                          <div className="room-contact-new">
+                            <Phone size={14} />
+                            <span>{room.contact}</span>
+                          </div>
+                        )}
+
+                        {/* Delete button for owner/admin */}
+                        {canManageRoom(room) && (
+                          <button
+                            className="btn-delete-room-new"
+                            onClick={() => handleDeleteClick(room)}
+                          >
+                            <Trash2 size={16} />
+                            Xóa phòng
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="pagination-new">
+                    <button
+                      className="pagination-btn-new"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      ← Trước
+                    </button>
+                    
+                    <div className="pagination-numbers-new">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                        <button
+                          key={number}
+                          className={`pagination-number-new ${currentPage === number ? 'active' : ''}`}
+                          onClick={() => handlePageChange(number)}
+                        >
+                          {number}
+                        </button>
+                      ))}
+                    </div>
+                    
+                    <button
+                      className="pagination-btn-new"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Sau →
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="empty-state-new">
+                <Home size={64} strokeWidth={1.5} className="empty-icon-new" />
+                <h3>Không tìm thấy phòng trọ</h3>
+                <p>Thử điều chỉnh bộ lọc hoặc mở rộng khu vực tìm kiếm</p>
+                <button className="btn-reset-search" onClick={handleReset}>
+                  Xóa bộ lọc
+                </button>
+              </div>
             )}
           </div>
-        )}
         </div>
       </main>
 
@@ -416,10 +415,7 @@ function RoomList({ currentUser, onLogout }) {
 
       {/* Modals */}
       {showCreateModal && (
-        <CreateRoom
-          onClose={handleModalClose}
-          onSuccess={handleSuccess}
-        />
+        <CreateRoom onClose={handleModalClose} onSuccess={handleSuccess} />
       )}
 
       {showRentModal && selectedRoom && (
@@ -444,4 +440,3 @@ function RoomList({ currentUser, onLogout }) {
 }
 
 export default RoomList
-
