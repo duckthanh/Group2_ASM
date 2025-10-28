@@ -11,7 +11,7 @@
   --text-secondary: #64748B;
   
   /* Background colors */
-  --bg-light: #F8FAFC;
+  --bg-light: #F7FAFC;
   --bg-white: #FFFFFF;
   --bg-card: #FFFFFF;
   
@@ -51,11 +51,11 @@
   padding: 0;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 html, body {
   height: 100%;
-  font-family: "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: "Be Vietnam Pro", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: var(--text-primary);
   background: var(--bg-light);
   overflow-x: hidden;
@@ -67,7 +67,7 @@ html, body {
 .bg-gradient {
   position: relative;
   min-height: 100vh;
-  background: var(--bg-light);
+  background: #F7FAFC;
 }
 
 .glow {
@@ -113,9 +113,19 @@ html, body {
 
 /* ===== CONTAINER ===== */
 .container {
-  max-width: 1200px;
+  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 clamp(20px, 5vw, 80px);
+  position: relative;
+  z-index: 1;
+}
+
+/* Container với max-width cho content cần giới hạn */
+.container-limited {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 5vw, 80px);
   position: relative;
   z-index: 1;
 }
@@ -128,13 +138,15 @@ html, body {
 }
 
 .navbar-container {
-  max-width: 1200px;
+  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
-  padding: 16px 24px;
+  padding: 16px clamp(20px, 5vw, 80px);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 32px;
+  position: relative;
 }
 
 .navbar-logo {
@@ -160,7 +172,9 @@ html, body {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex: 1;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .navbar-link {
@@ -446,9 +460,9 @@ html, body {
   padding: 16px 0;
   position: relative;
   z-index: 10;
-  background: white;
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: #FFFFFF;
+  border-bottom: 1px solid #E5EAF2;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
 }
 
 .nav-inner {
@@ -829,6 +843,7 @@ html, body {
   border: 1px solid rgba(74, 158, 255, 0.2);
   border-radius: 20px;
   padding: 32px 24px;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
@@ -867,6 +882,7 @@ html, body {
   border: 1px solid rgba(74, 158, 255, 0.3);
   border-radius: 24px;
   padding: 40px;
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4), 0 0 100px var(--shadow);
   position: relative;
@@ -1016,6 +1032,7 @@ html, body {
   border: 1px solid rgba(74, 158, 255, 0.2);
   border-radius: 20px;
   overflow: hidden;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
@@ -1069,6 +1086,7 @@ html, body {
   margin-bottom: 8px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1079,6 +1097,7 @@ html, body {
   margin-bottom: 16px;
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1199,6 +1218,7 @@ html, body {
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1209,6 +1229,7 @@ html, body {
   margin-bottom: 12px;
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -2418,13 +2439,14 @@ html, body {
 
 /* User Management Page Styles */
 .user-management-container {
-  max-width: 1200px;
+  max-width: 100%;
+  width: 100%;
   margin: 0 auto;
   background: rgba(15, 23, 42, 0.95);
   border-radius: 24px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   overflow: hidden;
-  padding: 40px;
+  padding: 40px clamp(20px, 5vw, 80px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2540,9 +2562,7 @@ html, body {
   z-index: 10;
 }
 
-.user-card:hover {
-  /* Tắt tất cả hiệu ứng hover để tránh phình ra */
-}
+/* Tắt tất cả hiệu ứng hover để tránh phình ra */
 
 .user-card-header {
   margin-bottom: 20px;
@@ -3187,8 +3207,9 @@ html, body {
 /* Hero Section */
 .room-list-hero {
   background: linear-gradient(135deg, #B2D9EA 0%, #1d4ed8 100%);
-  padding: 48px 0 64px;
+  padding: 60px 0 80px;
   color: white;
+  width: 100%;
 }
 
 .hero-content-new {
@@ -3213,8 +3234,9 @@ html, body {
 
 /* Search Bar */
 .search-bar-new {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .search-form-new {
@@ -3309,14 +3331,16 @@ html, body {
 
 /* Main Content */
 .room-list-main {
-  padding: 48px 24px;
+  padding: 48px 0;
+  width: 100%;
 }
 
 .room-list-layout {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 300px 1fr;
   gap: 32px;
   align-items: start;
+  max-width: 100%;
 }
 
 .filter-sidebar-new {
@@ -3399,9 +3423,29 @@ html, body {
 /* Room Grid */
 .room-grid-new {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 24px;
   margin-bottom: 48px;
+  width: 100%;
+}
+
+/* Responsive grid - hiển thị nhiều cột hơn trên màn hình lớn */
+@media (min-width: 1800px) {
+  .room-grid-new {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (min-width: 1400px) and (max-width: 1799px) {
+  .room-grid-new {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1399px) {
+  .room-grid-new {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .room-card-new {
@@ -3466,6 +3510,7 @@ html, body {
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   transition: color 0.2s ease;
@@ -4176,6 +4221,7 @@ html, body {
   justify-content: center;
   z-index: 1000;
   padding: 20px;
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }
 

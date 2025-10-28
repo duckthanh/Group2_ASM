@@ -49,9 +49,6 @@ public class SecurityConfiguration {
                         .requestMatchers("/uploads/**").permitAll()
                         // Auth endpoints - public
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/create-admin").permitAll()
-                        // MFA endpoints - verify cần public (chưa có token), các endpoint khác cần authenticated
-                        .requestMatchers(HttpMethod.POST, "/api/auth/mfa/verify").permitAll()
-                        .requestMatchers("/api/auth/mfa/**").authenticated()
                         // User endpoints
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers("/api/users").authenticated()

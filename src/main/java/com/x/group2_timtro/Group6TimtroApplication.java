@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Group2TimtroApplication {
+public class Group6TimtroApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(Group2TimtroApplication.class, args);
+        SpringApplication.run(Group6TimtroApplication.class, args);
     }
 
 }

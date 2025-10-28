@@ -68,5 +68,30 @@ public class BookingController {
         BookingResponse response = bookingService.getBookingById(bookingId);
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/landlord/pending")
+    public ResponseEntity<List<BookingResponse>> getLandlordPendingBookings(
+            @RequestHeader("X-User-Id") Long userId) {
+        log.info("Getting pending bookings for landlord: {}", userId);
+        List<BookingResponse> bookings = bookingService.getLandlordPendingBookings(userId);
+        return ResponseEntity.ok(bookings);
+    }
+
+    @GetMapping("/landlord/all")
+    public ResponseEntity<List<BookingResponse>> getAllLandlordBookings(
+            @RequestHeader("X-User-Id") Long userId) {
+        log.info("Getting all bookings for landlord: {}", userId);
+        List<BookingResponse> bookings = bookingService.getAllLandlordBookings(userId);
+        return ResponseEntity.ok(bookings);
+    }
+
+    @PutMapping("/{bookingId}/reject")
+    public ResponseEntity<BookingResponse> rejectBooking(
+            @PathVariable Long bookingId,
+            @RequestHeader("X-User-Id") Long userId) {
+        log.info("Rejecting booking: {} by user: {}", bookingId, userId);
+        BookingResponse response = bookingService.rejectBooking(bookingId, userId);
+        return ResponseEntity.ok(response);
+    }
 }
 

@@ -56,6 +56,11 @@ public class User implements UserDetails {
     }
 
     @Override
+    public String getPassword() {
+        return this.password;
+    }
+
+    @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // Trả về role đơn giản từ String
         return List.of(new SimpleGrantedAuthority(this.role));

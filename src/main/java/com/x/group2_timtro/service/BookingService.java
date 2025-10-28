@@ -113,6 +113,48 @@ public class BookingService {
         return mapToResponse(booking);
     }
 
+    public List<BookingResponse> getLandlordPendingBookings(Long userId) {
+        User landlord = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Lấy tất cả booking PENDING của các phòng mà user này sở hữu
+        List<Room> landlordRooms = roomRepository.findByOwner(landlord);
+        
+        return bookingRepository.findAll().stream()
+                .filter(booking -> landlordRooms.contains(booking.getRoom()))
+                .filter(booking -> "PENDING".equals(booking.getStatus()))
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<BookingResponse> getAllLandlordBookings(Long userId) {
+        User landlord = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Lấy tất cả booking của các phòng mà user này sở hữu
+        List<Room> landlordRooms = roomRepository.findByOwner(landlord);
+        
+        return bookingRepository.findAll().stream()
+                .filter(booking -> landlordRooms.contains(booking.getRoom()))
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    public BookingResponse rejectBooking(Long bookingId, Long userId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Kiểm tra quyền (chỉ chủ phòng mới có thể reject)
+        if (booking.getRoom().getOwner().getId() != userId) {
+            throw new RuntimeException("You don't have permission to reject this booking");
+        }
+
+        booking.setStatus("REJECTED");
+        booking.setCanceledBy("LANDLORD");
+        Booking updatedBooking = bookingRepository.save(booking);
+        return mapToResponse(updatedBooking);
+    }
+
     private BookingResponse mapToResponse(Booking booking) {
         return BookingResponse.builder()
                 .id(booking.getId())

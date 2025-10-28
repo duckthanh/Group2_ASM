@@ -7,8 +7,6 @@ import com.x.group2_timtro.dto.request.UpdateUserRoleRequest;
 import com.x.group2_timtro.dto.response.CreateUserResponse;
 
 import com.x.group2_timtro.dto.response.UserResponse;
-import com.x.group2_timtro.entity.User;
-import com.x.group2_timtro.repository.UserRepository;
 import com.x.group2_timtro.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
