@@ -21,6 +21,7 @@ public class RoomResponse {
     private Boolean isAvailable;
     private Long ownerId;
     private String ownerUsername;
+    private String ownerEmail;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     

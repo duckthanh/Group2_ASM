@@ -76,6 +76,20 @@ public class SecurityConfiguration {
                         .jwt(jwtConfigurer -> jwtConfigurer
                                 .decoder(jwtDecoderConfiguration)
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            // Chỉ trả về 401 cho các request cần authentication
+                            if (request.getRequestURI().startsWith("/api/") && 
+                                !request.getRequestURI().startsWith("/api/rooms") &&
+                                !request.getRequestURI().startsWith("/api/auth/login") &&
+                                !request.getRequestURI().startsWith("/api/auth/register") &&
+                                !request.getRequestURI().startsWith("/api/auth/create-admin") &&
+                                !request.getRequestURI().startsWith("/api/auth/mfa/verify") &&
+                                !request.getRequestURI().startsWith("/api/users") &&
+                                !request.getRequestURI().startsWith("/api/files")) {
+                                response.setStatus(401);
+                                response.getWriter().write("{\"error\":\"Unauthorized\"}");
+                            }
+                        })
                 );
 
         return http.build();
