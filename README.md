@@ -359,6 +359,11 @@ Nếu gặp vấn đề, kiểm tra:
    - Điền: Tên, Ảnh, Giá, Vị trí, Liên hệ
 4. **Thuê phòng** (nút "Thuê ngay" hoặc "Đặt cọc")
    - Điền: Thời hạn, Ngày dọn vào, Số người, SĐT
+  
+## Cách chạy Frontend
+- cd frontend
+- npm install
+- npm run dev
 
 ## 🎯 API Endpoints
 
