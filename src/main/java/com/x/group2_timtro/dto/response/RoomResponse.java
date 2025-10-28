@@ -13,6 +13,7 @@ public class RoomResponse {
     private Long id;
     private String name;
     private String imageUrl;
+    private String additionalImages; // JSON array string
     private String detail;
     private Double price;
     private String location;
@@ -29,5 +30,13 @@ public class RoomResponse {
     private Integer capacity;
     private String amenities;
     private String availability;
+    
+    // Cost fields
+    private Double electricityCost;
+    private Double waterCost;
+    private Double internetCost;
+    private Double parkingFee;
+    private Double deposit;
+    private String depositType;
 }
 

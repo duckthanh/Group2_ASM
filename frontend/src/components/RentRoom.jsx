@@ -65,7 +65,7 @@ const RentRoom = ({ room, onClose, onSuccess, isDeposit = false }) => {
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay">
       <div className="rent-modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="rent-modal-header">
           <h2>Yêu cầu thuê phòng</h2>

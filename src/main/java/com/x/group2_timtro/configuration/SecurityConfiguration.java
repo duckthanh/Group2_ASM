@@ -13,21 +13,11 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
-import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -45,35 +35,15 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(authorize -> authorize
-                        // Static files - public để xem ảnh (phải đặt đầu tiên)
-                        .requestMatchers("/uploads/**").permitAll()
-                        // Auth endpoints - public
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/create-admin").permitAll()
-                        // User endpoints
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                        .requestMatchers("/api/users").authenticated()
-                        .requestMatchers("/api/users/**").authenticated()
-                        // Room endpoints - GET public, POST/PUT/DELETE authenticated
-                        .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/rooms/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/rooms/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/rooms/**").authenticated()
-                        // File upload
-                        .requestMatchers(HttpMethod.POST, "/api/upload/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll()
-                        // Booking endpoints - authenticated
-                        .requestMatchers(HttpMethod.POST, "/api/bookings/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/bookings/**").authenticated()
-                        .requestMatchers(HttpMethod.PUT, "/api/bookings/**").authenticated()
-                        .requestMatchers(HttpMethod.DELETE, "/api/bookings/**").authenticated()
-                        // Tất cả request khác cần authenticated
-                        .anyRequest().authenticated()
-                )
-                .oauth2ResourceServer((oauth2) -> oauth2
-                        .jwt(jwtConfigurer -> jwtConfigurer
-                                .decoder(jwtDecoderConfiguration)
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                        // Allow all requests - for development/testing
+                        .anyRequest().permitAll()
                 );
+                // Comment out OAuth2 JWT for now to allow all requests
+                // .oauth2ResourceServer((oauth2) -> oauth2
+                //         .jwt(jwtConfigurer -> jwtConfigurer
+                //                 .decoder(jwtDecoderConfiguration)
+                //                 .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                // );
 
         return http.build();
     }

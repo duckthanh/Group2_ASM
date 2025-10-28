@@ -1,0 +1,279 @@
+.footer-new {
+  background: linear-gradient(135deg, #697ad6 0%, #698db8 100%);
+  color: white;
+  padding: 50px 0 0 0;
+  margin-top: 80px;
+}
+
+.footer-container {
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 clamp(20px, 5vw, 80px) 40px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  gap: 40px;
+}
+
+/* Logo và Brand Section */
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.logo-text {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  letter-spacing: 1px;
+}
+
+/* Download Section */
+.download-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  color: white;
+}
+
+.download-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.qr-code {
+  background: white;
+  padding: 8px;
+  border-radius: 8px;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-stores {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.app-store-btn {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.app-store-btn:hover {
+  background: rgba(0, 0, 0, 0.5);
+  transform: translateY(-2px);
+}
+
+.app-store-btn div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.store-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.store-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Partner Section */
+.partner-section p {
+  font-size: 13px;
+  margin-bottom: 12px;
+  opacity: 0.9;
+}
+
+.partner-logos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.partner-logo {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: white;
+  white-space: nowrap;
+}
+
+/* Footer Columns */
+.footer-column h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: white;
+  letter-spacing: 0.5px;
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-column ul li {
+  margin-bottom: 12px;
+}
+
+.footer-column ul li a {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.footer-column ul li a:hover {
+  color: white;
+  transform: translateX(5px);
+}
+
+/* Contact List */
+.contact-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 15px !important;
+}
+
+.contact-list li svg,
+.contact-list li img {
+  flex-shrink: 0;
+  margin-top: 2px;
+  filter: brightness(0) invert(1);
+}
+
+.contact-list li span {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Social Links */
+.social-links {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.social-links a {
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-3px);
+}
+
+.social-links a svg {
+  filter: brightness(0) invert(1);
+}
+
+/* Footer Bottom */
+.footer-bottom {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 20px 0;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-bottom p {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .footer-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+  
+  .footer-brand {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  
+  .download-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .qr-code {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .footer-new {
+    padding: 30px 0 0 0;
+    margin-top: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-logo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .partner-logos {
+    flex-direction: column;
+  }
+  
+  .partner-logo {
+    width: fit-content;
+  }
+  
+  .app-stores {
+    width: 100%;
+  }
+  
+  .app-store-btn {
+    width: 100%;
+  }
+}
+
