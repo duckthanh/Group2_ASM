@@ -323,6 +323,7 @@ public class RoomService {
                 .isAvailable(room.getIsAvailable())
                 .ownerId(room.getOwner().getId())
                 .ownerUsername(room.getOwner().getUsername())
+                .ownerEmail(room.getOwner().getEmail())
                 .createdAt(room.getCreatedAt())
                 .updatedAt(room.getUpdatedAt())
                 .roomType(room.getRoomType())
