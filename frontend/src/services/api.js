@@ -231,5 +231,76 @@ export const bookingAPI = {
   },
 }
 
+export const roomReportAPI = {
+  createReport: async (roomId, reportData) => {
+    const response = await api.post(`/room-reports/${roomId}`, reportData)
+    return response.data
+  },
+
+  getReportsByRoom: async (roomId) => {
+    const response = await api.get(`/room-reports/room/${roomId}`)
+    return response.data
+  },
+}
+
+export const savedRoomAPI = {
+  saveRoom: async (roomId) => {
+    const userId = getUserId()
+    const response = await api.post(`/saved-rooms/${roomId}`, {}, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  unsaveRoom: async (roomId) => {
+    const userId = getUserId()
+    const response = await api.delete(`/saved-rooms/${roomId}`, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  getSavedRooms: async () => {
+    const userId = getUserId()
+    const response = await api.get('/saved-rooms', {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+}
+
+export const myRoomsAPI = {
+  getMyRooms: async () => {
+    const userId = getUserId()
+    const response = await api.get('/my-rooms', {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  getMyRoomDetail: async (roomId) => {
+    const userId = getUserId()
+    const response = await api.get(`/my-rooms/${roomId}`, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+}
+
+export const viewingScheduleAPI = {
+  createSchedule: async (scheduleData) => {
+    const userId = getUserId()
+    const response = await api.post('/viewing-schedules', scheduleData, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  getSchedulesByRoom: async (roomId) => {
+    const response = await api.get(`/viewing-schedules/room/${roomId}`)
+    return response.data
+  },
+}
+
 export default api
 
