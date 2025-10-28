@@ -11,12 +11,15 @@ public class LoginResponse {
     // User info
     private Long id;
     private String username;
-    private String email;
-    private String phoneNumber;
-    private String address;
+//    private String email;
+//    private String phoneNumber;
+//    private String address;
     private String role;
     
     // JWT tokens
     private String accessToken;
     private String refreshToken;
+    
+    // 2FA
+    private boolean mfaRequired; // true nếu cần nhập mã OTP
 }

@@ -39,7 +39,13 @@ public class User implements UserDetails {
 
     @Column(nullable = false)
     private String role = "USER"; // USER, ADMIN
+//2fa
+    @Column(name = "mfa_secret")
+    private String mfaSecret; // Để lưu secret key của người dùng
 
+    @Column(name = "mfa_enabled")
+    private boolean mfaEnabled = false; // Mặc định là false
+//
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserStatus status = UserStatus.ACTIVE;

@@ -32,11 +32,38 @@ const getUserId = () => {
 export const authAPI = {
   login: async (email, password) => {
     const response = await api.post('/auth/login', { email, password })
-    return response.data  // Returns { id, username, email, phoneNumber, address, role, accessToken, refreshToken }
+    return response.data  // Returns { id, username, role, accessToken, refreshToken, mfaRequired }
   },
   
   register: async (userData) => {
     const response = await api.post('/auth/register', userData)
+    return response.data
+  },
+
+  verifyMfa: async (email, password, code) => {
+    const response = await api.post('/auth/mfa/verify', { email, password, code })
+    return response.data
+  },
+}
+
+export const mfaAPI = {
+  getStatus: async () => {
+    const response = await api.get('/auth/mfa/status')
+    return response.data // Returns boolean
+  },
+
+  setupInitiate: async () => {
+    const response = await api.get('/auth/mfa/setup')
+    return response.data // Returns { secret, qrCodeDataUri }
+  },
+
+  enable: async (secret, code) => {
+    const response = await api.post('/auth/mfa/enable', { secret, code })
+    return response.data
+  },
+
+  disable: async (code) => {
+    const response = await api.post('/auth/mfa/disable', { code })
     return response.data
   },
 }
