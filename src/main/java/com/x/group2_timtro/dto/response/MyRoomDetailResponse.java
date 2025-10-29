@@ -73,6 +73,8 @@ public class MyRoomDetailResponse {
         private Integer capacity;
         private String imageUrl;
         private String detail;
+        private String paymentQrImageUrl;
+        private String paymentDescription; // Content for payment transfer
     }
 
     @Data
@@ -139,6 +141,7 @@ public class MyRoomDetailResponse {
         private String documentUrl;
         private String fileName;
         private String status;
+        private String uploadedBy; // "LANDLORD" or "TENANT"
         private LocalDateTime createdAt;
     }
 

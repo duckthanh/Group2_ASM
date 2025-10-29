@@ -132,7 +132,7 @@ public class AuthenticationController {
     public ResponseEntity<Boolean> getMfaStatus() {
         try {
             User currentUser = userService.getCurrentUser();
-            return ResponseEntity.ok(currentUser.isMfaEnabled());
+            return ResponseEntity.ok(Boolean.TRUE.equals(currentUser.getMfaEnabled()));
         } catch (Exception e) {
             log.error("Failed to get MFA status: {}", e.getMessage());
             return ResponseEntity.badRequest().build();

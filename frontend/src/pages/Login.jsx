@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { customToast } from '../utils/customToast.jsx'
 import { authAPI } from '../services/api'
 import './AuthNew.css'
 
@@ -10,15 +11,20 @@ function Login({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [toast, setToast] = useState(null)
   
   const navigate = useNavigate()
   const location = useLocation()
 
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 4000)
-  }
+  // Load remembered email when component mounts
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberedEmail')
+    const savedRememberMe = localStorage.getItem('rememberMe')
+    
+    if (savedEmail && savedRememberMe === 'true') {
+      setEmail(savedEmail)
+      setRememberMe(true)
+    }
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -34,12 +40,17 @@ function Login({ onLogin }) {
     try {
       const user = await authAPI.login(email, password)
       
+      // Save or remove email based on rememberMe checkbox
       if (rememberMe) {
         localStorage.setItem('rememberMe', 'true')
+        localStorage.setItem('rememberedEmail', email)
+      } else {
+        localStorage.removeItem('rememberMe')
+        localStorage.removeItem('rememberedEmail')
       }
       
       onLogin(user)
-      showToast('Đăng nhập thành công! 🎉', 'success')
+      customToast.success('Đăng nhập thành công! 🎉')
       
       const from = location.state?.from?.pathname || '/'
       setTimeout(() => navigate(from), 1000)
@@ -54,13 +65,6 @@ function Login({ onLogin }) {
 
   return (
     <div className="auth-new-page">
-      {toast && (
-        <div className={`toast-new toast-${toast.type}`}>
-          <span className="toast-icon-new">{toast.type === 'success' ? '✓' : '⚠'}</span>
-          <span>{toast.message}</span>
-        </div>
-      )}
-
       <div className="auth-new-container">
         {/* Left Side - Illustration */}
         <div className="auth-new-left">

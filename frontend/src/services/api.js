@@ -229,6 +229,31 @@ export const bookingAPI = {
     })
     return response.data
   },
+
+  // Landlord endpoints
+  getLandlordPendingBookings: async () => {
+    const userId = getUserId()
+    const response = await api.get('/bookings/landlord/pending', {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  getAllLandlordBookings: async () => {
+    const userId = getUserId()
+    const response = await api.get('/bookings/landlord/all', {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
+
+  rejectBooking: async (bookingId) => {
+    const userId = getUserId()
+    const response = await api.put(`/bookings/${bookingId}/reject`, {}, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
 }
 
 export const roomReportAPI = {
@@ -270,19 +295,72 @@ export const savedRoomAPI = {
 }
 
 export const myRoomsAPI = {
-  getMyRooms: async () => {
+  getMyRooms: async (status, searchKeyword) => {
     const userId = getUserId()
-    const response = await api.get('/my-rooms', {
+    const params = {}
+    if (status) params.status = status
+    if (searchKeyword) params.q = searchKeyword
+    
+    const response = await api.get('/me/rooms', {
+      headers: { 'X-User-Id': userId },
+      params
+    })
+    return response.data
+  },
+
+  getMyRoomDetail: async (bookingId) => {
+    const userId = getUserId()
+    const response = await api.get(`/me/rooms/${bookingId}`, {
       headers: { 'X-User-Id': userId }
     })
     return response.data
   },
 
-  getMyRoomDetail: async (roomId) => {
+  cancelBooking: async (bookingId, reason) => {
     const userId = getUserId()
-    const response = await api.get(`/my-rooms/${roomId}`, {
-      headers: { 'X-User-Id': userId }
-    })
+    const response = await api.post(`/me/rooms/${bookingId}/cancel`, 
+      { reason },
+      { headers: { 'X-User-Id': userId } }
+    )
+    return response.data
+  },
+
+  returnRoom: async (bookingId) => {
+    const userId = getUserId()
+    const response = await api.post(`/me/rooms/${bookingId}/handover`, 
+      {},
+      { headers: { 'X-User-Id': userId } }
+    )
+    return response.data
+  },
+
+  // Upload QR payment image (Landlord only)
+  uploadPaymentQr: async (bookingId, imageUrl, paymentDescription) => {
+    const userId = getUserId()
+    const response = await api.post(`/me/rooms/${bookingId}/payment-qr`, 
+      { imageUrl, paymentDescription },
+      { headers: { 'X-User-Id': userId } }
+    )
+    return response.data
+  },
+
+  // Upload payment proof (Tenant only)
+  uploadPaymentProof: async (bookingId, documentUrl, fileName, note) => {
+    const userId = getUserId()
+    const response = await api.post(`/me/rooms/${bookingId}/payment-proof`, 
+      { documentUrl, fileName, note },
+      { headers: { 'X-User-Id': userId } }
+    )
+    return response.data
+  },
+
+  // Confirm payment (Landlord only)
+  confirmPayment: async (bookingId, documentId, note) => {
+    const userId = getUserId()
+    const response = await api.post(`/me/rooms/${bookingId}/confirm-payment`, 
+      { documentId, note },
+      { headers: { 'X-User-Id': userId } }
+    )
     return response.data
   },
 }

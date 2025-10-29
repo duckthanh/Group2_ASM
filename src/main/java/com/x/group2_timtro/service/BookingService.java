@@ -158,6 +158,7 @@ public class BookingService {
     private BookingResponse mapToResponse(Booking booking) {
         return BookingResponse.builder()
                 .id(booking.getId())
+                .bookingId(booking.getBookingId())
                 .roomId(booking.getRoom().getId())
                 .roomName(booking.getRoom().getName())
                 .tenantId(booking.getTenant().getId())

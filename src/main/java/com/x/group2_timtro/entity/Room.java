@@ -18,7 +18,6 @@ public class Room {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "room_id")
     private Long id;
 
     @Column(nullable = false)
@@ -83,6 +82,12 @@ public class Room {
 
     @Column
     private String depositType; // "FIXED" (cố định) hoặc "MONTHS" (số tháng)
+
+    @Column(columnDefinition = "TEXT")
+    private String paymentQrImageUrl; // QR code for payment (landlord only)
+
+    @Column(columnDefinition = "TEXT")
+    private String paymentDescription; // Payment transfer content/description for tenant to use
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

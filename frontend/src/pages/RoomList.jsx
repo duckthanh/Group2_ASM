@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
+import { customToast } from '../utils/customToast.jsx'
 import { Search, MapPin, SlidersHorizontal, Plus, Home, Users, Maximize, Phone, Eye, Trash2 } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
@@ -30,12 +31,14 @@ function RoomList({ currentUser, onLogout }) {
   const [roomsPerPage] = useState(10) // 10 phòng trên mỗi trang
 
   const fetchRooms = async () => {
+    console.log('🔄 Fetching available rooms...')
     setLoading(true)
     try {
       const data = await roomAPI.getAvailableRooms()
+      console.log(`✅ Fetched ${data.length} available rooms:`, data)
       setRooms(data)
     } catch (err) {
-      console.error('Error fetching rooms:', err)
+      console.error('❌ Error fetching rooms:', err)
     } finally {
       setLoading(false)
     }
@@ -48,7 +51,7 @@ function RoomList({ currentUser, onLogout }) {
       setRooms(data)
     } catch (err) {
       console.error('Error searching rooms:', err)
-      alert('Có lỗi khi tìm kiếm. Vui lòng thử lại!')
+      customToast.error('Có lỗi khi tìm kiếm. Vui lòng thử lại!')
     } finally {
       setLoading(false)
     }
@@ -70,7 +73,7 @@ function RoomList({ currentUser, onLogout }) {
 
   const handleCreateRoom = () => {
     if (!currentUser) {
-      alert('Vui lòng đăng nhập để thêm phòng trọ')
+      customToast.error('Vui lòng đăng nhập để thêm phòng trọ')
       navigate('/login')
       return
     }
@@ -83,8 +86,14 @@ function RoomList({ currentUser, onLogout }) {
     setSelectedRoom(null)
   }
 
-  const handleSuccess = () => {
-    fetchRooms()
+  const handleSuccess = async () => {
+    console.log('🎉 handleSuccess called - refreshing room list...')
+    // Reset về trạng thái ban đầu để thấy phòng mới
+    setSearchKeyword('')
+    setSearchLocation('')
+    setCurrentPage(1) // Reset về trang đầu tiên
+    setSortBy('default') // Reset sorting
+    await fetchRooms() // Fetch all available rooms
   }
 
   const handleSearch = async (e) => {
@@ -107,16 +116,16 @@ function RoomList({ currentUser, onLogout }) {
       const data = await roomAPI.filterRooms(filters)
       setRooms(data)
       if (data.length === 0) {
-        alert('Không tìm thấy phòng nào phù hợp với bộ lọc của bạn.')
+        customToast.info('Không tìm thấy phòng nào phù hợp với bộ lọc của bạn.')
       }
     } catch (err) {
       console.error('Error filtering rooms:', err)
       if (err.response?.status === 500) {
-        alert('Lỗi server. Vui lòng kiểm tra backend có đang chạy không.')
+        customToast.error('Lỗi server. Vui lòng kiểm tra backend có đang chạy không.')
       } else if (err.message === 'Network Error') {
-        alert('Không thể kết nối đến server.')
+        customToast.error('Không thể kết nối đến server.')
       } else {
-        alert('Có lỗi khi lọc: ' + (err.response?.data?.message || err.message))
+        customToast.error('Có lỗi khi lọc: ' + (err.response?.data?.message || err.message))
       }
     } finally {
       setLoading(false)
@@ -137,13 +146,13 @@ function RoomList({ currentUser, onLogout }) {
     setDeleting(true)
     try {
       await roomAPI.deleteRoom(roomToDelete.id)
-      alert('Xóa phòng trọ thành công!')
+      customToast.success('Xóa phòng trọ thành công! 🗑️')
       setShowDeleteModal(false)
       setRoomToDelete(null)
       fetchRooms()
     } catch (err) {
       console.error('Error deleting room:', err)
-      alert('Có lỗi khi xóa phòng trọ: ' + (err.response?.data?.message || err.message))
+      customToast.error('Có lỗi khi xóa phòng trọ: ' + (err.response?.data?.message || err.message))
     } finally {
       setDeleting(false)
     }

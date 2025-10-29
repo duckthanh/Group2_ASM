@@ -49,7 +49,7 @@ public class AuthenticationService {
         User user = (User) authenticate.getPrincipal();
 
         // Kiểm tra nếu user đã bật 2FA
-        if (user.isMfaEnabled()) {
+        if (Boolean.TRUE.equals(user.getMfaEnabled())) {
             // Trả về response với mfaRequired = true, không có token
             return LoginResponse.builder()
                     .id(user.getId())
@@ -139,13 +139,13 @@ public class AuthenticationService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User không tồn tại"));
 
-        if (!user.isMfaEnabled()) {
+        if (!Boolean.TRUE.equals(user.getMfaEnabled())) {
             log.error("User {} has not enabled 2FA", email);
             throw new RuntimeException("User chưa bật 2FA");
         }
 
         log.info("User MFA status - enabled: {}, secret exists: {}", 
-                user.isMfaEnabled(), 
+                user.getMfaEnabled(), 
                 user.getMfaSecret() != null && !user.getMfaSecret().isEmpty());
         
         // Xác thực mã OTP
@@ -194,7 +194,7 @@ public class AuthenticationService {
 
     // Tắt 2FA cho user
     public void disableMfa(User user, String code) {
-        if (!user.isMfaEnabled()) {
+        if (!Boolean.TRUE.equals(user.getMfaEnabled())) {
             throw new RuntimeException("2FA chưa được bật");
         }
 

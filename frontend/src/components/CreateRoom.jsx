@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { customToast } from '../utils/customToast.jsx'
 import { roomAPI, uploadAPI } from '../services/api'
 import './CreateRoom.css'
 
@@ -162,10 +163,19 @@ const CreateRoom = ({ onClose, onSuccess }) => {
       console.log('amenities string:', formData.amenities.join(', '))
       console.log('=================================')
 
-      await roomAPI.createRoom(roomData)
-      alert('Tạo phòng trọ thành công!')
-      if (onSuccess) onSuccess()
-      if (onClose) onClose()
+      const result = await roomAPI.createRoom(roomData)
+      console.log('✅ Room created successfully:', result)
+      customToast.success('Tạo phòng trọ thành công! 🏠')
+      
+      console.log('📞 Calling onSuccess callback to refresh room list...')
+      if (onSuccess) {
+        await onSuccess()
+        console.log('✅ onSuccess callback completed')
+      }
+      if (onClose) {
+        onClose()
+        console.log('✅ Modal closed')
+      }
     } catch (err) {
       console.error('Error creating room:', err)
       setError(err.response?.data?.message || 'Có lỗi xảy ra khi tạo phòng trọ')
