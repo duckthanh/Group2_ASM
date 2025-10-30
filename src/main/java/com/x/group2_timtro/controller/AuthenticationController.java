@@ -93,19 +93,22 @@ public class AuthenticationController {
     @PostMapping("/mfa/enable")
     public ResponseEntity<String> enableMfa(@RequestBody EnableMfaRequest request) {
         log.info("Enabling 2FA for user");
+        log.info("Request secret: {}, code: {}", request.getSecret(), request.getCode());
         try {
             User currentUser = userService.getCurrentUser();
+            log.info("Current user: {}", currentUser.getEmail());
             authenticationService.enableMfa(currentUser, request.getSecret(), request.getCode());
+            log.info("2FA enabled successfully");
             return ResponseEntity.ok("2FA đã được bật thành công");
         } catch (RuntimeException e) {
-            log.error("Failed to enable 2FA: {}", e.getMessage());
+            log.error("Failed to enable 2FA - Full error: ", e);
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PostMapping("/mfa/disable")
     public ResponseEntity<String> disableMfa(@RequestBody DisableMfaRequest request) {
-        log.info("Disabling 2FA for user");
         try {
             User currentUser = userService.getCurrentUser();
             authenticationService.disableMfa(currentUser, request.getCode());
@@ -118,7 +121,6 @@ public class AuthenticationController {
 
     @PostMapping("/mfa/verify")
     public ResponseEntity<LoginResponse> verifyMfa(@RequestBody VerifyMfaRequest request) {
-        log.info("Verifying 2FA code for email: {}", request.getEmail());
         try {
             LoginResponse response = authenticationService.verifyMfaAndLogin(request.getEmail(), request.getCode());
             return ResponseEntity.ok(response);
@@ -134,7 +136,7 @@ public class AuthenticationController {
             User currentUser = userService.getCurrentUser();
             return ResponseEntity.ok(currentUser.isMfaEnabled());
         } catch (Exception e) {
-            log.error("Failed to get MFA status: {}", e.getMessage());
+//            log.error("Failed to get MFA status: {}", e.getMessage());
             return ResponseEntity.badRequest().build();
         }
     }
