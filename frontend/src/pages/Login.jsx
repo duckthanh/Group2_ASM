@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { authAPI, mfaAPI } from '../services/api'
+import { authAPI } from '../services/api'
 import './AuthNew.css'
 
 function Login({ onLogin }) {
@@ -11,11 +11,6 @@ function Login({ onLogin }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState(null)
-  
-  // 2FA States
-  const [showMfaInput, setShowMfaInput] = useState(false)
-  const [mfaCode, setMfaCode] = useState('')
-  const [tempUserEmail, setTempUserEmail] = useState('')
   
   const navigate = useNavigate()
   const location = useLocation()
@@ -37,49 +32,7 @@ function Login({ onLogin }) {
     setLoading(true)
 
     try {
-      const response = await authAPI.login(email, password)
-      
-      // Check if 2FA is required
-      if (response.mfaRequired) {
-        setTempUserEmail(email)
-        setShowMfaInput(true)
-        showToast('Vui lòng nhập mã xác minh từ ứng dụng Authenticator', 'info')
-        setLoading(false)
-        return
-      }
-      
-      // No 2FA required, login directly
-      if (rememberMe) {
-        localStorage.setItem('rememberMe', 'true')
-      }
-      
-      onLogin(response)
-      showToast('Đăng nhập thành công! 🎉', 'success')
-      
-      const from = location.state?.from?.pathname || '/'
-      setTimeout(() => navigate(from), 1000)
-      
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Email hoặc mật khẩu không đúng'
-      setError(errorMessage)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleMfaVerify = async (e) => {
-    e.preventDefault()
-    setError('')
-
-    if (!mfaCode || mfaCode.length !== 6) {
-      setError('Vui lòng nhập mã xác minh 6 số')
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      const user = await authAPI.verifyMfa(tempUserEmail, password, mfaCode)
+      const user = await authAPI.login(email, password)
       
       if (rememberMe) {
         localStorage.setItem('rememberMe', 'true')
@@ -92,17 +45,11 @@ function Login({ onLogin }) {
       setTimeout(() => navigate(from), 1000)
       
     } catch (err) {
-      const errorMessage = err.response?.data || 'Mã xác minh không đúng'
+      const errorMessage = err.response?.data?.message || 'Email hoặc mật khẩu không đúng'
       setError(errorMessage)
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleBackToLogin = () => {
-    setShowMfaInput(false)
-    setMfaCode('')
-    setError('')
   }
 
   return (
@@ -175,39 +122,18 @@ function Login({ onLogin }) {
               </svg>
             </div>
 
-            {!showMfaInput ? (
-              <>
-                <h2 className="auth-new-title">Chào Mừng Bạn Đến Với Tìm Trọ</h2>
-                
-                {error && (
-                  <div className="alert-new alert-error-new">
-                    <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/>
-                    </svg>
-                    <span>{error}</span>
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                <h2 className="auth-new-title">Xác Thực 2 Yếu Tố</h2>
-                <p style={{color: '#64748b', marginBottom: '20px', textAlign: 'center'}}>
-                  Nhập mã 6 số từ ứng dụng Authenticator
-                </p>
-                
-                {error && (
-                  <div className="alert-new alert-error-new">
-                    <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/>
-                    </svg>
-                    <span>{error}</span>
-                  </div>
-                )}
-              </>
+            <h2 className="auth-new-title">Chào Mừng Bạn Đến Với Tìm Trọ</h2>
+            
+            {error && (
+              <div className="alert-new alert-error-new">
+                <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/>
+                </svg>
+                <span>{error}</span>
+              </div>
             )}
 
-            {!showMfaInput ? (
-              <form onSubmit={handleSubmit} className="auth-new-form">
+            <form onSubmit={handleSubmit} className="auth-new-form">
               <div className="form-group-new">
                 <input
                   type="email"
@@ -272,61 +198,10 @@ function Login({ onLogin }) {
                 )}
               </button>
             </form>
-            ) : (
-              <form onSubmit={handleMfaVerify} className="auth-new-form">
-                <div className="form-group-new">
-                  <input
-                    type="text"
-                    value={mfaCode}
-                    onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className="input-new"
-                    placeholder="Nhập mã 6 số"
-                    maxLength="6"
-                    required
-                    style={{
-                      fontSize: '24px',
-                      textAlign: 'center',
-                      letterSpacing: '8px',
-                      fontWeight: '600'
-                    }}
-                  />
-                  <p style={{fontSize: '14px', color: '#64748b', marginTop: '8px', textAlign: 'center'}}>
-                    Mã xác minh thay đổi mỗi 30 giây
-                  </p>
-                </div>
 
-                <button type="submit" className="btn-new btn-primary-new" disabled={loading || mfaCode.length !== 6}>
-                  {loading ? (
-                    <>
-                      <span className="spinner-new"></span>
-                      <span>Đang xác thực...</span>
-                    </>
-                  ) : (
-                    'Xác thực'
-                  )}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleBackToLogin}
-                  className="btn-new"
-                  style={{
-                    background: 'transparent',
-                    color: '#2563EB',
-                    border: '2px solid #2563EB',
-                    marginTop: '12px'
-                  }}
-                >
-                  ← Quay lại đăng nhập
-                </button>
-              </form>
-            )}
-
-            {!showMfaInput && (
-              <>
-                <div className="divider-new">
-                  <span>Hoặc đăng nhập bằng</span>
-                </div>
+            <div className="divider-new">
+              <span>Hoặc đăng nhập bằng</span>
+            </div>
 
             <div className="social-login-new">
               <button className="social-btn-new google-btn-new" type="button">
@@ -353,8 +228,6 @@ function Login({ onLogin }) {
               <span>Chưa có tài khoản?</span>
               <Link to="/register" className="link-new link-bold">Đăng ký tài khoản</Link>
             </div>
-              </>
-            )}
           </div>
         </div>
       </div>

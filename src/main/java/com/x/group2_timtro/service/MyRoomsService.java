@@ -56,13 +56,41 @@ public class MyRoomsService {
      */
     public MyRoomDetailResponse getMyRoomDetail(Long userId, String bookingId) {
         // Verify user exists
-        userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Booking booking = bookingRepository.findByBookingId(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
+        Booking booking = null;
+        
+        // Try to find by bookingId first
+        if (bookingId != null && !bookingId.isEmpty()) {
+            // Handle temporary ID format (TEMP-123)
+            if (bookingId.startsWith("TEMP-")) {
+                try {
+                    Long id = Long.parseLong(bookingId.substring(5));
+                    booking = bookingRepository.findById(id)
+                            .orElseThrow(() -> new RuntimeException("Booking not found"));
+                } catch (NumberFormatException e) {
+                    throw new RuntimeException("Invalid booking ID format");
+                }
+            } else {
+                // Normal bookingId (BK-2025-XXXXX)
+                booking = bookingRepository.findByBookingId(bookingId)
+                        .orElseThrow(() -> new RuntimeException("Booking not found"));
+            }
+        }
+        
+        if (booking == null) {
+            throw new RuntimeException("Booking not found");
+        }
 
-        if (booking.getTenant().getId() != userId) {
+        // Check if user is admin - admin can view all bookings
+        boolean isAdmin = "ADMIN".equals(user.getRole());
+        
+        // Allow access if user is either the tenant OR the landlord (room owner) OR admin
+        boolean isTenant = userId.equals(booking.getTenant().getId());
+        boolean isLandlord = userId.equals(booking.getRoom().getOwner().getId());
+        
+        if (!isTenant && !isLandlord && !isAdmin) {
             throw new RuntimeException("Unauthorized access to booking");
         }
 
@@ -303,6 +331,83 @@ public class MyRoomsService {
         document.setDocumentUrl(documentUrl);
         document.setFileName(fileName);
         document.setStatus("PENDING");
+        document.setUploadedBy("TENANT");
+        documentRepository.save(document);
+    }
+
+    /**
+     * Upload QR payment image (Landlord only)
+     */
+    @Transactional
+    public void uploadPaymentQr(Long userId, String bookingId, UploadQrPaymentRequest request) {
+        Booking booking = bookingRepository.findByBookingId(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        Room room = booking.getRoom();
+        
+        // Check if user is the landlord (room owner)
+        if (!userId.equals(room.getOwner().getId())) {
+            throw new RuntimeException("Only landlord can upload QR payment image");
+        }
+
+        // Update room's payment QR image and description
+        room.setPaymentQrImageUrl(request.getImageUrl());
+        room.setPaymentDescription(request.getPaymentDescription());
+        roomRepository.save(room);
+    }
+
+    /**
+     * Upload payment proof (Tenant only)
+     */
+    @Transactional
+    public void uploadPaymentProof(Long userId, String bookingId, UploadPaymentProofRequest request) {
+        Booking booking = bookingRepository.findByBookingId(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Check if user is the tenant
+        if (!userId.equals(booking.getTenant().getId())) {
+            throw new RuntimeException("Only tenant can upload payment proof");
+        }
+
+        // Create a document for payment proof
+        Document document = new Document();
+        document.setBooking(booking);
+        document.setDocumentType("PAYMENT_PROOF");
+        document.setDocumentUrl(request.getDocumentUrl());
+        document.setFileName(request.getFileName());
+        document.setNote(request.getNote());
+        document.setStatus("PENDING");
+        document.setUploadedBy("TENANT");
+        documentRepository.save(document);
+    }
+
+    /**
+     * Confirm payment (Landlord only)
+     */
+    @Transactional
+    public void confirmPayment(Long userId, String bookingId, ConfirmPaymentRequest request) {
+        Booking booking = bookingRepository.findByBookingId(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        Room room = booking.getRoom();
+        
+        // Check if user is the landlord
+        if (!userId.equals(room.getOwner().getId())) {
+            throw new RuntimeException("Only landlord can confirm payment");
+        }
+
+        // Find and approve the payment proof document
+        Document document = documentRepository.findById(request.getDocumentId())
+                .orElseThrow(() -> new RuntimeException("Document not found"));
+
+        if (!document.getBooking().getId().equals(booking.getId())) {
+            throw new RuntimeException("Document does not belong to this booking");
+        }
+
+        document.setStatus("APPROVED");
+        if (request.getNote() != null) {
+            document.setNote(request.getNote());
+        }
         documentRepository.save(document);
     }
 
@@ -382,6 +487,8 @@ public class MyRoomsService {
                 .capacity(room.getCapacity())
                 .imageUrl(room.getImageUrl())
                 .detail(room.getDetail())
+                .paymentQrImageUrl(room.getPaymentQrImageUrl())
+                .paymentDescription(room.getPaymentDescription())
                 .build();
 
         // Deposit info
@@ -445,6 +552,7 @@ public class MyRoomsService {
                         .documentUrl(d.getDocumentUrl())
                         .fileName(d.getFileName())
                         .status(d.getStatus())
+                        .uploadedBy(d.getUploadedBy())
                         .createdAt(d.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());

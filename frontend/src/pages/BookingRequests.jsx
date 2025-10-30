@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { customToast } from '../utils/customToast.jsx';
 import { bookingAPI } from '../services/api';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import './BookingRequests.css';
 
 function BookingRequests({ currentUser, onLogout }) {
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending'); // 'pending', 'all'
@@ -23,10 +26,11 @@ function BookingRequests({ currentUser, onLogout }) {
       } else {
         data = await bookingAPI.getAllLandlordBookings();
       }
+      console.log('Loaded bookings:', data);
       setBookings(data);
     } catch (error) {
       console.error('Failed to load bookings:', error);
-      alert('Không thể tải danh sách yêu cầu thuê phòng');
+      customToast.error('Không thể tải danh sách yêu cầu thuê phòng');
     } finally {
       setLoading(false);
     }
@@ -38,11 +42,11 @@ function BookingRequests({ currentUser, onLogout }) {
     try {
       setProcessingId(bookingId);
       await bookingAPI.confirmBooking(bookingId);
-      alert('Đã xác nhận thuê phòng thành công!');
+      customToast.success('Đã xác nhận thuê phòng thành công! ✅');
       loadBookings();
     } catch (error) {
       console.error('Failed to confirm booking:', error);
-      alert('Không thể xác nhận: ' + (error.response?.data?.message || error.message));
+      customToast.error('Không thể xác nhận: ' + (error.response?.data?.message || error.message));
     } finally {
       setProcessingId(null);
     }
@@ -54,11 +58,11 @@ function BookingRequests({ currentUser, onLogout }) {
     try {
       setProcessingId(bookingId);
       await bookingAPI.rejectBooking(bookingId);
-      alert('Đã từ chối yêu cầu thuê phòng');
+      customToast.success('Đã từ chối yêu cầu thuê phòng');
       loadBookings();
     } catch (error) {
       console.error('Failed to reject booking:', error);
-      alert('Không thể từ chối: ' + (error.response?.data?.message || error.message));
+      customToast.error('Không thể từ chối: ' + (error.response?.data?.message || error.message));
     } finally {
       setProcessingId(null);
     }
@@ -90,6 +94,12 @@ function BookingRequests({ currentUser, onLogout }) {
 
   const getDurationText = (duration, unit) => {
     return unit === 'YEAR' ? `${duration} năm` : `${duration} tháng`;
+  };
+
+  const handleViewDetail = (booking) => {
+    console.log('Viewing detail for booking:', booking);
+    const bookingId = booking.bookingId || `TEMP-${booking.id}`;
+    navigate(`/account/rooms/${bookingId}`);
   };
 
   if (loading) {
@@ -209,6 +219,12 @@ function BookingRequests({ currentUser, onLogout }) {
               {booking.status === 'PENDING' && (
                 <div className="booking-actions">
                   <button 
+                    className="btn-view-detail"
+                    onClick={() => handleViewDetail(booking)}
+                  >
+                    👁️ Xem chi tiết
+                  </button>
+                  <button 
                     className="btn-confirm"
                     onClick={() => handleConfirm(booking.id)}
                     disabled={processingId === booking.id}
@@ -244,20 +260,44 @@ function BookingRequests({ currentUser, onLogout }) {
               )}
 
               {booking.status === 'CONFIRMED' && (
-                <div className="booking-notice success">
-                  ✅ Yêu cầu này đã được xác nhận
+                <div className="booking-footer">
+                  <div className="booking-notice success">
+                    ✅ Yêu cầu này đã được xác nhận
+                  </div>
+                  <button 
+                    className="btn-view-detail-secondary"
+                    onClick={() => handleViewDetail(booking)}
+                  >
+                    👁️ Xem chi tiết
+                  </button>
                 </div>
               )}
 
               {booking.status === 'REJECTED' && (
-                <div className="booking-notice rejected">
-                  ❌ Yêu cầu này đã bị từ chối
+                <div className="booking-footer">
+                  <div className="booking-notice rejected">
+                    ❌ Yêu cầu này đã bị từ chối
+                  </div>
+                  <button 
+                    className="btn-view-detail-secondary"
+                    onClick={() => handleViewDetail(booking)}
+                  >
+                    👁️ Xem chi tiết
+                  </button>
                 </div>
               )}
 
               {booking.status === 'CANCELLED' && (
-                <div className="booking-notice cancelled">
-                  🚫 Yêu cầu này đã bị hủy bởi người thuê
+                <div className="booking-footer">
+                  <div className="booking-notice cancelled">
+                    🚫 Yêu cầu này đã bị hủy bởi người thuê
+                  </div>
+                  <button 
+                    className="btn-view-detail-secondary"
+                    onClick={() => handleViewDetail(booking)}
+                  >
+                    👁️ Xem chi tiết
+                  </button>
                 </div>
               )}
             </div>

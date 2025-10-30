@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, UserCog, Users as UsersIcon, Shield, Edit2, Trash2, X } from 'lucide-react'
+import { customToast } from '../utils/customToast.jsx'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { userAPI } from '../services/api'
@@ -94,10 +95,10 @@ function UserManagement({ currentUser, onLogout }) {
     try {
       await userAPI.deleteUser(selectedUser.id)
       setUsers(users.filter(user => user.id !== selectedUser.id))
-      alert('Xóa người dùng thành công!')
+      customToast.success('Xóa người dùng thành công! 🗑️')
     } catch (err) {
       console.error('Error deleting user:', err)
-      alert('Có lỗi khi xóa người dùng: ' + (err.response?.data?.message || err.message))
+      customToast.error('Có lỗi khi xóa người dùng: ' + (err.response?.data?.message || err.message))
     } finally {
       setDeleting(false)
       setShowDeleteModal(false)
@@ -120,10 +121,10 @@ function UserManagement({ currentUser, onLogout }) {
       setUsers(users.map(user => 
         user.id === selectedUser.id ? updatedUser : user
       ))
-      alert('Cập nhật quyền thành công!')
+      customToast.success('Cập nhật quyền thành công! ✅')
     } catch (err) {
       console.error('Error updating role:', err)
-      alert('Có lỗi khi cập nhật quyền: ' + (err.response?.data?.message || err.message))
+      customToast.error('Có lỗi khi cập nhật quyền: ' + (err.response?.data?.message || err.message))
     } finally {
       setUpdating(false)
       setShowRoleModal(false)

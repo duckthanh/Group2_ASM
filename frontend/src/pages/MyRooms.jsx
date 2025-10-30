@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Filter, Home, AlertCircle } from 'lucide-react'
-import toast from 'react-hot-toast'
+import { Search, Filter, Home, AlertCircle, X } from 'lucide-react'
+import { customToast } from '../utils/customToast.jsx'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import MyRoomCard from '../components/MyRoomCard'
@@ -16,42 +16,76 @@ function MyRooms({ currentUser, onLogout }) {
   const [searchKeyword, setSearchKeyword] = useState('')
   const [counts, setCounts] = useState({
     ALL: 0,
-    HOLD: 0,
-    DEPOSITED: 0,
+    PENDING: 0,
     ACTIVE: 0,
     ENDED: 0,
     CANCELED: 0
   })
 
+  // Modal states
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [showReturnModal, setShowReturnModal] = useState(false)
+  const [selectedRoom, setSelectedRoom] = useState(null)
+  const [cancelReason, setCancelReason] = useState('')
+  const [processing, setProcessing] = useState(false)
+
   useEffect(() => {
-    if (!currentUser) {
-      navigate('/login')
-      return
+    if (currentUser) {
+      loadRooms()
     }
-    loadRooms()
   }, [currentUser, activeTab])
 
   const loadRooms = async () => {
     try {
       setLoading(true)
-      const status = activeTab === 'ALL' ? null : activeTab
-      const data = await myRoomsAPI.getMyRooms(status, searchKeyword)
-      setRooms(data)
+      
+      // Always fetch all rooms first
+      const allRooms = await myRoomsAPI.getMyRooms(null, searchKeyword)
+      
+      console.log('=== MY ROOMS DEBUG ===')
+      console.log('All rooms:', allRooms)
+      console.log('Room statuses:', allRooms.map(r => ({ id: r.bookingId, status: r.status, title: r.roomTitle })))
+      console.log('Active tab:', activeTab)
+      console.log('=====================')
+      
+      // Filter based on active tab
+      let filteredRooms = allRooms
+      if (activeTab !== 'ALL') {
+        filteredRooms = allRooms.filter(room => {
+          switch (activeTab) {
+            case 'PENDING':
+              return room.status === 'PENDING'
+            case 'ACTIVE':
+              // Include both ACTIVE and CONFIRMED in "Đang thuê" tab
+              return room.status === 'ACTIVE' || room.status === 'CONFIRMED'
+            case 'ENDED':
+              return room.status === 'ENDED'
+            case 'CANCELED':
+              return room.status === 'CANCELED' || room.status === 'REJECTED'
+            default:
+              return true
+          }
+        })
+      }
+      
+      setRooms(filteredRooms)
       
       // Calculate counts
-      const allRooms = activeTab === 'ALL' ? data : await myRoomsAPI.getMyRooms(null, null)
       const newCounts = {
         ALL: allRooms.length,
-        HOLD: allRooms.filter(r => r.status === 'HOLD').length,
-        DEPOSITED: allRooms.filter(r => r.status === 'DEPOSITED').length,
-        ACTIVE: allRooms.filter(r => r.status === 'ACTIVE').length,
+        PENDING: allRooms.filter(r => r.status === 'PENDING').length,
+        ACTIVE: allRooms.filter(r => r.status === 'ACTIVE' || r.status === 'CONFIRMED').length,
         ENDED: allRooms.filter(r => r.status === 'ENDED').length,
-        CANCELED: allRooms.filter(r => r.status === 'CANCELED').length
+        CANCELED: allRooms.filter(r => r.status === 'CANCELED' || r.status === 'REJECTED').length
       }
+      
+      console.log('Counts:', newCounts)
+      console.log('Filtered rooms:', filteredRooms.length)
+      
       setCounts(newCounts)
     } catch (error) {
       console.error('Failed to load rooms:', error)
-      toast.error('Không thể tải danh sách phòng')
+      customToast.error('Không thể tải danh sách phòng')
     } finally {
       setLoading(false)
     }
@@ -65,15 +99,14 @@ function MyRooms({ currentUser, onLogout }) {
   const handleAction = async (action, room) => {
     switch (action) {
       case 'cancel':
-        if (window.confirm('Bạn có chắc muốn hủy đặt phòng này?')) {
-          try {
-            await myRoomsAPI.cancelBooking(room.bookingId, 'Hủy bởi người dùng')
-            toast.success('Đã hủy đặt phòng')
-            loadRooms()
-          } catch (error) {
-            toast.error('Không thể hủy đặt phòng')
-          }
-        }
+        setSelectedRoom(room)
+        setCancelReason('')
+        setShowCancelModal(true)
+        break
+      
+      case 'return':
+        setSelectedRoom(room)
+        setShowReturnModal(true)
         break
       
       case 'contact-landlord':
@@ -97,10 +130,47 @@ function MyRooms({ currentUser, onLogout }) {
     }
   }
 
+  const handleConfirmCancel = async () => {
+    if (!selectedRoom) return
+    
+    setProcessing(true)
+    try {
+      const reason = cancelReason.trim() || 'Đổi ý không thuê nữa'
+      await myRoomsAPI.cancelBooking(selectedRoom.bookingId, reason)
+      customToast.success('Đã hủy yêu cầu thuê phòng thành công! 🚫')
+      setShowCancelModal(false)
+      setSelectedRoom(null)
+      setCancelReason('')
+      loadRooms()
+    } catch (error) {
+      console.error('Cancel booking error:', error)
+      customToast.error('Không thể hủy yêu cầu: ' + (error.response?.data?.message || error.message))
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  const handleConfirmReturn = async () => {
+    if (!selectedRoom) return
+    
+    setProcessing(true)
+    try {
+      await myRoomsAPI.returnRoom(selectedRoom.bookingId)
+      customToast.success('Trả phòng thành công! 🏠✓')
+      setShowReturnModal(false)
+      setSelectedRoom(null)
+      loadRooms()
+    } catch (error) {
+      console.error('Return room error:', error)
+      customToast.error('Không thể trả phòng: ' + (error.response?.data?.message || error.message))
+    } finally {
+      setProcessing(false)
+    }
+  }
+
   const tabs = [
     { key: 'ALL', label: 'Tất cả', count: counts.ALL },
-    { key: 'HOLD', label: 'Giữ chỗ', count: counts.HOLD },
-    { key: 'DEPOSITED', label: 'Đã đặt cọc', count: counts.DEPOSITED },
+    { key: 'PENDING', label: 'Chờ xác nhận', count: counts.PENDING },
     { key: 'ACTIVE', label: 'Đang thuê', count: counts.ACTIVE },
     { key: 'ENDED', label: 'Đã trả phòng', count: counts.ENDED },
     { key: 'CANCELED', label: 'Đã hủy', count: counts.CANCELED }
@@ -193,6 +263,108 @@ function MyRooms({ currentUser, onLogout }) {
           )}
         </div>
       </div>
+
+      {/* Cancel Booking Modal */}
+      {showCancelModal && selectedRoom && (
+        <div className="modal-overlay-new" onClick={() => setShowCancelModal(false)}>
+          <div className="modal-content-new" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-new">
+              <h3>Hủy yêu cầu thuê phòng</h3>
+              <button
+                className="modal-close-btn"
+                onClick={() => setShowCancelModal(false)}
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="modal-body-new">
+              <p>Bạn có chắc muốn hủy yêu cầu thuê phòng:</p>
+              <div className="user-to-delete-box">
+                <strong>{selectedRoom.roomTitle}</strong>
+              </div>
+              <div className="form-group-new" style={{ marginTop: '20px' }}>
+                <label className="form-label-new">Lý do hủy (không bắt buộc):</label>
+                <textarea
+                  className="form-textarea-new"
+                  placeholder="Vui lòng cho biết lý do hủy..."
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  rows={4}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+              <div className="warning-box">
+                ⚠️ Hành động này không thể hoàn tác!
+              </div>
+            </div>
+            <div className="modal-actions-new">
+              <button
+                className="btn-modal-cancel"
+                onClick={() => setShowCancelModal(false)}
+                disabled={processing}
+              >
+                Đóng
+              </button>
+              <button
+                className="btn-modal-delete"
+                onClick={handleConfirmCancel}
+                disabled={processing}
+              >
+                {processing ? 'Đang xử lý...' : 'Xác nhận hủy'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Return Room Modal */}
+      {showReturnModal && selectedRoom && (
+        <div className="modal-overlay-new" onClick={() => setShowReturnModal(false)}>
+          <div className="modal-content-new" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header-new">
+              <h3>Xác nhận trả phòng</h3>
+              <button
+                className="modal-close-btn"
+                onClick={() => setShowReturnModal(false)}
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="modal-body-new">
+              <p>Bạn chắc chắn muốn trả phòng:</p>
+              <div className="user-to-delete-box">
+                <strong>{selectedRoom.roomTitle}</strong>
+              </div>
+              <div className="warning-box" style={{ marginTop: '20px' }}>
+                ⚠️ Phòng sẽ được chuyển sang trạng thái "Đã trả phòng" và bạn sẽ không thể quay lại quyết định này!
+              </div>
+            </div>
+            <div className="modal-actions-new">
+              <button
+                className="btn-modal-cancel"
+                onClick={() => setShowReturnModal(false)}
+                disabled={processing}
+              >
+                Hủy
+              </button>
+              <button
+                className="btn-modal-delete"
+                onClick={handleConfirmReturn}
+                disabled={processing}
+              >
+                {processing ? 'Đang xử lý...' : 'Xác nhận trả phòng'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

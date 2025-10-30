@@ -44,7 +44,7 @@ public class User implements UserDetails {
     private String mfaSecret; // Để lưu secret key của người dùng
 
     @Column(name = "mfa_enabled")
-    private boolean mfaEnabled = false; // Mặc định là false
+    private Boolean mfaEnabled = false; // Mặc định là false (dùng Boolean để support NULL)
 //
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

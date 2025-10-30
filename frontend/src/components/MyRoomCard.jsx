@@ -13,29 +13,18 @@ function MyRoomCard({ room, onAction }) {
 
   const getStatusBadge = (status) => {
     const badges = {
-      HOLD: { label: 'Giữ chỗ', className: 'status-hold' },
-      DEPOSITED: { label: 'Đã đặt cọc', className: 'status-deposited' },
+      PENDING: { label: 'Chờ xác nhận', className: 'status-pending' },
+      CONFIRMED: { label: 'Đã xác nhận', className: 'status-confirmed' },
       ACTIVE: { label: 'Đang thuê', className: 'status-active' },
       ENDED: { label: 'Đã trả phòng', className: 'status-ended' },
-      CANCELED: { label: 'Đã hủy', className: 'status-canceled' }
+      CANCELED: { label: 'Đã hủy', className: 'status-canceled' },
+      REJECTED: { label: 'Bị từ chối', className: 'status-rejected' }
     }
     return badges[status] || { label: status, className: 'status-default' }
   }
 
   const getTimeRemaining = () => {
-    if (room.status === 'HOLD' && room.holdExpiresAt) {
-      const now = new Date()
-      const expires = new Date(room.holdExpiresAt)
-      const diff = expires - now
-      const hours = Math.floor(diff / (1000 * 60 * 60))
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-      
-      if (diff <= 0) return 'Đã hết hạn'
-      if (hours < 24) return `Còn ${hours}h ${minutes}m`
-      return `Còn ${Math.floor(hours / 24)} ngày`
-    }
-    
-    if (room.status === 'ACTIVE' && room.lease) {
+    if ((room.status === 'ACTIVE' || room.status === 'CONFIRMED') && room.lease) {
       const days = room.lease.daysRemaining
       if (days < 0) return 'Đã quá hạn'
       if (days === 0) return 'Hết hạn hôm nay'
@@ -48,21 +37,16 @@ function MyRoomCard({ room, onAction }) {
 
   const getPrimaryCTA = () => {
     switch (room.status) {
-      case 'HOLD':
-        return { label: 'Đặt cọc ngay', action: 'deposit', variant: 'primary' }
-      case 'DEPOSITED':
-        if (!room.deposit?.paid) {
-          return { label: 'Thanh toán cọc', action: 'pay-deposit', variant: 'primary' }
-        }
-        if (room.contract?.status === 'PENDING') {
-          return { label: 'Ký hợp đồng', action: 'sign-contract', variant: 'primary' }
-        }
+      case 'PENDING':
         return { label: 'Xem chi tiết', action: 'view', variant: 'secondary' }
+      case 'CONFIRMED':
+        return { label: 'Xem chi tiết', action: 'view', variant: 'primary' }
       case 'ACTIVE':
-        return { label: 'Thanh toán tiền nhà', action: 'pay-rent', variant: 'primary' }
+        return { label: 'Xem chi tiết', action: 'view', variant: 'primary' }
       case 'ENDED':
-        return { label: 'Viết đánh giá', action: 'review', variant: 'secondary' }
+        return { label: 'Xem chi tiết', action: 'view', variant: 'secondary' }
       case 'CANCELED':
+      case 'REJECTED':
         return { label: 'Tìm phòng khác', action: 'find-room', variant: 'secondary' }
       default:
         return { label: 'Xem chi tiết', action: 'view', variant: 'secondary' }
@@ -157,10 +141,10 @@ function MyRoomCard({ room, onAction }) {
                     </button>
                   </>
                 )}
-                {(room.status === 'HOLD' || room.status === 'DEPOSITED') && (
+                {room.status === 'PENDING' && (
                   <button onClick={(e) => handleMenuAction(e, 'cancel')} className="menu-danger">
                     <XCircle size={16} />
-                    Hủy đặt chỗ
+                    Hủy yêu cầu thuê
                   </button>
                 )}
               </div>
@@ -189,23 +173,21 @@ function MyRoomCard({ room, onAction }) {
         </div>
 
         {/* Progress / Status Info */}
-        {room.status === 'HOLD' && (
-          <div className="my-room-progress">
-            <div className="progress-step completed">Tạo giữ chỗ</div>
-            <div className="progress-step pending">Đặt cọc</div>
-            <div className="progress-step pending">Ký hợp đồng</div>
+        {room.status === 'PENDING' && (
+          <div className="my-room-status-info pending">
+            <AlertCircle size={14} />
+            <span>Đang chờ chủ trọ xác nhận...</span>
           </div>
         )}
 
-        {room.status === 'DEPOSITED' && (
-          <div className="my-room-progress">
-            <div className="progress-step completed">Giữ chỗ</div>
-            <div className="progress-step completed">Đặt cọc</div>
-            <div className="progress-step current">Ký hợp đồng</div>
+        {room.status === 'CONFIRMED' && !room.isDeposit && (
+          <div className="my-room-status-info confirmed">
+            <AlertCircle size={14} />
+            <span>Đã được xác nhận - Sẵn sàng chuyển vào</span>
           </div>
         )}
 
-        {room.status === 'ACTIVE' && room.lease && (
+        {(room.status === 'ACTIVE' || room.status === 'CONFIRMED') && room.lease && (
           <div className="my-room-lease-info">
             <Calendar size={14} />
             <span>
@@ -215,7 +197,7 @@ function MyRoomCard({ room, onAction }) {
           </div>
         )}
 
-        {room.status === 'CANCELED' && room.cancelReason && (
+        {(room.status === 'CANCELED' || room.status === 'REJECTED') && room.cancelReason && (
           <div className="my-room-cancel-info">
             <AlertCircle size={14} />
             <span>{room.cancelReason}</span>
@@ -238,13 +220,43 @@ function MyRoomCard({ room, onAction }) {
           </div>
         )}
 
-        {/* CTA */}
-        <button 
-          className={`my-room-cta btn-${cta.variant}`}
-          onClick={handleCTAClick}
-        >
-          {cta.label}
-        </button>
+        {/* CTA Buttons */}
+        <div className="my-room-actions">
+          <button 
+            className={`my-room-cta btn-${cta.variant}`}
+            onClick={handleCTAClick}
+          >
+            {cta.label}
+          </button>
+          
+          {/* Cancel Button - Only show when PENDING (not yet confirmed by landlord) */}
+          {room.status === 'PENDING' && (
+            <button 
+              className="my-room-cta btn-cancel"
+              onClick={(e) => {
+                e.stopPropagation()
+                onAction?.('cancel', room)
+              }}
+            >
+              <XCircle size={16} />
+              Hủy yêu cầu thuê
+            </button>
+          )}
+
+          {/* Return Room Button - Only show when ACTIVE or CONFIRMED (user is renting) */}
+          {(room.status === 'ACTIVE' || room.status === 'CONFIRMED') && (
+            <button 
+              className="my-room-cta btn-return"
+              onClick={(e) => {
+                e.stopPropagation()
+                onAction?.('return', room)
+              }}
+            >
+              <XCircle size={16} />
+              Trả phòng
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

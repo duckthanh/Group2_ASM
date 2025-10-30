@@ -1,5 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { customToast } from '../utils/customToast.jsx'
 import { Search, Home, Building2, Info, Mail, User, LogOut, Users, Menu, X, Key, ClipboardCheck } from 'lucide-react'
 
 function Navbar({ currentUser, onLogout }) {
@@ -25,7 +26,12 @@ function Navbar({ currentUser, onLogout }) {
 
   const handleLogout = () => {
     setShowUserDropdown(false)
+    
+    // Note: We keep rememberedEmail in localStorage so user doesn't need to retype email next time
+    // Only remove it if user unchecks "Remember Me" on login page
+    
     onLogout()
+    customToast.success('Đăng xuất thành công! 👋')
   }
 
   const handleContactClick = (e) => {

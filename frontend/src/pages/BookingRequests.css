@@ -315,6 +315,56 @@
   cursor: not-allowed;
 }
 
+.btn-view-detail {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.btn-view-detail:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Booking Footer (for non-pending bookings) */
+.booking-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.booking-footer .booking-notice {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  margin: 0;
+  border-radius: 8px;
+  border: none;
+}
+
+.btn-view-detail-secondary {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.btn-view-detail-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
 /* Booking Notice */
 .booking-notice {
   padding: 1rem 1.5rem;
@@ -382,6 +432,20 @@
 
   .booking-actions button {
     width: 100%;
+  }
+
+  .booking-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .booking-footer .booking-notice {
+    text-align: center;
+  }
+
+  .btn-view-detail-secondary {
+    width: 100%;
+    justify-content: center;
   }
 }
 

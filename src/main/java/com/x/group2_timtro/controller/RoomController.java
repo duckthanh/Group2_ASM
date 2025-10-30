@@ -66,9 +66,39 @@ public class RoomController {
 
     @GetMapping("/available")
     public ResponseEntity<List<RoomResponse>> getAvailableRooms() {
-        log.info("Getting available rooms");
-        List<RoomResponse> rooms = roomService.getAvailableRooms();
-        return ResponseEntity.ok(rooms);
+        try {
+            log.info("Getting available rooms");
+            List<RoomResponse> rooms = roomService.getAvailableRooms();
+            log.info("Found {} available rooms", rooms.size());
+            return ResponseEntity.ok(rooms);
+        } catch (Exception e) {
+            log.error("Error getting available rooms", e);
+            throw e;
+        }
+    }
+
+    @GetMapping("/test")
+    public ResponseEntity<String> testEndpoint() {
+        try {
+            log.info("Test endpoint called");
+            long count = roomService.getRoomCount();
+            return ResponseEntity.ok("Backend is working! Total rooms in database: " + count);
+        } catch (Exception e) {
+            log.error("Error in test endpoint", e);
+            return ResponseEntity.status(500).body("Error: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/debug")
+    public ResponseEntity<String> debugRooms() {
+        try {
+            log.info("Debug endpoint called");
+            String debug = roomService.debugAllRooms();
+            return ResponseEntity.ok(debug);
+        } catch (Exception e) {
+            log.error("Error in debug endpoint", e);
+            return ResponseEntity.status(500).body("Error: " + e.getMessage() + "\nStack: " + e.getStackTrace()[0]);
+        }
     }
 
     @GetMapping("/my-rooms")

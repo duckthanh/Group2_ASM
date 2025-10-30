@@ -58,6 +58,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/users/**").authenticated()
                         // Room endpoints - GET public, POST/PUT/DELETE authenticated
                         .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/rooms/test").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/rooms/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/rooms/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/rooms/**").authenticated()

@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import toast, { Toaster } from 'react-hot-toast'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -7,17 +8,27 @@ import RoomList from './pages/RoomList'
 import RoomDetail from './pages/RoomDetail'
 import Profile from './pages/Profile'
 import UserManagement from './pages/UserManagement'
+import MyRooms from './pages/MyRooms'
+import MyRoomDetail from './pages/MyRoomDetail'
+import BookingRequests from './pages/BookingRequests'
 import './App.css'
 
 function App() {
   const [currentUser, setCurrentUser] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // Check localStorage for user session
     const user = localStorage.getItem('user')
     if (user) {
-      setCurrentUser(JSON.parse(user))
+      try {
+        setCurrentUser(JSON.parse(user))
+      } catch (error) {
+        console.error('Error parsing user from localStorage:', error)
+        localStorage.removeItem('user')
+      }
     }
+    setLoading(false)
   }, [])
 
   const handleLogin = (user) => {
@@ -30,9 +41,71 @@ function App() {
     localStorage.removeItem('user')
   }
 
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        backgroundColor: '#f8fafc'
+      }}>
+        <div style={{
+          textAlign: 'center'
+        }}>
+          <div style={{
+            width: '50px',
+            height: '50px',
+            border: '4px solid #e2e8f0',
+            borderTop: '4px solid #3b82f6',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }}></div>
+          <p style={{ color: '#64748b', fontSize: '14px' }}>Đang tải...</p>
+        </div>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    )
+  }
+
   return (
-    <Router>
-      <Routes>
+    <>
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#fff',
+            color: '#363636',
+            fontSize: '14px',
+            padding: '16px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            cursor: 'pointer',
+          },
+          success: {
+            iconTheme: {
+              primary: '#10b981',
+              secondary: '#fff',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#fff',
+            },
+          },
+        }}
+      />
+      <Router>
+        <Routes>
         <Route 
           path="/" 
           element={<Home currentUser={currentUser} onLogout={handleLogout} />} 
@@ -70,6 +143,30 @@ function App() {
           }
         />
         <Route
+          path="/account/rooms"
+          element={
+            currentUser ?
+            <MyRooms currentUser={currentUser} onLogout={handleLogout} /> :
+            <Navigate to="/login" replace />
+          }
+        />
+        <Route
+          path="/account/rooms/:bookingId"
+          element={
+            currentUser ?
+            <MyRoomDetail currentUser={currentUser} onLogout={handleLogout} /> :
+            <Navigate to="/login" replace />
+          }
+        />
+        <Route
+          path="/landlord/booking-requests"
+          element={
+            currentUser ?
+            <BookingRequests currentUser={currentUser} onLogout={handleLogout} /> :
+            <Navigate to="/login" replace />
+          }
+        />
+        <Route
           path="/admin/users"
           element={
             currentUser && currentUser.role === 'ADMIN' ?
@@ -77,8 +174,9 @@ function App() {
             <Navigate to="/" replace />
           }
         />
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    </>
   )
 }
 

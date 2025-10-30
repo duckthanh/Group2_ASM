@@ -18,7 +18,6 @@ public class Room {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "room_id")
     private Long id;
 
     @Column(nullable = false)
@@ -26,7 +25,7 @@ public class Room {
 
     @Column(columnDefinition = "TEXT")
     private String imageUrl;
-    
+
     @Column(name = "additional_images", columnDefinition = "TEXT")
     private String additionalImages; // JSON array of additional image URLs
 
@@ -48,41 +47,47 @@ public class Room {
 
     @Column(nullable = false)
     private Boolean isAvailable = true;
-    
+
     // Filter fields
     @Column
     private String roomType; // "Nhà trọ", "Nhà nguyên căn", "Căn hộ"
-    
+
     @Column
     private Double area; // Diện tích (m²)
-    
+
     @Column
     private Integer capacity; // Sức chứa (số người)
-    
+
     @Column(columnDefinition = "TEXT")
     private String amenities; // Tiện nghi (lưu dạng JSON string hoặc comma-separated)
-    
+
     @Column
     private String availability; // "Còn trống", "Sắp trống"
-    
+
     // Cost fields
     @Column
     private Double electricityCost; // Tiền điện (VNĐ/kWh hoặc cố định)
-    
+
     @Column
     private Double waterCost; // Tiền nước (VNĐ/m³ hoặc cố định)
-    
+
     @Column
     private Double internetCost; // Tiền internet (VNĐ/tháng)
-    
+
     @Column
     private Double parkingFee; // Phí giữ xe (VNĐ/tháng)
-    
+
     @Column
     private Double deposit; // Tiền cọc (VNĐ hoặc số tháng)
-    
+
     @Column
     private String depositType; // "FIXED" (cố định) hoặc "MONTHS" (số tháng)
+
+    @Column(columnDefinition = "TEXT")
+    private String paymentQrImageUrl; // QR code for payment (landlord only)
+
+    @Column(columnDefinition = "TEXT")
+    private String paymentDescription; // Payment transfer content/description for tenant to use
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

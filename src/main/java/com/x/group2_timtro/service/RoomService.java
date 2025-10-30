@@ -143,10 +143,69 @@ public class RoomService {
                 .collect(Collectors.toList());
     }
 
+    public long getRoomCount() {
+        return roomRepository.count();
+    }
+
+    public String debugAllRooms() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== DEBUGGING ALL ROOMS ===\n");
+        
+        try {
+            List<Room> allRooms = roomRepository.findAll();
+            sb.append("Total rooms: ").append(allRooms.size()).append("\n\n");
+            
+            for (Room room : allRooms) {
+                sb.append("Room ID: ").append(room.getId()).append("\n");
+                sb.append("  Name: ").append(room.getName()).append("\n");
+                sb.append("  Owner: ").append(room.getOwner() != null ? room.getOwner().getUsername() : "NULL!").append("\n");
+                sb.append("  Available: ").append(room.getIsAvailable()).append("\n");
+                
+                try {
+                    mapToResponse(room);
+                    sb.append("  Mapping: OK\n");
+                } catch (Exception e) {
+                    sb.append("  Mapping: FAILED - ").append(e.getMessage()).append("\n");
+                }
+                sb.append("\n");
+            }
+            
+        } catch (Exception e) {
+            sb.append("ERROR: ").append(e.getMessage());
+            e.printStackTrace();
+        }
+        
+        return sb.toString();
+    }
+
     public List<RoomResponse> getAvailableRooms() {
-        return roomRepository.findByIsAvailable(true).stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
+        try {
+            System.out.println("=== GET AVAILABLE ROOMS DEBUG ===");
+            List<Room> rooms = roomRepository.findByIsAvailable(true);
+            System.out.println("Found " + rooms.size() + " available rooms in database");
+            
+            List<RoomResponse> responses = rooms.stream()
+                    .map(room -> {
+                        try {
+                            return mapToResponse(room);
+                        } catch (Exception e) {
+                            System.err.println("Error mapping room ID: " + room.getId() + " - " + e.getMessage());
+                            e.printStackTrace();
+                            throw e;
+                        }
+                    })
+                    .collect(Collectors.toList());
+            
+            System.out.println("Successfully mapped " + responses.size() + " room responses");
+            System.out.println("=================================");
+            return responses;
+        } catch (Exception e) {
+            System.err.println("=== ERROR IN GET AVAILABLE ROOMS ===");
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+            System.err.println("====================================");
+            throw e;
+        }
     }
 
     public List<RoomResponse> getRoomsByOwner(Long userId) {
@@ -311,33 +370,51 @@ public class RoomService {
 
     // Public method for other services to use
     public RoomResponse mapToRoomResponse(Room room) {
-        return RoomResponse.builder()
-                .id(room.getId())
-                .name(room.getName())
-                .imageUrl(room.getImageUrl())
-                .additionalImages(room.getAdditionalImages())
-                .detail(room.getDetail())
-                .price(room.getPrice())
-                .location(room.getLocation())
-                .contact(room.getContact())
-                .isAvailable(room.getIsAvailable())
-                .ownerId(room.getOwner().getId())
-                .ownerUsername(room.getOwner().getUsername())
-                .ownerEmail(room.getOwner().getEmail())
-                .createdAt(room.getCreatedAt())
-                .updatedAt(room.getUpdatedAt())
-                .roomType(room.getRoomType())
-                .area(room.getArea())
-                .capacity(room.getCapacity())
-                .amenities(room.getAmenities())
-                .availability(room.getAvailability())
-                .electricityCost(room.getElectricityCost())
-                .waterCost(room.getWaterCost())
-                .internetCost(room.getInternetCost())
-                .parkingFee(room.getParkingFee())
-                .deposit(room.getDeposit())
-                .depositType(room.getDepositType())
-                .build();
+        try {
+            Long ownerId = null;
+            String ownerUsername = null;
+            String ownerEmail = null;
+            
+            if (room.getOwner() != null) {
+                ownerId = room.getOwner().getId();
+                ownerUsername = room.getOwner().getUsername();
+                ownerEmail = room.getOwner().getEmail();
+            } else {
+                System.err.println("WARNING: Room ID " + room.getId() + " has no owner!");
+            }
+            
+            return RoomResponse.builder()
+                    .id(room.getId())
+                    .name(room.getName())
+                    .imageUrl(room.getImageUrl())
+                    .additionalImages(room.getAdditionalImages())
+                    .detail(room.getDetail())
+                    .price(room.getPrice())
+                    .location(room.getLocation())
+                    .contact(room.getContact())
+                    .isAvailable(room.getIsAvailable())
+                    .ownerId(ownerId)
+                    .ownerUsername(ownerUsername)
+                    .ownerEmail(ownerEmail)
+                    .createdAt(room.getCreatedAt())
+                    .updatedAt(room.getUpdatedAt())
+                    .roomType(room.getRoomType())
+                    .area(room.getArea())
+                    .capacity(room.getCapacity())
+                    .amenities(room.getAmenities())
+                    .availability(room.getAvailability())
+                    .electricityCost(room.getElectricityCost())
+                    .waterCost(room.getWaterCost())
+                    .internetCost(room.getInternetCost())
+                    .parkingFee(room.getParkingFee())
+                    .deposit(room.getDeposit())
+                    .depositType(room.getDepositType())
+                    .build();
+        } catch (Exception e) {
+            System.err.println("ERROR mapping room ID: " + room.getId());
+            e.printStackTrace();
+            throw e;
+        }
     }
 }
 
