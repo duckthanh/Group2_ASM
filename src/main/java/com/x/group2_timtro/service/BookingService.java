@@ -35,6 +35,11 @@ public class BookingService {
             throw new RuntimeException("Room is not available");
         }
 
+        // Check if there are available rooms
+        if (room.getAvailableRooms() != null && room.getAvailableRooms() <= 0) {
+            throw new RuntimeException("No rooms available");
+        }
+
         User tenant = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -65,10 +70,17 @@ public class BookingService {
 
         booking.setStatus("CONFIRMED");
         
-        // Nếu là thuê ngay, đánh dấu phòng là không còn trống
-        if (!booking.getIsDeposit()) {
-            Room room = booking.getRoom();
-            room.setIsAvailable(false);
+        // Giảm số phòng còn trống
+        Room room = booking.getRoom();
+        if (room.getAvailableRooms() != null && room.getAvailableRooms() > 0) {
+            room.setAvailableRooms(room.getAvailableRooms() - 1);
+            
+            // Nếu hết phòng, tự động chuyển sang "Hết phòng"
+            if (room.getAvailableRooms() == 0) {
+                room.setIsAvailable(false);
+                room.setAvailability("Hết phòng");
+            }
+            
             roomRepository.save(room);
         }
 
@@ -84,6 +96,27 @@ public class BookingService {
         if (booking.getTenant().getId() != userId && 
             booking.getRoom().getOwner().getId() != userId) {
             throw new RuntimeException("You don't have permission to cancel this booking");
+        }
+
+        // Nếu booking đang CONFIRMED, tăng lại số phòng còn trống
+        if ("CONFIRMED".equals(booking.getStatus())) {
+            Room room = booking.getRoom();
+            if (room.getAvailableRooms() != null && room.getTotalRooms() != null) {
+                int newAvailable = room.getAvailableRooms() + 1;
+                
+                // Không vượt quá tổng số phòng
+                if (newAvailable <= room.getTotalRooms()) {
+                    room.setAvailableRooms(newAvailable);
+                    
+                    // Nếu từ hết phòng → còn phòng, cập nhật lại trạng thái
+                    if (room.getAvailableRooms() > 0 && !room.getIsAvailable()) {
+                        room.setIsAvailable(true);
+                        room.setAvailability("Còn trống");
+                    }
+                    
+                    roomRepository.save(room);
+                }
+            }
         }
 
         booking.setStatus("CANCELLED");

@@ -26,7 +26,8 @@ function RoomFilter({ onFilter, onReset }) {
     { label: 'Dưới 1 triệu', min: 0, max: 1000000 },
     { label: '1–10 triệu', min: 1000000, max: 10000000 },
     { label: '10–30 triệu', min: 10000000, max: 30000000 },
-    { label: '30–50 triệu', min: 30000000, max: 50000000 }
+    { label: '30–50 triệu', min: 30000000, max: 50000000 },
+    { label: '>50 triệu', min: 50000000, max: 999999999 }
   ]
 
   const areaOptions = [
@@ -49,8 +50,7 @@ function RoomFilter({ onFilter, onReset }) {
   ]
 
   const capacityOptions = [
-    { value: 1, label: '1 người' },
-    { value: 2, label: '2 người' },
+    { value: 1, label: '1-2 người' },
     { value: 3, label: '3–4 người' },
     { value: 4, label: '4+ người' }
   ]

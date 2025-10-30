@@ -56,6 +56,11 @@ public class RoomService {
         room.setAmenities(request.getAmenities());
         room.setAvailability(request.getAvailability());
 
+        // ✅ SET ROOM QUANTITY
+        Integer totalRooms = request.getTotalRooms() != null ? request.getTotalRooms() : 1;
+        room.setTotalRooms(totalRooms);
+        room.setAvailableRooms(totalRooms); // Initially all rooms are available
+
         Room savedRoom = roomRepository.save(room);
 
         System.out.println("=== SAVED ROOM DEBUG ===");
@@ -105,6 +110,48 @@ public class RoomService {
         if (request.getParkingFee() != null) room.setParkingFee(request.getParkingFee());
         if (request.getDeposit() != null) room.setDeposit(request.getDeposit());
         if (request.getDepositType() != null) room.setDepositType(request.getDepositType());
+
+        // Room quantity management
+        if (request.getTotalRooms() != null) {
+            Integer oldTotal = room.getTotalRooms() != null ? room.getTotalRooms() : 1;
+            Integer newTotal = request.getTotalRooms();
+            room.setTotalRooms(newTotal);
+            
+            // Nếu tăng tổng số phòng, tăng cả số phòng còn trống tương ứng
+            if (newTotal > oldTotal) {
+                Integer currentAvailable = room.getAvailableRooms() != null ? room.getAvailableRooms() : oldTotal;
+                room.setAvailableRooms(currentAvailable + (newTotal - oldTotal));
+            }
+            // Nếu giảm tổng số phòng, đảm bảo availableRooms không vượt quá totalRooms
+            else if (newTotal < oldTotal) {
+                Integer currentAvailable = room.getAvailableRooms() != null ? room.getAvailableRooms() : oldTotal;
+                if (currentAvailable > newTotal) {
+                    room.setAvailableRooms(newTotal);
+                }
+            }
+        }
+        
+        // Cho phép chỉnh sửa trực tiếp availableRooms (nếu được gửi lên)
+        if (request.getAvailableRooms() != null) {
+            Integer totalRooms = room.getTotalRooms() != null ? room.getTotalRooms() : 1;
+            Integer newAvailable = request.getAvailableRooms();
+            
+            // Không cho availableRooms vượt quá totalRooms
+            if (newAvailable > totalRooms) {
+                newAvailable = totalRooms;
+            }
+            
+            room.setAvailableRooms(newAvailable);
+            
+            // Tự động cập nhật trạng thái dựa trên số phòng còn trống
+            if (newAvailable == 0) {
+                room.setIsAvailable(false);
+                room.setAvailability("Hết phòng");
+            } else if (newAvailable > 0 && !room.getIsAvailable()) {
+                room.setIsAvailable(true);
+                room.setAvailability("Còn trống");
+            }
+        }
 
         Room updatedRoom = roomRepository.save(room);
         return mapToResponse(updatedRoom);
@@ -180,9 +227,10 @@ public class RoomService {
 
     public List<RoomResponse> getAvailableRooms() {
         try {
-            System.out.println("=== GET AVAILABLE ROOMS DEBUG ===");
-            List<Room> rooms = roomRepository.findByIsAvailable(true);
-            System.out.println("Found " + rooms.size() + " available rooms in database");
+            System.out.println("=== GET ALL ROOMS DEBUG ===");
+            // Changed to show ALL rooms, not just available ones
+            List<Room> rooms = roomRepository.findAll();
+            System.out.println("Found " + rooms.size() + " rooms in database");
             
             List<RoomResponse> responses = rooms.stream()
                     .map(room -> {
@@ -200,7 +248,7 @@ public class RoomService {
             System.out.println("=================================");
             return responses;
         } catch (Exception e) {
-            System.err.println("=== ERROR IN GET AVAILABLE ROOMS ===");
+            System.err.println("=== ERROR IN GET ALL ROOMS ===");
             System.err.println("Error: " + e.getMessage());
             e.printStackTrace();
             System.err.println("====================================");
@@ -217,35 +265,76 @@ public class RoomService {
     }
 
     public List<RoomResponse> searchRooms(String keyword, String location) {
-        List<Room> rooms;
+        List<Room> rooms = roomRepository.findAll();
         
-        if (keyword != null && !keyword.isEmpty() && location != null && !location.isEmpty()) {
-            // Tìm theo cả keyword và location
-            rooms = roomRepository.findByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(
-                keyword, location);
-        } else if (keyword != null && !keyword.isEmpty()) {
-            // Tìm theo keyword (tìm trong name, location, detail)
-            rooms = roomRepository.findByNameContainingIgnoreCaseOrLocationContainingIgnoreCaseOrDetailContainingIgnoreCase(
-                keyword, keyword, keyword);
-        } else if (location != null && !location.isEmpty()) {
-            // Chỉ tìm theo location
-            rooms = roomRepository.findByLocationContainingIgnoreCase(location);
-        } else {
-            // Không có keyword, trả về phòng còn trống
-            rooms = roomRepository.findByIsAvailable(true);
-        }
+        // Normalize keyword: chuyển lowercase và trim, nhưng GIỮ khoảng trắng
+        String normalizedKeyword = keyword != null && !keyword.isEmpty() 
+            ? keyword.toLowerCase().trim().replaceAll("\\s+", " ") // Chuẩn hóa nhiều space thành 1 space
+            : null;
         
+        String normalizedLocation = location != null && !location.isEmpty() 
+            ? location.toLowerCase().trim().replaceAll("\\s+", " ")
+            : null;
+        
+        // Filter rooms based on flexible search
         return rooms.stream()
-                .filter(Room::getIsAvailable) // Chỉ lấy phòng còn trống
+                .filter(room -> {
+                    // Nếu không có keyword và location, trả về tất cả
+                    if ((normalizedKeyword == null || normalizedKeyword.isEmpty()) && 
+                        (normalizedLocation == null || normalizedLocation.isEmpty())) {
+                        return true;
+                    }
+                    
+                    boolean matchKeyword = true;
+                    boolean matchLocation = true;
+                    
+                    // Check keyword match (tìm trong name, location, detail, amenities, roomType)
+                    if (normalizedKeyword != null && !normalizedKeyword.isEmpty()) {
+                        matchKeyword = flexibleMatch(room.getName(), normalizedKeyword) ||
+                                      flexibleMatch(room.getLocation(), normalizedKeyword) ||
+                                      flexibleMatch(room.getDetail(), normalizedKeyword) ||
+                                      flexibleMatch(room.getAmenities(), normalizedKeyword) ||
+                                      flexibleMatch(room.getRoomType(), normalizedKeyword);
+                    }
+                    
+                    // Check location match
+                    if (normalizedLocation != null && !normalizedLocation.isEmpty()) {
+                        matchLocation = flexibleMatch(room.getLocation(), normalizedLocation);
+                    }
+                    
+                    return matchKeyword && matchLocation;
+                })
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
+    
+    // Helper method for flexible matching
+    private boolean flexibleMatch(String text, String keyword) {
+        if (text == null || text.isEmpty()) {
+            return false;
+        }
+        
+        // Chuẩn hóa text: lowercase và normalize spaces
+        String normalizedText = text.toLowerCase().trim().replaceAll("\\s+", " ");
+        
+        // 1. Exact match với space
+        if (normalizedText.contains(keyword)) {
+            return true;
+        }
+        
+        // 2. Match khi loại bỏ space (cho trường hợp "thôn 4" vs "thôn4")
+        String textNoSpace = normalizedText.replaceAll("\\s+", "");
+        String keywordNoSpace = keyword.replaceAll("\\s+", "");
+        
+        return textNoSpace.contains(keywordNoSpace);
+    }
 
     public List<RoomResponse> filterRooms(RoomFilterRequest filter) {
-        List<Room> rooms = roomRepository.findByIsAvailable(true);
+        // Changed to show ALL rooms, including unavailable ones
+        List<Room> rooms = roomRepository.findAll();
 
         System.out.println("=== FILTER DEBUG ===");
-        System.out.println("Total available rooms: " + rooms.size());
+        System.out.println("Total rooms: " + rooms.size());
         System.out.println("Filter roomTypes: " + filter.getRoomTypes());
         System.out.println("Filter areas: " + filter.getAreas());
         System.out.println("Filter amenities: " + filter.getAmenities());
@@ -322,14 +411,20 @@ public class RoomService {
             if (room.getCapacity() == null) {
                 return false;  // Loại bỏ phòng không có capacity
             }
-            // Handle "4+ người" case (capacity = 4 means 4 or more)
-            if (filter.getCapacity() == 4) {
-                if (room.getCapacity() < 4) {
+            // Handle capacity ranges
+            if (filter.getCapacity() == 1) {
+                // "1-2 người"
+                if (room.getCapacity() < 1 || room.getCapacity() > 2) {
                     return false;
                 }
             } else if (filter.getCapacity() == 3) {
                 // "3-4 người"
                 if (room.getCapacity() < 3 || room.getCapacity() > 4) {
+                    return false;
+                }
+            } else if (filter.getCapacity() == 4) {
+                // "4+ người" (4 or more)
+                if (room.getCapacity() < 4) {
                     return false;
                 }
             } else {
@@ -409,6 +504,8 @@ public class RoomService {
                     .parkingFee(room.getParkingFee())
                     .deposit(room.getDeposit())
                     .depositType(room.getDepositType())
+                    .totalRooms(room.getTotalRooms())
+                    .availableRooms(room.getAvailableRooms())
                     .build();
         } catch (Exception e) {
             System.err.println("ERROR mapping room ID: " + room.getId());

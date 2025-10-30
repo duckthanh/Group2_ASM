@@ -16,7 +16,8 @@ const CreateRoom = ({ onClose, onSuccess }) => {
     area: '',
     capacity: '',
     amenities: [],
-    availability: 'Còn trống'
+    availability: 'Còn trống',
+    totalRooms: '1' // Default 1 room
   })
   const [selectedFile, setSelectedFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState('')
@@ -153,6 +154,7 @@ const CreateRoom = ({ onClose, onSuccess }) => {
         price: parseFloat(formData.price),
         area: formData.area ? parseFloat(formData.area) : null,
         capacity: formData.capacity ? parseInt(formData.capacity) : null,
+        totalRooms: formData.totalRooms ? parseInt(formData.totalRooms) : 1,
         amenities: formData.amenities.join(', '), // Convert array to comma-separated string
         additionalImages: JSON.stringify(formData.additionalImages) // Convert array to JSON string
       }
@@ -381,6 +383,25 @@ const CreateRoom = ({ onClose, onSuccess }) => {
                 <option value="Còn trống">Còn trống</option>
                 <option value="Sắp trống">Sắp trống</option>
               </select>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="totalRooms">Số lượng phòng <span className="required">*</span></label>
+              <input
+                type="number"
+                id="totalRooms"
+                name="totalRooms"
+                value={formData.totalRooms}
+                onChange={handleChange}
+                placeholder="VD: 10"
+                min="1"
+                required
+              />
+              <small style={{ color: '#6B7280', fontSize: '13px', marginTop: '4px', display: 'block' }}>
+                💡 Số lượng phòng sẽ tự động giảm khi có người thuê
+              </small>
             </div>
           </div>
 

@@ -49,9 +49,18 @@ function RoomList({ currentUser, onLogout }) {
     try {
       const data = await roomAPI.searchRooms(keyword, location)
       setRooms(data)
+      if (data.length === 0) {
+        customToast.info('Không tìm thấy phòng nào phù hợp với từ khóa tìm kiếm.')
+      }
     } catch (err) {
       console.error('Error searching rooms:', err)
-      customToast.error('Có lỗi khi tìm kiếm. Vui lòng thử lại!')
+      if (err.response?.status === 500) {
+        customToast.error('Lỗi server. Vui lòng kiểm tra backend có đang chạy không.')
+      } else if (err.message === 'Network Error') {
+        customToast.error('Không thể kết nối đến server.')
+      } else {
+        customToast.error('Có lỗi khi tìm kiếm: ' + (err.response?.data?.message || err.message))
+      }
     } finally {
       setLoading(false)
     }
@@ -241,9 +250,9 @@ function RoomList({ currentUser, onLogout }) {
             {/* Popular keywords */}
             <div className="search-suggestions">
               <span className="suggestions-label">Gợi ý:</span>
-              <button className="suggestion-chip" onClick={() => setSearchKeyword('gần FTU')}>Gần FPT</button>
-              <button className="suggestion-chip" onClick={() => setSearchKeyword('có ban công')}>Thôn 4</button>
-              <button className="suggestion-chip" onClick={() => setSearchKeyword('dưới 3tr')}>Gần chợ hòa lạc</button>
+              <button className="suggestion-chip" onClick={() => setSearchKeyword('gần FPT')}>Gần FPT</button>
+              <button className="suggestion-chip" onClick={() => setSearchKeyword('thôn 4')}>Thôn 4</button>
+              <button className="suggestion-chip" onClick={() => setSearchKeyword('gần chợ hòa lạc')}>Gần chợ hòa lạc</button>
             </div>
           </div>
         </div>
@@ -306,7 +315,22 @@ function RoomList({ currentUser, onLogout }) {
                           alt={room.name}
                           className="room-image-new"
                         />
-                        <div className="room-badge-new">Còn trống</div>
+                        <div 
+                          className="room-badge-new"
+                          style={{
+                            background: room.isAvailable ? '#10B981' : '#EF4444',
+                            color: 'white',
+                            padding: '4px 10px',
+                            borderRadius: '6px',
+                            fontSize: '12px',
+                            fontWeight: '600',
+                            position: 'absolute',
+                            top: '12px',
+                            right: '12px'
+                          }}
+                        >
+                          {room.isAvailable ? '✓ Còn Trống' : '✕ Hết Phòng'}
+                        </div>
                       </Link>
 
                       {/* Room Info */}

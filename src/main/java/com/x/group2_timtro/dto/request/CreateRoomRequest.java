@@ -20,5 +20,8 @@ public class CreateRoomRequest {
     private Integer capacity;
     private String amenities;
     private String availability;
+    
+    // Room quantity
+    private Integer totalRooms; // Total number of rooms (default 1 if not specified)
 }
 

@@ -292,6 +292,14 @@ export const savedRoomAPI = {
     })
     return response.data
   },
+
+  checkIfSaved: async (roomId) => {
+    const userId = getUserId()
+    const response = await api.get(`/saved-rooms/${roomId}/check`, {
+      headers: { 'X-User-Id': userId }
+    })
+    return response.data
+  },
 }
 
 export const myRoomsAPI = {
@@ -363,19 +371,13 @@ export const myRoomsAPI = {
     )
     return response.data
   },
-}
 
-export const viewingScheduleAPI = {
-  createSchedule: async (scheduleData) => {
+  // Get posted rooms (rooms owned by current user)
+  getMyPostedRooms: async () => {
     const userId = getUserId()
-    const response = await api.post('/viewing-schedules', scheduleData, {
+    const response = await api.get('/me/rooms/posted', {
       headers: { 'X-User-Id': userId }
     })
-    return response.data
-  },
-
-  getSchedulesByRoom: async (roomId) => {
-    const response = await api.get(`/viewing-schedules/room/${roomId}`)
     return response.data
   },
 }
