@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.x.group2_timtro.dto.request.*;
 import com.x.group2_timtro.dto.response.MyRoomDetailResponse;
 import com.x.group2_timtro.dto.response.MyRoomResponse;
+import com.x.group2_timtro.dto.response.MyPostedRoomResponse;
 import com.x.group2_timtro.entity.*;
 import com.x.group2_timtro.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -350,10 +351,10 @@ public class MyRoomsService {
             throw new RuntimeException("Only landlord can upload QR payment image");
         }
 
-        // Update room's payment QR image and description
-        room.setPaymentQrImageUrl(request.getImageUrl());
-        room.setPaymentDescription(request.getPaymentDescription());
-        roomRepository.save(room);
+        // Update booking's payment QR image and description (specific to this booking)
+        booking.setPaymentQrImageUrl(request.getImageUrl());
+        booking.setPaymentDescription(request.getPaymentDescription());
+        bookingRepository.save(booking);
     }
 
     /**
@@ -487,8 +488,8 @@ public class MyRoomsService {
                 .capacity(room.getCapacity())
                 .imageUrl(room.getImageUrl())
                 .detail(room.getDetail())
-                .paymentQrImageUrl(room.getPaymentQrImageUrl())
-                .paymentDescription(room.getPaymentDescription())
+                .paymentQrImageUrl(booking.getPaymentQrImageUrl()) // From booking, not room
+                .paymentDescription(booking.getPaymentDescription()) // From booking, not room
                 .build();
 
         // Deposit info
@@ -653,6 +654,49 @@ public class MyRoomsService {
         }
 
         return timeline;
+    }
+
+    /**
+     * Get all posted rooms (rooms owned by current user)
+     */
+    public List<MyPostedRoomResponse> getMyPostedRooms(Long userId) {
+        User owner = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Room> rooms = roomRepository.findByOwner(owner);
+
+        return rooms.stream()
+                .map(room -> {
+                    // Get all bookings for this room
+                    List<Booking> bookings = bookingRepository.findByRoom(room);
+                    
+                    // Calculate statistics
+                    int totalBookings = bookings.size();
+                    int activeBookings = (int) bookings.stream()
+                            .filter(b -> "ACTIVE".equals(b.getStatus()) || "CONFIRMED".equals(b.getStatus()))
+                            .count();
+                    int pendingBookings = (int) bookings.stream()
+                            .filter(b -> "PENDING".equals(b.getStatus()))
+                            .count();
+
+                    return MyPostedRoomResponse.builder()
+                            .id(room.getId())
+                            .name(room.getName())
+                            .imageUrl(room.getImageUrl())
+                            .location(room.getLocation())
+                            .price(room.getPrice())
+                            .area(room.getArea())
+                            .capacity(room.getCapacity())
+                            .isAvailable(room.getIsAvailable())
+                            .roomType(room.getRoomType())
+                            .totalBookings(totalBookings)
+                            .activeBookings(activeBookings)
+                            .pendingBookings(pendingBookings)
+                            .createdAt(room.getCreatedAt())
+                            .updatedAt(room.getUpdatedAt())
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 }
 

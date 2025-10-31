@@ -90,6 +90,13 @@ public class Room {
     @Column(columnDefinition = "TEXT")
     private String paymentDescription; // Payment transfer content/description for tenant to use
 
+    // Room quantity management
+    @Column
+    private Integer totalRooms; // Total number of rooms (e.g., 10 rooms)
+
+    @Column
+    private Integer availableRooms; // Number of rooms still available (decreases when booked)
+
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 

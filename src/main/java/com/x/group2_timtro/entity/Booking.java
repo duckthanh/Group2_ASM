@@ -91,6 +91,13 @@ public class Booking {
     @Column
     private String canceledBy; // USER, LANDLORD, SYSTEM
 
+    // Payment QR (specific to this booking)
+    @Column(columnDefinition = "TEXT")
+    private String paymentQrImageUrl; // QR code for payment (landlord only)
+
+    @Column(columnDefinition = "TEXT")
+    private String paymentDescription; // Payment transfer content/description for tenant to use
+
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 

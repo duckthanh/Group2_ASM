@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
 import { 
   Heart, Share2, Flag, MapPin, Home, Users, Maximize, 
-  Phone, MessageCircle, Calendar, Clock, ChevronLeft, ChevronRight,
+  Phone, MessageCircle, Clock, ChevronLeft, ChevronRight,
   ZoomIn, X, Copy, Check, Star, DollarSign, Zap, Wifi,
   AirVent, Droplets, Car, UtensilsCrossed, Sofa, Edit
 } from 'lucide-react'
@@ -11,7 +11,7 @@ import Footer from '../components/Footer'
 import RentRoom from '../components/RentRoom'
 import EditRoom from '../components/EditRoom'
 import ImageGallery from '../components/ImageGallery'
-import { roomAPI, savedRoomAPI, roomReportAPI, viewingScheduleAPI } from '../services/api'
+import { roomAPI, savedRoomAPI, roomReportAPI } from '../services/api'
 import toast from 'react-hot-toast'
 import './RoomDetail.css'
 
@@ -34,23 +34,18 @@ function RoomDetail({ currentUser, onLogout }) {
   // Edit Room modal state
   const [showEditModal, setShowEditModal] = useState(false)
 
-  // Booking form state
-  const [showBookingForm, setShowBookingForm] = useState(false)
-  const [bookingDate, setBookingDate] = useState('')
-  const [bookingTime, setBookingTime] = useState('')
-  const [bookingName, setBookingName] = useState('')
-  const [bookingPhone, setBookingPhone] = useState('')
-
   useEffect(() => {
     fetchRoom()
-    checkIfRoomSaved()
+    if (currentUser) {
+      checkIfRoomSaved()
+    }
     // Scroll spy
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
-  }, [id])
+  }, [id, currentUser])
 
   const handleScroll = () => {
-    const sections = ['overview', 'amenities', 'costs', 'schedule', 'map', 'similar']
+    const sections = ['overview', 'amenities', 'costs', 'map', 'similar']
     const scrollPosition = window.scrollY + 200
 
     for (const section of sections) {
@@ -139,7 +134,12 @@ function RoomDetail({ currentUser, onLogout }) {
       }
     } catch (err) {
       console.error('Error saving room:', err)
-      toast.error('Có lỗi xảy ra')
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message
+      if (errorMessage === 'Room already saved') {
+        toast.error('Bạn đã lưu phòng này rồi!')
+      } else {
+        toast.error(errorMessage || 'Có lỗi xảy ra')
+      }
     }
   }
 
@@ -178,34 +178,6 @@ function RoomDetail({ currentUser, onLogout }) {
     } catch (err) {
       console.error('Error reporting room:', err)
       toast.error('Có lỗi xảy ra khi gửi báo cáo')
-    }
-  }
-
-  const handleBooking = async (e) => {
-    e.preventDefault()
-    if (!currentUser) {
-      toast.error('Vui lòng đăng nhập để đặt lịch')
-      navigate('/login')
-      return
-    }
-
-    try {
-      await viewingScheduleAPI.createSchedule(id, {
-        viewingDate: bookingDate,
-        viewingTime: bookingTime,
-        visitorName: bookingName,
-        visitorPhone: bookingPhone,
-        notes: ''
-      })
-      toast.success('Đặt lịch xem phòng thành công!')
-      setShowBookingForm(false)
-      setBookingDate('')
-      setBookingTime('')
-      setBookingName('')
-      setBookingPhone('')
-    } catch (err) {
-      console.error('Error creating schedule:', err)
-      toast.error('Có lỗi xảy ra khi đặt lịch')
     }
   }
 
@@ -452,12 +424,6 @@ function RoomDetail({ currentUser, onLogout }) {
                   <span className="price-amount">{formatPrice(room.price)}đ</span>
                   <span className="price-unit">/tháng</span>
                 </div>
-                <div className="price-actions">
-                  <button className="btn-schedule" onClick={() => setShowBookingForm(true)}>
-                    <Calendar size={20} />
-                    Đặt lịch xem
-                  </button>
-                </div>
               </div>
 
               {/* Description */}
@@ -535,67 +501,6 @@ function RoomDetail({ currentUser, onLogout }) {
                 </div>
               </div>
 
-              {/* Booking Schedule */}
-              {showBookingForm && (
-                <div className="room-section" id="schedule">
-                  <h2 className="section-title">Đặt lịch xem phòng</h2>
-                  <form className="booking-form" onSubmit={handleBooking}>
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Ngày xem</label>
-                        <input 
-                          type="date" 
-                          value={bookingDate}
-                          onChange={(e) => setBookingDate(e.target.value)}
-                          required
-                          min={new Date().toISOString().split('T')[0]}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Giờ xem</label>
-                        <select 
-                          value={bookingTime}
-                          onChange={(e) => setBookingTime(e.target.value)}
-                          required
-                        >
-                          <option value="">Chọn giờ</option>
-                          <option value="08:00">08:00 - 09:00</option>
-                          <option value="09:00">09:00 - 10:00</option>
-                          <option value="10:00">10:00 - 11:00</option>
-                          <option value="14:00">14:00 - 15:00</option>
-                          <option value="15:00">15:00 - 16:00</option>
-                          <option value="16:00">16:00 - 17:00</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Họ tên</label>
-                        <input 
-                          type="text" 
-                          placeholder="Nhập họ tên"
-                          value={bookingName}
-                          onChange={(e) => setBookingName(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Số điện thoại</label>
-                        <input 
-                          type="tel" 
-                          placeholder="Nhập số điện thoại"
-                          value={bookingPhone}
-                          onChange={(e) => setBookingPhone(e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
-                    <button type="submit" className="btn-submit-booking">
-                      Xác nhận đặt lịch
-                    </button>
-                  </form>
-                </div>
-              )}
             </div>
 
             {/* Right Column (30%) */}
@@ -619,12 +524,6 @@ function RoomDetail({ currentUser, onLogout }) {
                   onClick={() => scrollToSection('costs')}
                 >
                   Chi phí
-                </button>
-                <button 
-                  className={activeSection === 'schedule' ? 'active' : ''}
-                  onClick={() => scrollToSection('schedule')}
-                >
-                  Lịch xem
                 </button>
               </div>
 
@@ -657,19 +556,134 @@ function RoomDetail({ currentUser, onLogout }) {
                     )}
                   </div>
                 </div>
+
+                {/* Room Availability Info */}
+                {(room.totalRooms !== null && room.totalRooms !== undefined) && (
+                  <div style={{
+                    marginTop: '16px',
+                    padding: '16px',
+                    background: room.availableRooms > 0 ? '#F0FDF4' : '#FEF2F2',
+                    borderRadius: '12px',
+                    border: `1px solid ${room.availableRooms > 0 ? '#BBF7D0' : '#FECACA'}`
+                  }}>
+                    <h4 style={{ 
+                      margin: '0 0 12px 0', 
+                      fontSize: '14px', 
+                      fontWeight: '600',
+                      color: '#1F2937',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Home size={16} />
+                      Tình trạng phòng
+                    </h4>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: '12px'
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ 
+                          margin: '0 0 4px 0', 
+                          fontSize: '13px', 
+                          color: '#6B7280' 
+                        }}>
+                          Tổng số phòng
+                        </p>
+                        <p style={{ 
+                          margin: 0, 
+                          fontSize: '20px', 
+                          fontWeight: '700',
+                          color: '#1F2937'
+                        }}>
+                          {room.totalRooms}
+                        </p>
+                      </div>
+                      <div style={{
+                        width: '1px',
+                        height: '40px',
+                        background: '#E5E7EB'
+                      }}></div>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ 
+                          margin: '0 0 4px 0', 
+                          fontSize: '13px', 
+                          color: '#6B7280' 
+                        }}>
+                          Còn trống
+                        </p>
+                        <p style={{ 
+                          margin: 0, 
+                          fontSize: '20px', 
+                          fontWeight: '700',
+                          color: room.availableRooms > 0 ? '#059669' : '#DC2626'
+                        }}>
+                          {room.availableRooms || 0}
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{
+                      marginTop: '12px',
+                      padding: '8px 12px',
+                      background: 'white',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      color: '#6B7280',
+                      textAlign: 'center'
+                    }}>
+                      {room.availableRooms > 0 
+                        ? `✓ Còn ${room.availableRooms} phòng trống có thể đặt`
+                        : '✕ Hiện tại đã hết phòng'}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Contact Card */}
               <div className="contact-card">
                 <h3>Liên hệ chủ trọ</h3>
+                {!room.isAvailable && (
+                  <div style={{
+                    padding: '12px 16px',
+                    background: '#FEE2E2',
+                    border: '1px solid #EF4444',
+                    borderRadius: '8px',
+                    marginBottom: '16px',
+                    textAlign: 'center'
+                  }}>
+                    <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#DC2626' }}>
+                      ⚠️ {room.totalRooms > 1 
+                        ? `Đã hết phòng (0/${room.totalRooms}) - Không thể đặt thuê` 
+                        : 'Phòng này đã hết - Không thể đặt thuê'}
+                    </p>
+                  </div>
+                )}
                 <div className="contact-actions">
-                  <button className="btn-contact call" onClick={handleRentNow}>
+                  <button 
+                    className="btn-contact call" 
+                    onClick={handleRentNow}
+                    disabled={!room.isAvailable}
+                    style={{
+                      opacity: !room.isAvailable ? 0.5 : 1,
+                      cursor: !room.isAvailable ? 'not-allowed' : 'pointer'
+                    }}
+                  >
                     <Home size={18} />
-                    Thuê ngay
+                    {room.isAvailable ? 'Thuê ngay' : 'Hết phòng'}
                   </button>
-                  <button className="btn-contact message" onClick={handleDeposit}>
+                  <button 
+                    className="btn-contact message" 
+                    onClick={handleDeposit}
+                    disabled={!room.isAvailable}
+                    style={{
+                      opacity: !room.isAvailable ? 0.5 : 1,
+                      cursor: !room.isAvailable ? 'not-allowed' : 'pointer'
+                    }}
+                  >
                     <DollarSign size={18} />
-                    Đặt cọc
+                    {room.isAvailable ? 'Đặt cọc' : 'Hết phòng'}
                   </button>
                 </div>
                 <p className="contact-note">
@@ -706,17 +720,29 @@ function RoomDetail({ currentUser, onLogout }) {
           <span className="cta-unit">/tháng</span>
         </div>
         <div className="cta-actions">
-          <button className="btn-cta call" onClick={handleRentNow}>
+          <button 
+            className="btn-cta call" 
+            onClick={handleRentNow}
+            disabled={!room.isAvailable}
+            style={{
+              opacity: !room.isAvailable ? 0.5 : 1,
+              cursor: !room.isAvailable ? 'not-allowed' : 'pointer'
+            }}
+          >
             <Home size={18} />
-            Thuê ngay
+            {room.isAvailable ? 'Thuê ngay' : 'Hết phòng'}
           </button>
-          <button className="btn-cta message" onClick={handleDeposit}>
+          <button 
+            className="btn-cta message" 
+            onClick={handleDeposit}
+            disabled={!room.isAvailable}
+            style={{
+              opacity: !room.isAvailable ? 0.5 : 1,
+              cursor: !room.isAvailable ? 'not-allowed' : 'pointer'
+            }}
+          >
             <DollarSign size={18} />
-            Đặt cọc
-          </button>
-          <button className="btn-cta schedule" onClick={() => setShowBookingForm(true)}>
-            <Calendar size={18} />
-            Xem lịch
+            {room.isAvailable ? 'Đặt cọc' : 'Hết phòng'}
           </button>
         </div>
       </div>
