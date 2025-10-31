@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { customToast } from '../utils/customToast.jsx'
 import { roomAPI, uploadAPI } from '../services/api'
 import './CreateRoom.css'
 
@@ -15,7 +16,8 @@ const CreateRoom = ({ onClose, onSuccess }) => {
     area: '',
     capacity: '',
     amenities: [],
-    availability: 'Còn trống'
+    availability: 'Còn trống',
+    totalRooms: '1' // Default 1 room
   })
   const [selectedFile, setSelectedFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState('')
@@ -152,6 +154,7 @@ const CreateRoom = ({ onClose, onSuccess }) => {
         price: parseFloat(formData.price),
         area: formData.area ? parseFloat(formData.area) : null,
         capacity: formData.capacity ? parseInt(formData.capacity) : null,
+        totalRooms: formData.totalRooms ? parseInt(formData.totalRooms) : 1,
         amenities: formData.amenities.join(', '), // Convert array to comma-separated string
         additionalImages: JSON.stringify(formData.additionalImages) // Convert array to JSON string
       }
@@ -162,10 +165,19 @@ const CreateRoom = ({ onClose, onSuccess }) => {
       console.log('amenities string:', formData.amenities.join(', '))
       console.log('=================================')
 
-      await roomAPI.createRoom(roomData)
-      alert('Tạo phòng trọ thành công!')
-      if (onSuccess) onSuccess()
-      if (onClose) onClose()
+      const result = await roomAPI.createRoom(roomData)
+      console.log('✅ Room created successfully:', result)
+      customToast.success('Tạo phòng trọ thành công! 🏠')
+      
+      console.log('📞 Calling onSuccess callback to refresh room list...')
+      if (onSuccess) {
+        await onSuccess()
+        console.log('✅ onSuccess callback completed')
+      }
+      if (onClose) {
+        onClose()
+        console.log('✅ Modal closed')
+      }
     } catch (err) {
       console.error('Error creating room:', err)
       setError(err.response?.data?.message || 'Có lỗi xảy ra khi tạo phòng trọ')
@@ -250,10 +262,26 @@ const CreateRoom = ({ onClose, onSuccess }) => {
               multiple
               onChange={handleAdditionalImagesUpload}
               disabled={uploading || formData.additionalImages.length >= 9}
+              style={{
+                padding: '12px',
+                border: '2px solid #E5E7EB',
+                borderRadius: '10px',
+                background: '#FFFFFF',
+                fontSize: '14px',
+                cursor: 'pointer',
+                width: '100%',
+                transition: 'all 0.3s ease'
+              }}
             />
             {uploading && <p className="uploading-text">⏳ Đang tải ảnh lên...</p>}
-            <small style={{ display: 'block', marginTop: '8px', color: 'var(--text-secondary)' }}>
-              Đã upload: {formData.additionalImages.length}/9 ảnh phụ
+            <small style={{ 
+              display: 'block', 
+              marginTop: '10px', 
+              color: '#6B7280',
+              fontSize: '13px',
+              fontWeight: '500'
+            }}>
+              📸 Đã upload: {formData.additionalImages.length}/9 ảnh phụ
             </small>
           </div>
 
@@ -371,6 +399,25 @@ const CreateRoom = ({ onClose, onSuccess }) => {
                 <option value="Còn trống">Còn trống</option>
                 <option value="Sắp trống">Sắp trống</option>
               </select>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="totalRooms">Số lượng phòng <span className="required">*</span></label>
+              <input
+                type="number"
+                id="totalRooms"
+                name="totalRooms"
+                value={formData.totalRooms}
+                onChange={handleChange}
+                placeholder="VD: 10"
+                min="1"
+                required
+              />
+              <small style={{ color: '#6B7280', fontSize: '13px', marginTop: '4px', display: 'block' }}>
+                💡 Số lượng phòng sẽ tự động giảm khi có người thuê
+              </small>
             </div>
           </div>
 

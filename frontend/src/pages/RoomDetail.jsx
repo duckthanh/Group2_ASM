@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
 import { 
   Heart, Share2, Flag, MapPin, Home, Users, Maximize, 
+<<<<<<< HEAD
   Phone, MessageCircle, Calendar, Clock, ChevronLeft, ChevronRight,
+=======
+  Phone, MessageCircle, Clock, ChevronLeft, ChevronRight,
+>>>>>>> origin/phong28
   ZoomIn, X, Copy, Check, Star, DollarSign, Zap, Wifi,
   AirVent, Droplets, Car, UtensilsCrossed, Sofa, Edit
 } from 'lucide-react'
@@ -11,7 +15,11 @@ import Footer from '../components/Footer'
 import RentRoom from '../components/RentRoom'
 import EditRoom from '../components/EditRoom'
 import ImageGallery from '../components/ImageGallery'
+<<<<<<< HEAD
 import { roomAPI, savedRoomAPI, roomReportAPI, viewingScheduleAPI } from '../services/api'
+=======
+import { roomAPI, savedRoomAPI, roomReportAPI } from '../services/api'
+>>>>>>> origin/phong28
 import toast from 'react-hot-toast'
 import './RoomDetail.css'
 
@@ -33,6 +41,7 @@ function RoomDetail({ currentUser, onLogout }) {
 
   // Edit Room modal state
   const [showEditModal, setShowEditModal] = useState(false)
+<<<<<<< HEAD
 
   // Booking form state
   const [showBookingForm, setShowBookingForm] = useState(false)
@@ -48,6 +57,52 @@ function RoomDetail({ currentUser, onLogout }) {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [id])
+=======
+
+  useEffect(() => {
+    fetchRoom()
+    if (currentUser) {
+      checkIfRoomSaved()
+    }
+    // Scroll spy
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [id, currentUser])
+
+  const handleScroll = () => {
+    const sections = ['overview', 'amenities', 'costs', 'map', 'similar']
+    const scrollPosition = window.scrollY + 200
+
+    for (const section of sections) {
+      const element = document.getElementById(section)
+      if (element) {
+        const { offsetTop, offsetHeight } = element
+        if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+          setActiveSection(section)
+          break
+        }
+      }
+    }
+  }
+
+  // Get all images (main + additional)
+  const getAllImages = () => {
+    if (!room) return []
+    const images = []
+    if (room.imageUrl) images.push(room.imageUrl)
+    
+    if (room.additionalImages) {
+      try {
+        const additionalImagesArray = JSON.parse(room.additionalImages)
+        images.push(...additionalImagesArray)
+      } catch (e) {
+        console.error('Error parsing additional images:', e)
+      }
+    }
+    
+    return images
+  }
+>>>>>>> origin/phong28
 
   const handleScroll = () => {
     const sections = ['overview', 'amenities', 'costs', 'schedule', 'map', 'similar']
@@ -139,7 +194,16 @@ function RoomDetail({ currentUser, onLogout }) {
       }
     } catch (err) {
       console.error('Error saving room:', err)
+<<<<<<< HEAD
       toast.error('Có lỗi xảy ra')
+=======
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message
+      if (errorMessage === 'Room already saved') {
+        toast.error('Bạn đã lưu phòng này rồi!')
+      } else {
+        toast.error(errorMessage || 'Có lỗi xảy ra')
+      }
+>>>>>>> origin/phong28
     }
   }
 
@@ -181,6 +245,7 @@ function RoomDetail({ currentUser, onLogout }) {
     }
   }
 
+<<<<<<< HEAD
   const handleBooking = async (e) => {
     e.preventDefault()
     if (!currentUser) {
@@ -209,6 +274,8 @@ function RoomDetail({ currentUser, onLogout }) {
     }
   }
 
+=======
+>>>>>>> origin/phong28
   const handleRentNow = () => {
     if (!currentUser) {
       toast.error('Vui lòng đăng nhập để thuê phòng')
@@ -442,6 +509,7 @@ function RoomDetail({ currentUser, onLogout }) {
                     <Users size={16} />
                     {room.capacity ? `${room.capacity} người` : 'N/A'}
                   </span>
+<<<<<<< HEAD
                 </div>
                 <p className="room-updated">Cập nhật {room.updatedAt ? new Date(room.updatedAt).toLocaleDateString('vi-VN') : 'N/A'}</p>
               </div>
@@ -594,8 +662,302 @@ function RoomDetail({ currentUser, onLogout }) {
                       Xác nhận đặt lịch
                     </button>
                   </form>
+=======
+>>>>>>> origin/phong28
                 </div>
-              )}
+                <p className="room-updated">Cập nhật {room.updatedAt ? new Date(room.updatedAt).toLocaleDateString('vi-VN') : 'N/A'}</p>
+              </div>
+
+              {/* Price & Status */}
+              <div className="room-price-section">
+                <div className="price-main">
+                  <span className="price-amount">{formatPrice(room.price)}đ</span>
+                  <span className="price-unit">/tháng</span>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="room-section">
+                <h2 className="section-title">Mô tả chi tiết</h2>
+                <p className="room-description">
+                  {room.detail || 'Chưa có mô tả chi tiết'}
+                </p>
+              </div>
+
+              {/* Amenities */}
+              <div className="room-section" id="amenities">
+                <h2 className="section-title">Tiện nghi</h2>
+                <div className="amenities-grid">
+                  {amenitiesList.length > 0 ? (
+                    amenitiesList.map((amenity, index) => {
+                      const amenityData = amenitiesMap[amenity.trim()]
+                      const Icon = amenityData?.icon || Check
+                      return (
+                        <div key={index} className="amenity-item">
+                          <Icon size={20} className="amenity-icon" />
+                          <span>{amenityData?.label || amenity.trim()}</span>
+                        </div>
+                      )
+                    })
+                  ) : (
+                    <p className="empty-text">Chưa cập nhật tiện nghi</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Costs & Terms */}
+              <div className="room-section" id="costs">
+                <h2 className="section-title">Chi phí & điều khoản</h2>
+                <div className="costs-table">
+                  <div className="cost-row">
+                    <span className="cost-label">Tiền phòng</span>
+                    <span className="cost-value">{formatPrice(room.price)}đ/tháng</span>
+                  </div>
+                  <div className="cost-row">
+                    <span className="cost-label">Tiền điện</span>
+                    <span className="cost-value">
+                      {room.electricityCost ? `${formatPrice(room.electricityCost)}đ/kWh` : 'Chưa cập nhật'}
+                    </span>
+                  </div>
+                  <div className="cost-row">
+                    <span className="cost-label">Tiền nước</span>
+                    <span className="cost-value">
+                      {room.waterCost ? `${formatPrice(room.waterCost)}đ/m³` : 'Chưa cập nhật'}
+                    </span>
+                  </div>
+                  <div className="cost-row">
+                    <span className="cost-label">Internet</span>
+                    <span className="cost-value">
+                      {room.internetCost ? `${formatPrice(room.internetCost)}đ/tháng` : 'Chưa cập nhật'}
+                    </span>
+                  </div>
+                  <div className="cost-row">
+                    <span className="cost-label">Phí giữ xe</span>
+                    <span className="cost-value">
+                      {room.parkingFee ? `${formatPrice(room.parkingFee)}đ/tháng` : 'Chưa cập nhật'}
+                    </span>
+                  </div>
+                  <div className="cost-row">
+                    <span className="cost-label">Tiền cọc</span>
+                    <span className="cost-value">
+                      {room.deposit 
+                        ? room.depositType === 'MONTHS' 
+                          ? `${room.deposit} tháng`
+                          : `${formatPrice(room.deposit)}đ`
+                        : 'Chưa cập nhật'
+                      }
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Column (30%) */}
+            <div className="room-detail-right">
+              {/* Scroll Spy Navigation */}
+              <div className="scroll-spy-nav">
+                <button 
+                  className={activeSection === 'overview' ? 'active' : ''}
+                  onClick={() => scrollToSection('overview')}
+                >
+                  Tổng quan
+                </button>
+                <button 
+                  className={activeSection === 'amenities' ? 'active' : ''}
+                  onClick={() => scrollToSection('amenities')}
+                >
+                  Tiện nghi
+                </button>
+                <button 
+                  className={activeSection === 'costs' ? 'active' : ''}
+                  onClick={() => scrollToSection('costs')}
+                >
+                  Chi phí
+                </button>
+              </div>
+
+              {/* Owner Info Card */}
+              <div className="owner-info-card">
+                <div className="owner-card-header">
+                  <h3>Thông tin chủ trọ</h3>
+                  {canManageRoom() && (
+                    <button className="btn-edit-room" onClick={handleEditRoom}>
+                      <Edit size={16} />
+                      Sửa phòng
+                    </button>
+                  )}
+                </div>
+                <div className="host-info">
+                  <div className="host-avatar">
+                    {room.ownerUsername?.charAt(0).toUpperCase() || 'H'}
+                  </div>
+                  <div className="host-details">
+                    <p className="host-name">{room.ownerUsername || 'Chủ trọ'}</p>
+                    <p className="host-phone">
+                      <Phone size={14} />
+                      {room.contact}
+                    </p>
+                    {room.ownerEmail && (
+                      <p className="host-email">
+                        <MessageCircle size={14} />
+                        {room.ownerEmail}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Room Availability Info */}
+                {(room.totalRooms !== null && room.totalRooms !== undefined) && (
+                  <div style={{
+                    marginTop: '16px',
+                    padding: '16px',
+                    background: room.availableRooms > 0 ? '#F0FDF4' : '#FEF2F2',
+                    borderRadius: '12px',
+                    border: `1px solid ${room.availableRooms > 0 ? '#BBF7D0' : '#FECACA'}`
+                  }}>
+                    <h4 style={{ 
+                      margin: '0 0 12px 0', 
+                      fontSize: '14px', 
+                      fontWeight: '600',
+                      color: '#1F2937',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Home size={16} />
+                      Tình trạng phòng
+                    </h4>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: '12px'
+                    }}>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ 
+                          margin: '0 0 4px 0', 
+                          fontSize: '13px', 
+                          color: '#6B7280' 
+                        }}>
+                          Tổng số phòng
+                        </p>
+                        <p style={{ 
+                          margin: 0, 
+                          fontSize: '20px', 
+                          fontWeight: '700',
+                          color: '#1F2937'
+                        }}>
+                          {room.totalRooms}
+                        </p>
+                      </div>
+                      <div style={{
+                        width: '1px',
+                        height: '40px',
+                        background: '#E5E7EB'
+                      }}></div>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ 
+                          margin: '0 0 4px 0', 
+                          fontSize: '13px', 
+                          color: '#6B7280' 
+                        }}>
+                          Còn trống
+                        </p>
+                        <p style={{ 
+                          margin: 0, 
+                          fontSize: '20px', 
+                          fontWeight: '700',
+                          color: room.availableRooms > 0 ? '#059669' : '#DC2626'
+                        }}>
+                          {room.availableRooms || 0}
+                        </p>
+                      </div>
+                    </div>
+                    <div style={{
+                      marginTop: '12px',
+                      padding: '8px 12px',
+                      background: 'white',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      color: '#6B7280',
+                      textAlign: 'center'
+                    }}>
+                      {room.availableRooms > 0 
+                        ? `✓ Còn ${room.availableRooms} phòng trống có thể đặt`
+                        : '✕ Hiện tại đã hết phòng'}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Contact Card */}
+              <div className="contact-card">
+                <h3>Liên hệ chủ trọ</h3>
+                {!room.isAvailable && (
+                  <div style={{
+                    padding: '12px 16px',
+                    background: '#FEE2E2',
+                    border: '1px solid #EF4444',
+                    borderRadius: '8px',
+                    marginBottom: '16px',
+                    textAlign: 'center'
+                  }}>
+                    <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: '#DC2626' }}>
+                      ⚠️ {room.totalRooms > 1 
+                        ? `Đã hết phòng (0/${room.totalRooms}) - Không thể đặt thuê` 
+                        : 'Phòng này đã hết - Không thể đặt thuê'}
+                    </p>
+                  </div>
+                )}
+                <div className="contact-actions">
+                  <button 
+                    className="btn-contact call" 
+                    onClick={handleRentNow}
+                    disabled={!room.isAvailable}
+                    style={{
+                      opacity: !room.isAvailable ? 0.5 : 1,
+                      cursor: !room.isAvailable ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    <Home size={18} />
+                    {room.isAvailable ? 'Thuê ngay' : 'Hết phòng'}
+                  </button>
+                  <button 
+                    className="btn-contact message" 
+                    onClick={handleDeposit}
+                    disabled={!room.isAvailable}
+                    style={{
+                      opacity: !room.isAvailable ? 0.5 : 1,
+                      cursor: !room.isAvailable ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    <DollarSign size={18} />
+                    {room.isAvailable ? 'Đặt cọc' : 'Hết phòng'}
+                  </button>
+                </div>
+                <p className="contact-note">
+                  <Phone size={14} />
+                  Liên hệ: {room.contact}
+                </p>
+              </div>
+
+              {/* Map */}
+              <div className="map-card" id="map">
+                <h3>Vị trí</h3>
+                <div className="map-placeholder">
+                  <MapPin size={48} />
+                  <p>{room.location}</p>
+                  <a 
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(room.location)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-directions"
+                  >
+                    Chỉ đường
+                  </a>
+                </div>
+              </div>
             </div>
 
             {/* Right Column (30%) */}
@@ -706,6 +1068,7 @@ function RoomDetail({ currentUser, onLogout }) {
           <span className="cta-unit">/tháng</span>
         </div>
         <div className="cta-actions">
+<<<<<<< HEAD
           <button className="btn-cta call" onClick={handleRentNow}>
             <Home size={18} />
             Thuê ngay
@@ -717,6 +1080,31 @@ function RoomDetail({ currentUser, onLogout }) {
           <button className="btn-cta schedule" onClick={() => setShowBookingForm(true)}>
             <Calendar size={18} />
             Xem lịch
+=======
+          <button 
+            className="btn-cta call" 
+            onClick={handleRentNow}
+            disabled={!room.isAvailable}
+            style={{
+              opacity: !room.isAvailable ? 0.5 : 1,
+              cursor: !room.isAvailable ? 'not-allowed' : 'pointer'
+            }}
+          >
+            <Home size={18} />
+            {room.isAvailable ? 'Thuê ngay' : 'Hết phòng'}
+          </button>
+          <button 
+            className="btn-cta message" 
+            onClick={handleDeposit}
+            disabled={!room.isAvailable}
+            style={{
+              opacity: !room.isAvailable ? 0.5 : 1,
+              cursor: !room.isAvailable ? 'not-allowed' : 'pointer'
+            }}
+          >
+            <DollarSign size={18} />
+            {room.isAvailable ? 'Đặt cọc' : 'Hết phòng'}
+>>>>>>> origin/phong28
           </button>
         </div>
       </div>

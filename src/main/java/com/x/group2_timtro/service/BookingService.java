@@ -35,6 +35,11 @@ public class BookingService {
             throw new RuntimeException("Room is not available");
         }
 
+        // Check if there are available rooms
+        if (room.getAvailableRooms() != null && room.getAvailableRooms() <= 0) {
+            throw new RuntimeException("No rooms available");
+        }
+
         User tenant = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -65,10 +70,17 @@ public class BookingService {
 
         booking.setStatus("CONFIRMED");
         
-        // Nếu là thuê ngay, đánh dấu phòng là không còn trống
-        if (!booking.getIsDeposit()) {
-            Room room = booking.getRoom();
-            room.setIsAvailable(false);
+        // Giảm số phòng còn trống
+        Room room = booking.getRoom();
+        if (room.getAvailableRooms() != null && room.getAvailableRooms() > 0) {
+            room.setAvailableRooms(room.getAvailableRooms() - 1);
+            
+            // Nếu hết phòng, tự động chuyển sang "Hết phòng"
+            if (room.getAvailableRooms() == 0) {
+                room.setIsAvailable(false);
+                room.setAvailability("Hết phòng");
+            }
+            
             roomRepository.save(room);
         }
 
@@ -84,6 +96,27 @@ public class BookingService {
         if (booking.getTenant().getId() != userId && 
             booking.getRoom().getOwner().getId() != userId) {
             throw new RuntimeException("You don't have permission to cancel this booking");
+        }
+
+        // Nếu booking đang CONFIRMED, tăng lại số phòng còn trống
+        if ("CONFIRMED".equals(booking.getStatus())) {
+            Room room = booking.getRoom();
+            if (room.getAvailableRooms() != null && room.getTotalRooms() != null) {
+                int newAvailable = room.getAvailableRooms() + 1;
+                
+                // Không vượt quá tổng số phòng
+                if (newAvailable <= room.getTotalRooms()) {
+                    room.setAvailableRooms(newAvailable);
+                    
+                    // Nếu từ hết phòng → còn phòng, cập nhật lại trạng thái
+                    if (room.getAvailableRooms() > 0 && !room.getIsAvailable()) {
+                        room.setIsAvailable(true);
+                        room.setAvailability("Còn trống");
+                    }
+                    
+                    roomRepository.save(room);
+                }
+            }
         }
 
         booking.setStatus("CANCELLED");
@@ -113,9 +146,52 @@ public class BookingService {
         return mapToResponse(booking);
     }
 
+    public List<BookingResponse> getLandlordPendingBookings(Long userId) {
+        User landlord = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Lấy tất cả booking PENDING của các phòng mà user này sở hữu
+        List<Room> landlordRooms = roomRepository.findByOwner(landlord);
+        
+        return bookingRepository.findAll().stream()
+                .filter(booking -> landlordRooms.contains(booking.getRoom()))
+                .filter(booking -> "PENDING".equals(booking.getStatus()))
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    public List<BookingResponse> getAllLandlordBookings(Long userId) {
+        User landlord = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Lấy tất cả booking của các phòng mà user này sở hữu
+        List<Room> landlordRooms = roomRepository.findByOwner(landlord);
+        
+        return bookingRepository.findAll().stream()
+                .filter(booking -> landlordRooms.contains(booking.getRoom()))
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    public BookingResponse rejectBooking(Long bookingId, Long userId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Kiểm tra quyền (chỉ chủ phòng mới có thể reject)
+        if (booking.getRoom().getOwner().getId() != userId) {
+            throw new RuntimeException("You don't have permission to reject this booking");
+        }
+
+        booking.setStatus("REJECTED");
+        booking.setCanceledBy("LANDLORD");
+        Booking updatedBooking = bookingRepository.save(booking);
+        return mapToResponse(updatedBooking);
+    }
+
     private BookingResponse mapToResponse(Booking booking) {
         return BookingResponse.builder()
                 .id(booking.getId())
+                .bookingId(booking.getBookingId())
                 .roomId(booking.getRoom().getId())
                 .roomName(booking.getRoom().getName())
                 .tenantId(booking.getTenant().getId())

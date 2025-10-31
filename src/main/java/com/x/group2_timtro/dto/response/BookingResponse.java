@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 public class BookingResponse {
     private Long id;
+    private String bookingId; // BK-2025-XXXXX format
     private Long roomId;
     private String roomName;
     private Long tenantId;

@@ -39,6 +39,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/uploads/**").permitAll()
                         // Auth endpoints - public
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/create-admin").permitAll()
+<<<<<<< HEAD
                         // User endpoints - For testing purposes, permit all for now
                         .requestMatchers("/api/users/**").permitAll() 
                         // Room endpoints - For testing purposes, permit all for now
@@ -56,12 +57,50 @@ public class SecurityConfiguration {
                         // Viewing Schedules endpoints - For testing purposes, permit all for now
                         .requestMatchers("/api/viewing-schedules/**").permitAll()
                         // Tất cả request khác cần authenticated (still keep this for safety)
+=======
+                        // MFA endpoints - verify cần public (chưa có token), các endpoint khác cần authenticated
+                        .requestMatchers(HttpMethod.POST, "/api/auth/mfa/verify").permitAll()
+                        .requestMatchers("/api/auth/mfa/**").authenticated()
+                        // User endpoints
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers("/api/users").authenticated()
+                        .requestMatchers("/api/users/**").authenticated()
+                        // Room endpoints - GET public, POST/PUT/DELETE authenticated
+                        .requestMatchers(HttpMethod.GET, "/api/rooms/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/rooms/test").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/rooms/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/rooms/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/rooms/**").authenticated()
+                        // File upload
+                        .requestMatchers(HttpMethod.POST, "/api/upload/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/files/**").permitAll()
+                        // Booking endpoints - authenticated
+                        .requestMatchers(HttpMethod.POST, "/api/bookings/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/bookings/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/bookings/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/bookings/**").authenticated()
+                        // Tất cả request khác cần authenticated
+>>>>>>> origin/phong28
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer((oauth2) -> oauth2
                         .jwt(jwtConfigurer -> jwtConfigurer
                                 .decoder(jwtDecoderConfiguration)
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            // Chỉ trả về 401 cho các request cần authentication
+                            if (request.getRequestURI().startsWith("/api/") && 
+                                !request.getRequestURI().startsWith("/api/rooms") &&
+                                !request.getRequestURI().startsWith("/api/auth/login") &&
+                                !request.getRequestURI().startsWith("/api/auth/register") &&
+                                !request.getRequestURI().startsWith("/api/auth/create-admin") &&
+                                !request.getRequestURI().startsWith("/api/auth/mfa/verify") &&
+                                !request.getRequestURI().startsWith("/api/users") &&
+                                !request.getRequestURI().startsWith("/api/files")) {
+                                response.setStatus(401);
+                                response.getWriter().write("{\"error\":\"Unauthorized\"}");
+                            }
+                        })
                 );
 
         return http.build();

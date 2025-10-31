@@ -27,5 +27,12 @@ public class UpdateRoomRequest {
     private Double parkingFee;
     private Double deposit;
     private String depositType;
+<<<<<<< HEAD
+=======
+    
+    // Room quantity
+    private Integer totalRooms;
+    private Integer availableRooms;
+>>>>>>> origin/phong28
 }
 

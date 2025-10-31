@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+=======
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { customToast } from '../utils/customToast.jsx'
+>>>>>>> origin/phong28
 import { authAPI } from '../services/api'
 import './AuthNew.css'
 
@@ -10,15 +16,31 @@ function Login({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+<<<<<<< HEAD
   const [toast, setToast] = useState(null)
+=======
+>>>>>>> origin/phong28
   
   const navigate = useNavigate()
   const location = useLocation()
 
+<<<<<<< HEAD
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
     setTimeout(() => setToast(null), 4000)
   }
+=======
+  // Load remembered email when component mounts
+  useEffect(() => {
+    const savedEmail = localStorage.getItem('rememberedEmail')
+    const savedRememberMe = localStorage.getItem('rememberMe')
+    
+    if (savedEmail && savedRememberMe === 'true') {
+      setEmail(savedEmail)
+      setRememberMe(true)
+    }
+  }, [])
+>>>>>>> origin/phong28
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -34,12 +56,26 @@ function Login({ onLogin }) {
     try {
       const user = await authAPI.login(email, password)
       
+<<<<<<< HEAD
       if (rememberMe) {
         localStorage.setItem('rememberMe', 'true')
       }
       
       onLogin(user)
       showToast('Đăng nhập thành công! 🎉', 'success')
+=======
+      // Save or remove email based on rememberMe checkbox
+      if (rememberMe) {
+        localStorage.setItem('rememberMe', 'true')
+        localStorage.setItem('rememberedEmail', email)
+      } else {
+        localStorage.removeItem('rememberMe')
+        localStorage.removeItem('rememberedEmail')
+      }
+      
+      onLogin(user)
+      customToast.success('Đăng nhập thành công! 🎉')
+>>>>>>> origin/phong28
       
       const from = location.state?.from?.pathname || '/'
       setTimeout(() => navigate(from), 1000)
@@ -54,6 +90,7 @@ function Login({ onLogin }) {
 
   return (
     <div className="auth-new-page">
+<<<<<<< HEAD
       {toast && (
         <div className={`toast-new toast-${toast.type}`}>
           <span className="toast-icon-new">{toast.type === 'success' ? '✓' : '⚠'}</span>
@@ -111,6 +148,58 @@ function Login({ onLogin }) {
             <p>Tin tưởng và sử dụng dịch vụ của timtro.com</p>
           </div>
         </div>
+=======
+      <div className="auth-new-container">
+        {/* Left Side - Illustration */}
+        <div className="auth-new-left">
+          <div className="auth-illustration">
+            <div className="phone-mockup">
+              <div className="phone-content">
+                <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+                  <path d="M30 7.5L11.25 18.75V37.5L30 48.75L48.75 37.5V18.75L30 7.5Z" fill="#2563EB"/>
+                  <path d="M30 16.5L21 22.5V37.5L30 43.5L39 37.5V22.5L30 16.5Z" fill="white"/>
+                </svg>
+                <h2>TÌM TRỌ</h2>
+              </div>
+            </div>
+            
+            {/* Floating Avatars */}
+            <div className="avatar-float avatar-1">
+              <div className="avatar-circle"></div>
+            </div>
+            <div className="avatar-float avatar-2">
+              <div className="avatar-circle"></div>
+            </div>
+            <div className="avatar-float avatar-3">
+              <div className="avatar-circle"></div>
+            </div>
+            <div className="avatar-float avatar-4">
+              <div className="avatar-circle"></div>
+            </div>
+            <div className="avatar-float avatar-5">
+              <div className="avatar-circle"></div>
+            </div>
+            <div className="avatar-float avatar-6">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="#4ADE80">
+                <path d="M20 2L18 12L8 10L20 20L22 10L32 12L20 2Z"/>
+                <ellipse cx="20" cy="32" rx="6" ry="4" fill="#4ADE80"/>
+              </svg>
+            </div>
+            <div className="avatar-float avatar-7">
+              <svg width="40" height="50" viewBox="0 0 40 50" fill="#10B981">
+                <rect x="15" y="30" width="10" height="20" rx="2" fill="#8B4513"/>
+                <path d="M8 30C8 22 12 18 20 15C28 18 32 22 32 30H8Z" fill="#10B981"/>
+                <ellipse cx="20" cy="15" rx="8" ry="10" fill="#10B981"/>
+              </svg>
+            </div>
+          </div>
+
+          <div className="auth-stats">
+            <h3>HƠN <span className="highlight">50.000</span> CHỦ TRỌ</h3>
+            <p>Tin tưởng và sử dụng dịch vụ của timtro.com</p>
+          </div>
+        </div>
+>>>>>>> origin/phong28
 
         {/* Right Side - Form */}
         <div className="auth-new-right">

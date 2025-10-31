@@ -3,6 +3,10 @@ package com.x.group2_timtro.controller;
 import com.x.group2_timtro.dto.request.*;
 import com.x.group2_timtro.dto.response.MyRoomDetailResponse;
 import com.x.group2_timtro.dto.response.MyRoomResponse;
+<<<<<<< HEAD
+=======
+import com.x.group2_timtro.dto.response.MyPostedRoomResponse;
+>>>>>>> origin/phong28
 import com.x.group2_timtro.service.MyRoomsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -251,5 +255,92 @@ public class MyRoomsController {
             ));
         }
     }
+<<<<<<< HEAD
+=======
+
+    /**
+     * Upload QR payment image (Landlord only)
+     * POST /api/me/rooms/{bookingId}/payment-qr
+     */
+    @PostMapping("/{bookingId}/payment-qr")
+    public ResponseEntity<?> uploadPaymentQr(
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable String bookingId,
+            @RequestBody UploadQrPaymentRequest request
+    ) {
+        try {
+            myRoomsService.uploadPaymentQr(userId, bookingId, request);
+            return ResponseEntity.ok(Map.of(
+                    "message", "QR payment image uploaded successfully"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Upload payment proof (Tenant only)
+     * POST /api/me/rooms/{bookingId}/payment-proof
+     */
+    @PostMapping("/{bookingId}/payment-proof")
+    public ResponseEntity<?> uploadPaymentProof(
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable String bookingId,
+            @RequestBody UploadPaymentProofRequest request
+    ) {
+        try {
+            myRoomsService.uploadPaymentProof(userId, bookingId, request);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Payment proof uploaded successfully"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Confirm payment (Landlord only)
+     * POST /api/me/rooms/{bookingId}/confirm-payment
+     */
+    @PostMapping("/{bookingId}/confirm-payment")
+    public ResponseEntity<?> confirmPayment(
+            @RequestHeader("X-User-Id") Long userId,
+            @PathVariable String bookingId,
+            @RequestBody ConfirmPaymentRequest request
+    ) {
+        try {
+            myRoomsService.confirmPayment(userId, bookingId, request);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Payment confirmed successfully"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Get posted rooms (rooms owned by current user)
+     * GET /api/me/posted-rooms
+     */
+    @GetMapping("/posted")
+    public ResponseEntity<?> getMyPostedRooms(
+            @RequestHeader("X-User-Id") Long userId
+    ) {
+        try {
+            List<MyPostedRoomResponse> rooms = myRoomsService.getMyPostedRooms(userId);
+            return ResponseEntity.ok(rooms);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", e.getMessage()
+            ));
+        }
+    }
+>>>>>>> origin/phong28
 }
 

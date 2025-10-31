@@ -4,6 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.x.group2_timtro.dto.request.*;
 import com.x.group2_timtro.dto.response.MyRoomDetailResponse;
 import com.x.group2_timtro.dto.response.MyRoomResponse;
+<<<<<<< HEAD
+=======
+import com.x.group2_timtro.dto.response.MyPostedRoomResponse;
+>>>>>>> origin/phong28
 import com.x.group2_timtro.entity.*;
 import com.x.group2_timtro.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +60,7 @@ public class MyRoomsService {
      */
     public MyRoomDetailResponse getMyRoomDetail(Long userId, String bookingId) {
         // Verify user exists
+<<<<<<< HEAD
         userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -63,6 +68,43 @@ public class MyRoomsService {
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
         if (booking.getTenant().getId() != userId) {
+=======
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Booking booking = null;
+        
+        // Try to find by bookingId first
+        if (bookingId != null && !bookingId.isEmpty()) {
+            // Handle temporary ID format (TEMP-123)
+            if (bookingId.startsWith("TEMP-")) {
+                try {
+                    Long id = Long.parseLong(bookingId.substring(5));
+                    booking = bookingRepository.findById(id)
+                            .orElseThrow(() -> new RuntimeException("Booking not found"));
+                } catch (NumberFormatException e) {
+                    throw new RuntimeException("Invalid booking ID format");
+                }
+            } else {
+                // Normal bookingId (BK-2025-XXXXX)
+                booking = bookingRepository.findByBookingId(bookingId)
+                        .orElseThrow(() -> new RuntimeException("Booking not found"));
+            }
+        }
+        
+        if (booking == null) {
+            throw new RuntimeException("Booking not found");
+        }
+
+        // Check if user is admin - admin can view all bookings
+        boolean isAdmin = "ADMIN".equals(user.getRole());
+        
+        // Allow access if user is either the tenant OR the landlord (room owner) OR admin
+        boolean isTenant = userId.equals(booking.getTenant().getId());
+        boolean isLandlord = userId.equals(booking.getRoom().getOwner().getId());
+        
+        if (!isTenant && !isLandlord && !isAdmin) {
+>>>>>>> origin/phong28
             throw new RuntimeException("Unauthorized access to booking");
         }
 
@@ -303,6 +345,86 @@ public class MyRoomsService {
         document.setDocumentUrl(documentUrl);
         document.setFileName(fileName);
         document.setStatus("PENDING");
+<<<<<<< HEAD
+=======
+        document.setUploadedBy("TENANT");
+        documentRepository.save(document);
+    }
+
+    /**
+     * Upload QR payment image (Landlord only)
+     */
+    @Transactional
+    public void uploadPaymentQr(Long userId, String bookingId, UploadQrPaymentRequest request) {
+        Booking booking = bookingRepository.findByBookingId(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        Room room = booking.getRoom();
+        
+        // Check if user is the landlord (room owner)
+        if (!userId.equals(room.getOwner().getId())) {
+            throw new RuntimeException("Only landlord can upload QR payment image");
+        }
+
+        // Update booking's payment QR image and description (specific to this booking)
+        booking.setPaymentQrImageUrl(request.getImageUrl());
+        booking.setPaymentDescription(request.getPaymentDescription());
+        bookingRepository.save(booking);
+    }
+
+    /**
+     * Upload payment proof (Tenant only)
+     */
+    @Transactional
+    public void uploadPaymentProof(Long userId, String bookingId, UploadPaymentProofRequest request) {
+        Booking booking = bookingRepository.findByBookingId(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Check if user is the tenant
+        if (!userId.equals(booking.getTenant().getId())) {
+            throw new RuntimeException("Only tenant can upload payment proof");
+        }
+
+        // Create a document for payment proof
+        Document document = new Document();
+        document.setBooking(booking);
+        document.setDocumentType("PAYMENT_PROOF");
+        document.setDocumentUrl(request.getDocumentUrl());
+        document.setFileName(request.getFileName());
+        document.setNote(request.getNote());
+        document.setStatus("PENDING");
+        document.setUploadedBy("TENANT");
+        documentRepository.save(document);
+    }
+
+    /**
+     * Confirm payment (Landlord only)
+     */
+    @Transactional
+    public void confirmPayment(Long userId, String bookingId, ConfirmPaymentRequest request) {
+        Booking booking = bookingRepository.findByBookingId(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        Room room = booking.getRoom();
+        
+        // Check if user is the landlord
+        if (!userId.equals(room.getOwner().getId())) {
+            throw new RuntimeException("Only landlord can confirm payment");
+        }
+
+        // Find and approve the payment proof document
+        Document document = documentRepository.findById(request.getDocumentId())
+                .orElseThrow(() -> new RuntimeException("Document not found"));
+
+        if (!document.getBooking().getId().equals(booking.getId())) {
+            throw new RuntimeException("Document does not belong to this booking");
+        }
+
+        document.setStatus("APPROVED");
+        if (request.getNote() != null) {
+            document.setNote(request.getNote());
+        }
+>>>>>>> origin/phong28
         documentRepository.save(document);
     }
 
@@ -382,6 +504,11 @@ public class MyRoomsService {
                 .capacity(room.getCapacity())
                 .imageUrl(room.getImageUrl())
                 .detail(room.getDetail())
+<<<<<<< HEAD
+=======
+                .paymentQrImageUrl(booking.getPaymentQrImageUrl()) // From booking, not room
+                .paymentDescription(booking.getPaymentDescription()) // From booking, not room
+>>>>>>> origin/phong28
                 .build();
 
         // Deposit info
@@ -445,6 +572,10 @@ public class MyRoomsService {
                         .documentUrl(d.getDocumentUrl())
                         .fileName(d.getFileName())
                         .status(d.getStatus())
+<<<<<<< HEAD
+=======
+                        .uploadedBy(d.getUploadedBy())
+>>>>>>> origin/phong28
                         .createdAt(d.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
@@ -546,5 +677,51 @@ public class MyRoomsService {
 
         return timeline;
     }
+<<<<<<< HEAD
+=======
+
+    /**
+     * Get all posted rooms (rooms owned by current user)
+     */
+    public List<MyPostedRoomResponse> getMyPostedRooms(Long userId) {
+        User owner = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        List<Room> rooms = roomRepository.findByOwner(owner);
+
+        return rooms.stream()
+                .map(room -> {
+                    // Get all bookings for this room
+                    List<Booking> bookings = bookingRepository.findByRoom(room);
+                    
+                    // Calculate statistics
+                    int totalBookings = bookings.size();
+                    int activeBookings = (int) bookings.stream()
+                            .filter(b -> "ACTIVE".equals(b.getStatus()) || "CONFIRMED".equals(b.getStatus()))
+                            .count();
+                    int pendingBookings = (int) bookings.stream()
+                            .filter(b -> "PENDING".equals(b.getStatus()))
+                            .count();
+
+                    return MyPostedRoomResponse.builder()
+                            .id(room.getId())
+                            .name(room.getName())
+                            .imageUrl(room.getImageUrl())
+                            .location(room.getLocation())
+                            .price(room.getPrice())
+                            .area(room.getArea())
+                            .capacity(room.getCapacity())
+                            .isAvailable(room.getIsAvailable())
+                            .roomType(room.getRoomType())
+                            .totalBookings(totalBookings)
+                            .activeBookings(activeBookings)
+                            .pendingBookings(pendingBookings)
+                            .createdAt(room.getCreatedAt())
+                            .updatedAt(room.getUpdatedAt())
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+>>>>>>> origin/phong28
 }
 

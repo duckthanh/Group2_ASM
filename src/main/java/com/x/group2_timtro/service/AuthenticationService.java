@@ -5,6 +5,7 @@ package com.x.group2_timtro.service;
 import com.nimbusds.jwt.SignedJWT;
 import com.x.group2_timtro.dto.request.LoginRequest;
 import com.x.group2_timtro.dto.response.LoginResponse;
+import com.x.group2_timtro.dto.response.MfaSetupResponse;
 import com.x.group2_timtro.entity.Token;
 import com.x.group2_timtro.entity.User;
 import com.x.group2_timtro.repository.TokenRepository;
@@ -31,6 +32,10 @@ import java.text.ParseException;
 import java.util.Optional;
 
 import static dev.samstevens.totp.util.Utils.getDataUriForImage;
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/phong28
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -40,8 +45,11 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
+<<<<<<< HEAD
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+=======
+>>>>>>> origin/phong28
 
     public LoginResponse login(LoginRequest request) {
 
@@ -51,18 +59,28 @@ public class AuthenticationService {
 
         User user = (User) authenticate.getPrincipal();
 
+        // Kiểm tra nếu user đã bật 2FA
+        if (Boolean.TRUE.equals(user.getMfaEnabled())) {
+            // Trả về response với mfaRequired = true, không có token
+            return LoginResponse.builder()
+                    .id(user.getId())
+                    .username(user.getName())
+                    .role(user.getRole())
+                    .mfaRequired(true)
+                    .build();
+        }
+
+        // Nếu không có 2FA, trả về token như bình thường
         String accessToken = jwtService.generateAccessToken(user);
         String refreshToken = jwtService.generateRefreshToken(user);
 
         return LoginResponse.builder()
                 .id(user.getId())
                 .username(user.getName())  // Use getName() to get actual username
-                .email(user.getEmail())
-                .phoneNumber(user.getPhoneNumber())
-                .address(user.getAddress())
                 .role(user.getRole())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .mfaRequired(false)
                 .build();
 
     }
@@ -78,9 +96,10 @@ public class AuthenticationService {
         tokenRepository.save(token);
     }
 
-    //2FA
-//    public SetupMFAResponse setupMfa
+    //2FA Methods
+    public MfaSetupResponse generateMfaSetup(String email, String issuer) {
 
+<<<<<<< HEAD
     public void forgotPassword(String email) {
         log.info("Forgot password request for {}", email);
 
@@ -126,5 +145,127 @@ public class AuthenticationService {
         userRepository.save(user);
 
         log.info("✅ Password reset successful for {}", email);
+=======
+        SecretGenerator secretGenerator = new DefaultSecretGenerator();
+        String secret = secretGenerator.generate();
+
+        //generate QR
+        QrData data = new QrData.Builder()
+                .label(email)
+                .secret(secret)
+                .issuer(issuer)
+                .algorithm(HashingAlgorithm.SHA1)
+                .digits(6)
+                .period(30)
+                .build();
+
+        QrGenerator generator = new ZxingPngQrGenerator();
+        byte[] imageData;
+        try {
+            imageData = generator.generate(data);
+        } catch (QrGenerationException e) {
+            throw new RuntimeException("Lỗi khi tạo mã QR", e);
+        }
+
+        String mimeType = generator.getImageMimeType();
+        String dataUri = getDataUriForImage(imageData, mimeType);
+
+        return MfaSetupResponse.builder()
+                .secret(secret)
+                .qrCodeDataUri(dataUri)
+                .build();
+    }
+
+    public boolean verifyMfaCode(String secret, String code) {
+
+        TimeProvider timeProvider = new SystemTimeProvider();
+        CodeGenerator codeGenerator = new DefaultCodeGenerator();
+        
+        // Tạo verifier với time window (cho phép sai lệch +/- 1 period = 30 giây)
+        // Constructor: DefaultCodeVerifier(codeGenerator, timeProvider, discrepancy)
+        CodeVerifier verifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
+
+        boolean successful = verifier.isValidCode(secret, code);
+
+        return successful;
+    }
+
+    // Xác thực 2FA và trả về token
+    public LoginResponse verifyMfaAndLogin(String email, String code) {
+        log.info("Verifying MFA for email: {}", email);
+        
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+
+        if (!Boolean.TRUE.equals(user.getMfaEnabled())) {
+            log.error("User {} has not enabled 2FA", email);
+            throw new RuntimeException("User chưa bật 2FA");
+        }
+
+        log.info("User MFA status - enabled: {}, secret exists: {}", 
+                user.getMfaEnabled(), 
+                user.getMfaSecret() != null && !user.getMfaSecret().isEmpty());
+        
+        // Xác thực mã OTP
+        boolean isValid = verifyMfaCode(user.getMfaSecret(), code);
+        
+        log.info("MFA verification result for {}: {}", email, isValid);
+        
+        if (!isValid) {
+            log.error("Invalid OTP code for user: {}", email);
+            throw new RuntimeException("Mã OTP không đúng");
+        }
+
+        // Tạo token
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshToken = jwtService.generateRefreshToken(user);
+
+        return LoginResponse.builder()
+                .id(user.getId())
+                .username(user.getName())
+                .role(user.getRole())
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .mfaRequired(false)
+                .build();
+    }
+
+    // Bật 2FA cho user
+    public void enableMfa(User user, String secret, String code) {
+        log.info("Attempting to enable MFA for user: {}", user.getEmail());
+        log.debug("Secret length: {}, Code: {}", secret != null ? secret.length() : 0, code);
+        
+        // Xác thực mã OTP trước khi bật
+        boolean isValid = verifyMfaCode(secret, code);
+        if (!isValid) {
+            log.error("Invalid OTP code when enabling MFA for user: {}", user.getEmail());
+            throw new RuntimeException("Mã OTP không đúng. Không thể bật 2FA");
+        }
+
+        // Lưu secret và bật 2FA
+        user.setMfaSecret(secret);
+        user.setMfaEnabled(true);
+        userRepository.save(user);
+        
+        log.info("MFA enabled successfully for user: {}", user.getEmail());
+    }
+
+    // Tắt 2FA cho user
+    public void disableMfa(User user, String code) {
+        if (!Boolean.TRUE.equals(user.getMfaEnabled())) {
+            throw new RuntimeException("2FA chưa được bật");
+        }
+
+        // Xác thực mã OTP trước khi tắt
+        boolean isValid = verifyMfaCode(user.getMfaSecret(), code);
+        if (!isValid) {
+            throw new RuntimeException("Mã OTP không đúng. Không thể tắt 2FA");
+        }
+
+        // Xóa secret và tắt 2FA
+        user.setMfaSecret(null);
+        user.setMfaEnabled(false);
+        userRepository.save(user);
+>>>>>>> origin/phong28
     }
 }

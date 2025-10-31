@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { customToast } from '../utils/customToast.jsx'
 import { bookingAPI } from '../services/api'
 import './RentRoom.css'
 
@@ -53,7 +54,7 @@ const RentRoom = ({ room, onClose, onSuccess, isDeposit = false }) => {
       }
       
       await bookingAPI.createBooking(bookingData)
-      alert(isDeposit ? 'Đặt cọc phòng thành công!' : 'Thuê phòng thành công!')
+      customToast.success(isDeposit ? 'Đặt cọc phòng thành công! 💰' : 'Thuê phòng thành công! 🎉')
       if (onSuccess) onSuccess()
       if (onClose) onClose()
     } catch (err) {

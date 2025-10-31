@@ -1,6 +1,11 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+<<<<<<< HEAD
 import { Search, Home, Building2, Info, Mail, User, LogOut, Users, Menu, X, Key } from 'lucide-react'
+=======
+import { customToast } from '../utils/customToast.jsx'
+import { Search, Home, Building2, Info, Mail, User, LogOut, Users, Menu, X, Key, ClipboardCheck } from 'lucide-react'
+>>>>>>> origin/phong28
 
 function Navbar({ currentUser, onLogout }) {
   const [showUserDropdown, setShowUserDropdown] = useState(false)
@@ -25,7 +30,12 @@ function Navbar({ currentUser, onLogout }) {
 
   const handleLogout = () => {
     setShowUserDropdown(false)
+    
+    // Note: We keep rememberedEmail in localStorage so user doesn't need to retype email next time
+    // Only remove it if user unchecks "Remember Me" on login page
+    
     onLogout()
+    customToast.success('Đăng xuất thành công! 👋')
   }
 
   const handleContactClick = (e) => {
@@ -153,6 +163,17 @@ function Navbar({ currentUser, onLogout }) {
                     <Key size={18} />
                     Phòng của tôi
                   </Link>
+<<<<<<< HEAD
+=======
+                  <Link 
+                    to="/landlord/booking-requests" 
+                    className="navbar-dropdown-item"
+                    onClick={() => setShowUserDropdown(false)}
+                  >
+                    <ClipboardCheck size={18} />
+                    Yêu cầu thuê phòng
+                  </Link>
+>>>>>>> origin/phong28
                   {(currentUser.role === 'ADMIN' || currentUser.role === 'HOST') && (
                     <Link to="/admin/users" className="navbar-dropdown-item">
                       <Users size={18} />

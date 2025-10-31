@@ -33,6 +33,7 @@ public class JwtDecoderConfiguration implements JwtDecoder {
     @Override
     public Jwt decode(String token) throws JwtException {
         try {
+            log.debug("Decoding JWT token...");
             //trich xuat ttin tu token
             SignedJWT signedJWT = SignedJWT.parse(token);
 
@@ -42,12 +43,19 @@ public class JwtDecoderConfiguration implements JwtDecoder {
             }
 
             //check logout
-            String jwtId = signedJWT.getJWTClaimsSet().getJWTID();
-            Optional<Token> tokenOptional = tokenRepository.findById(jwtId);
-            if(tokenOptional.isPresent()) {
-                //neu ton tai log out
-                log.info("Token is logged");
-                throw new JwtException("Token is logged");
+            try {
+                String jwtId = signedJWT.getJWTClaimsSet().getJWTID();
+                Optional<Token> tokenOptional = tokenRepository.findById(jwtId);
+                if(tokenOptional.isPresent()) {
+                    //neu ton tai log out
+                    log.info("Token is logged out");
+                    throw new JwtException("Token is logged out");
+                }
+            } catch (JwtException e) {
+                throw e; // Re-throw JwtException
+            } catch (Exception e) {
+                // If tokens table doesn't exist, just skip this check
+                log.warn("Could not check token repository (table may not exist yet): " + e.getMessage());
             }
 
             //decode, verify token
@@ -60,7 +68,13 @@ public class JwtDecoderConfiguration implements JwtDecoder {
             return nimbusJwtDecoder.decode(token);
 
         } catch (ParseException e) {
-            throw new RuntimeException(e);
+            log.error("Error parsing JWT token", e);
+            throw new JwtException("Invalid JWT token", e);
+        } catch (JwtException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("Unexpected error decoding JWT", e);
+            throw new JwtException("Error decoding JWT", e);
         }
 
     }

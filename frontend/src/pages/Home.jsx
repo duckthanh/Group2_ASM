@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { Heart } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+<<<<<<< HEAD
 import { roomAPI } from '../services/api'
+=======
+import { roomAPI, savedRoomAPI } from '../services/api'
+import toast from 'react-hot-toast'
+>>>>>>> origin/phong28
 import '../styles/Contact.css'
 import '../styles/About.css'
 
@@ -11,6 +17,7 @@ function Home({ currentUser, onLogout }) {
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('rent') // 'rent' or 'roommate'
   const [searchKeyword, setSearchKeyword] = useState('')
+  const [savedRooms, setSavedRooms] = useState({}) // Track saved status { roomId: true/false }
   const [contactForm, setContactForm] = useState({
     name: '',
     email: '',
@@ -21,6 +28,9 @@ function Home({ currentUser, onLogout }) {
 
   useEffect(() => {
     fetchRooms()
+    if (currentUser) {
+      checkSavedRooms()
+    }
     
     // Xử lý scroll xuống phần liên hệ hoặc giới thiệu nếu có hash
     const hash = window.location.hash
@@ -32,7 +42,7 @@ function Home({ currentUser, onLogout }) {
         }
       }, 300)
     }
-  }, [])
+  }, [currentUser])
 
   const fetchRooms = async () => {
     setLoading(true)
@@ -43,6 +53,49 @@ function Home({ currentUser, onLogout }) {
       console.error('Error fetching rooms:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const checkSavedRooms = async () => {
+    try {
+      const savedRoomsList = await savedRoomAPI.getSavedRooms()
+      const savedMap = {}
+      savedRoomsList.forEach(item => {
+        savedMap[item.roomId] = true
+      })
+      setSavedRooms(savedMap)
+    } catch (err) {
+      console.error('Error checking saved rooms:', err)
+    }
+  }
+
+  const handleSaveRoom = async (e, roomId) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    if (!currentUser) {
+      toast.error('Vui lòng đăng nhập để lưu phòng')
+      navigate('/login')
+      return
+    }
+
+    try {
+      if (savedRooms[roomId]) {
+        await savedRoomAPI.unsaveRoom(roomId)
+        setSavedRooms(prev => ({ ...prev, [roomId]: false }))
+        toast.success('Đã bỏ lưu phòng')
+      } else {
+        await savedRoomAPI.saveRoom(roomId)
+        setSavedRooms(prev => ({ ...prev, [roomId]: true }))
+        toast.success('Đã lưu phòng')
+      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.error || err.message
+      if (errorMessage === 'Room already saved') {
+        toast.error('Bạn đã lưu phòng này rồi!')
+      } else {
+        toast.error(errorMessage || 'Có lỗi xảy ra')
+      }
     }
   }
 
@@ -153,7 +206,19 @@ function Home({ currentUser, onLogout }) {
                 <div key={room.id} className="home-room-card-new">
                   <div className="home-room-image-new">
                     <img src={room.imageUrl || 'https://via.placeholder.com/400x300?text=Phòng+Trọ'} alt={room.name} />
-                    <button className="btn-favorite">❤️</button>
+                    <button 
+                      className="btn-favorite"
+                      onClick={(e) => handleSaveRoom(e, room.id)}
+                      style={{
+                        background: savedRooms[room.id] ? '#EF4444' : 'rgba(255, 255, 255, 0.9)',
+                        color: savedRooms[room.id] ? 'white' : '#EF4444'
+                      }}
+                    >
+                      <Heart 
+                        size={18} 
+                        fill={savedRooms[room.id] ? 'currentColor' : 'none'}
+                      />
+                    </button>
                     <button className="btn-share">📤</button>
                   </div>
                   <div className="home-room-content-new">
