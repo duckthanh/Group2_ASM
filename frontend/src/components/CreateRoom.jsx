@@ -262,10 +262,26 @@ const CreateRoom = ({ onClose, onSuccess }) => {
               multiple
               onChange={handleAdditionalImagesUpload}
               disabled={uploading || formData.additionalImages.length >= 9}
+              style={{
+                padding: '12px',
+                border: '2px solid #E5E7EB',
+                borderRadius: '10px',
+                background: '#FFFFFF',
+                fontSize: '14px',
+                cursor: 'pointer',
+                width: '100%',
+                transition: 'all 0.3s ease'
+              }}
             />
             {uploading && <p className="uploading-text">⏳ Đang tải ảnh lên...</p>}
-            <small style={{ display: 'block', marginTop: '8px', color: 'var(--text-secondary)' }}>
-              Đã upload: {formData.additionalImages.length}/9 ảnh phụ
+            <small style={{ 
+              display: 'block', 
+              marginTop: '10px', 
+              color: '#6B7280',
+              fontSize: '13px',
+              fontWeight: '500'
+            }}>
+              📸 Đã upload: {formData.additionalImages.length}/9 ảnh phụ
             </small>
           </div>
 
