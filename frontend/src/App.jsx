@@ -1,10 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-<<<<<<< HEAD
-import { Toaster } from 'react-hot-toast'
-=======
 import toast, { Toaster } from 'react-hot-toast'
->>>>>>> origin/phong28
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
@@ -15,10 +11,7 @@ import Profile from './pages/Profile'
 import UserManagement from './pages/UserManagement'
 import MyRooms from './pages/MyRooms'
 import MyRoomDetail from './pages/MyRoomDetail'
-<<<<<<< HEAD
-=======
 import BookingRequests from './pages/BookingRequests'
->>>>>>> origin/phong28
 import './App.css'
 
 function App() {
@@ -85,31 +78,11 @@ function App() {
 
   return (
     <>
-<<<<<<< HEAD
-      <Toaster
-=======
       <Toaster 
->>>>>>> origin/phong28
         position="top-right"
         toastOptions={{
           duration: 4000,
           style: {
-<<<<<<< HEAD
-            background: 'white',
-            color: '#0F172A',
-            padding: '16px',
-            borderRadius: '12px',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
-            border: '1px solid #E2E8F0',
-            fontSize: '15px',
-            fontWeight: '500',
-            maxWidth: '500px',
-          },
-          success: {
-            iconTheme: {
-              primary: '#22C55E',
-              secondary: 'white',
-=======
             background: '#fff',
             color: '#363636',
             fontSize: '14px',
@@ -122,94 +95,18 @@ function App() {
             iconTheme: {
               primary: '#10b981',
               secondary: '#fff',
->>>>>>> origin/phong28
             },
           },
           error: {
             iconTheme: {
-<<<<<<< HEAD
-              primary: '#EF4444',
-              secondary: 'white',
-=======
               primary: '#ef4444',
               secondary: '#fff',
->>>>>>> origin/phong28
             },
           },
         }}
       />
       <Router>
         <Routes>
-<<<<<<< HEAD
-          <Route 
-            path="/" 
-            element={<Home currentUser={currentUser} onLogout={handleLogout} />} 
-          />
-          <Route 
-            path="/login" 
-            element={
-              currentUser ? 
-              <Navigate to="/" replace /> : 
-              <Login onLogin={handleLogin} />
-            } 
-          />
-          <Route 
-            path="/register" 
-            element={
-              currentUser ? 
-              <Navigate to="/" replace /> : 
-              <Register />
-            } 
-          />
-          <Route 
-            path="/forgot-password" 
-            element={
-              currentUser ? 
-              <Navigate to="/" replace /> : 
-              <ForgotPassword />
-            } 
-          />
-          <Route
-            path="/rooms/phong-tro"
-            element={<RoomList currentUser={currentUser} onLogout={handleLogout} />}
-          />
-          <Route
-            path="/room/:id"
-            element={<RoomDetail currentUser={currentUser} onLogout={handleLogout} />}
-          />
-          <Route
-            path="/profile"
-            element={
-              currentUser ?
-              <Profile currentUser={currentUser} onLogout={handleLogout} /> :
-              <Navigate to="/login" replace />
-            }
-          />
-          <Route
-            path="/admin/users"
-            element={
-              currentUser && currentUser.role === 'ADMIN' ?
-              <UserManagement currentUser={currentUser} onLogout={handleLogout} /> :
-              <Navigate to="/" replace />
-            }
-          />
-          <Route
-            path="/account/rooms"
-            element={
-              currentUser ?
-              <MyRooms currentUser={currentUser} onLogout={handleLogout} /> :
-              <Navigate to="/login" replace />
-            }
-          />
-          <Route
-            path="/account/rooms/:bookingId"
-            element={
-              currentUser ?
-              <MyRoomDetail currentUser={currentUser} onLogout={handleLogout} /> :
-              <Navigate to="/login" replace />
-            }
-          />
-=======
         <Route 
           path="/" 
           element={<Home currentUser={currentUser} onLogout={handleLogout} />} 
@@ -278,7 +175,6 @@ function App() {
             <Navigate to="/" replace />
           }
         />
->>>>>>> origin/phong28
         </Routes>
       </Router>
     </>

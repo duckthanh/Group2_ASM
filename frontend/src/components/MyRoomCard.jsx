@@ -13,42 +13,18 @@ function MyRoomCard({ room, onAction }) {
 
   const getStatusBadge = (status) => {
     const badges = {
-<<<<<<< HEAD
-      HOLD: { label: 'Giữ chỗ', className: 'status-hold' },
-      DEPOSITED: { label: 'Đã đặt cọc', className: 'status-deposited' },
-      ACTIVE: { label: 'Đang thuê', className: 'status-active' },
-      ENDED: { label: 'Đã trả phòng', className: 'status-ended' },
-      CANCELED: { label: 'Đã hủy', className: 'status-canceled' }
-=======
       PENDING: { label: 'Chờ xác nhận', className: 'status-pending' },
       CONFIRMED: { label: 'Đã xác nhận', className: 'status-confirmed' },
       ACTIVE: { label: 'Đang thuê', className: 'status-active' },
       ENDED: { label: 'Đã trả phòng', className: 'status-ended' },
       CANCELED: { label: 'Đã hủy', className: 'status-canceled' },
       REJECTED: { label: 'Bị từ chối', className: 'status-rejected' }
->>>>>>> origin/phong28
     }
     return badges[status] || { label: status, className: 'status-default' }
   }
 
   const getTimeRemaining = () => {
-<<<<<<< HEAD
-    if (room.status === 'HOLD' && room.holdExpiresAt) {
-      const now = new Date()
-      const expires = new Date(room.holdExpiresAt)
-      const diff = expires - now
-      const hours = Math.floor(diff / (1000 * 60 * 60))
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
-      
-      if (diff <= 0) return 'Đã hết hạn'
-      if (hours < 24) return `Còn ${hours}h ${minutes}m`
-      return `Còn ${Math.floor(hours / 24)} ngày`
-    }
-    
-    if (room.status === 'ACTIVE' && room.lease) {
-=======
     if ((room.status === 'ACTIVE' || room.status === 'CONFIRMED') && room.lease) {
->>>>>>> origin/phong28
       const days = room.lease.daysRemaining
       if (days < 0) return 'Đã quá hạn'
       if (days === 0) return 'Hết hạn hôm nay'
@@ -61,23 +37,6 @@ function MyRoomCard({ room, onAction }) {
 
   const getPrimaryCTA = () => {
     switch (room.status) {
-<<<<<<< HEAD
-      case 'HOLD':
-        return { label: 'Đặt cọc ngay', action: 'deposit', variant: 'primary' }
-      case 'DEPOSITED':
-        if (!room.deposit?.paid) {
-          return { label: 'Thanh toán cọc', action: 'pay-deposit', variant: 'primary' }
-        }
-        if (room.contract?.status === 'PENDING') {
-          return { label: 'Ký hợp đồng', action: 'sign-contract', variant: 'primary' }
-        }
-        return { label: 'Xem chi tiết', action: 'view', variant: 'secondary' }
-      case 'ACTIVE':
-        return { label: 'Thanh toán tiền nhà', action: 'pay-rent', variant: 'primary' }
-      case 'ENDED':
-        return { label: 'Viết đánh giá', action: 'review', variant: 'secondary' }
-      case 'CANCELED':
-=======
       case 'PENDING':
         return { label: 'Xem chi tiết', action: 'view', variant: 'secondary' }
       case 'CONFIRMED':
@@ -88,7 +47,6 @@ function MyRoomCard({ room, onAction }) {
         return { label: 'Xem chi tiết', action: 'view', variant: 'secondary' }
       case 'CANCELED':
       case 'REJECTED':
->>>>>>> origin/phong28
         return { label: 'Tìm phòng khác', action: 'find-room', variant: 'secondary' }
       default:
         return { label: 'Xem chi tiết', action: 'view', variant: 'secondary' }
@@ -183,17 +141,10 @@ function MyRoomCard({ room, onAction }) {
                     </button>
                   </>
                 )}
-<<<<<<< HEAD
-                {(room.status === 'HOLD' || room.status === 'DEPOSITED') && (
-                  <button onClick={(e) => handleMenuAction(e, 'cancel')} className="menu-danger">
-                    <XCircle size={16} />
-                    Hủy đặt chỗ
-=======
                 {room.status === 'PENDING' && (
                   <button onClick={(e) => handleMenuAction(e, 'cancel')} className="menu-danger">
                     <XCircle size={16} />
                     Hủy yêu cầu thuê
->>>>>>> origin/phong28
                   </button>
                 )}
               </div>
@@ -222,25 +173,6 @@ function MyRoomCard({ room, onAction }) {
         </div>
 
         {/* Progress / Status Info */}
-<<<<<<< HEAD
-        {room.status === 'HOLD' && (
-          <div className="my-room-progress">
-            <div className="progress-step completed">Tạo giữ chỗ</div>
-            <div className="progress-step pending">Đặt cọc</div>
-            <div className="progress-step pending">Ký hợp đồng</div>
-          </div>
-        )}
-
-        {room.status === 'DEPOSITED' && (
-          <div className="my-room-progress">
-            <div className="progress-step completed">Giữ chỗ</div>
-            <div className="progress-step completed">Đặt cọc</div>
-            <div className="progress-step current">Ký hợp đồng</div>
-          </div>
-        )}
-
-        {room.status === 'ACTIVE' && room.lease && (
-=======
         {room.status === 'PENDING' && (
           <div className="my-room-status-info pending">
             <AlertCircle size={14} />
@@ -256,7 +188,6 @@ function MyRoomCard({ room, onAction }) {
         )}
 
         {(room.status === 'ACTIVE' || room.status === 'CONFIRMED') && room.lease && (
->>>>>>> origin/phong28
           <div className="my-room-lease-info">
             <Calendar size={14} />
             <span>
@@ -266,11 +197,7 @@ function MyRoomCard({ room, onAction }) {
           </div>
         )}
 
-<<<<<<< HEAD
-        {room.status === 'CANCELED' && room.cancelReason && (
-=======
         {(room.status === 'CANCELED' || room.status === 'REJECTED') && room.cancelReason && (
->>>>>>> origin/phong28
           <div className="my-room-cancel-info">
             <AlertCircle size={14} />
             <span>{room.cancelReason}</span>
@@ -293,15 +220,6 @@ function MyRoomCard({ room, onAction }) {
           </div>
         )}
 
-<<<<<<< HEAD
-        {/* CTA */}
-        <button 
-          className={`my-room-cta btn-${cta.variant}`}
-          onClick={handleCTAClick}
-        >
-          {cta.label}
-        </button>
-=======
         {/* CTA Buttons */}
         <div className="my-room-actions">
           <button 
@@ -339,7 +257,6 @@ function MyRoomCard({ room, onAction }) {
             </button>
           )}
         </div>
->>>>>>> origin/phong28
       </div>
     </div>
   )

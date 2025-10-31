@@ -25,14 +25,10 @@ function EditRoom({ room, onClose, onSuccess }) {
     internetCost: '',
     parkingFee: '',
     deposit: '',
-<<<<<<< HEAD
-    depositType: 'MONTHS'
-=======
     depositType: 'MONTHS',
     // Room quantity
     totalRooms: '',
     availableRooms: ''
->>>>>>> origin/phong28
   })
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -70,14 +66,10 @@ function EditRoom({ room, onClose, onSuccess }) {
         internetCost: room.internetCost || '',
         parkingFee: room.parkingFee || '',
         deposit: room.deposit || '',
-<<<<<<< HEAD
-        depositType: room.depositType || 'MONTHS'
-=======
         depositType: room.depositType || 'MONTHS',
         // Room quantity
         totalRooms: room.totalRooms || '',
         availableRooms: room.availableRooms || ''
->>>>>>> origin/phong28
       })
     }
   }, [room])
@@ -213,14 +205,10 @@ function EditRoom({ room, onClose, onSuccess }) {
         internetCost: formData.internetCost ? parseFloat(formData.internetCost) : null,
         parkingFee: formData.parkingFee ? parseFloat(formData.parkingFee) : null,
         deposit: formData.deposit ? parseFloat(formData.deposit) : null,
-<<<<<<< HEAD
-        depositType: formData.depositType
-=======
         depositType: formData.depositType,
         // Room quantity
         totalRooms: formData.totalRooms ? parseInt(formData.totalRooms) : null,
         availableRooms: formData.availableRooms ? parseInt(formData.availableRooms) : null
->>>>>>> origin/phong28
       }
 
       await roomAPI.updateRoom(room.id, updateData)
@@ -412,8 +400,6 @@ function EditRoom({ room, onClose, onSuccess }) {
                 </div>
               </div>
 
-<<<<<<< HEAD
-=======
               {/* Room Quantity */}
               <div className="form-row">
                 <div className="form-group">
@@ -448,7 +434,6 @@ function EditRoom({ room, onClose, onSuccess }) {
                 </div>
               </div>
 
->>>>>>> origin/phong28
               <div className="form-group">
                 <label>Mô tả chi tiết</label>
                 <textarea
@@ -574,13 +559,6 @@ function EditRoom({ room, onClose, onSuccess }) {
                 <select
                   name="availability"
                   value={formData.availability}
-<<<<<<< HEAD
-                  onChange={handleChange}
-                >
-                  <option value="Còn trống">Còn trống</option>
-                  <option value="Sắp trống">Sắp trống</option>
-                  <option value="Đã cho thuê">Đã cho thuê</option>
-=======
                   onChange={(e) => {
                     const value = e.target.value
                     setFormData({
@@ -593,7 +571,6 @@ function EditRoom({ room, onClose, onSuccess }) {
                   <option value="Còn trống">Còn trống</option>
                   <option value="Sắp trống">Sắp trống</option>
                   <option value="Hết phòng">Hết phòng</option>
->>>>>>> origin/phong28
                 </select>
               </div>
 
@@ -603,9 +580,6 @@ function EditRoom({ room, onClose, onSuccess }) {
                     type="checkbox"
                     name="isAvailable"
                     checked={formData.isAvailable}
-<<<<<<< HEAD
-                    onChange={handleChange}
-=======
                     onChange={(e) => {
                       const checked = e.target.checked
                       setFormData({
@@ -614,7 +588,6 @@ function EditRoom({ room, onClose, onSuccess }) {
                         availability: checked ? 'Còn trống' : 'Hết phòng'
                       })
                     }}
->>>>>>> origin/phong28
                   />
                   <span>Phòng còn trống</span>
                 </label>

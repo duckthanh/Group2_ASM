@@ -36,12 +36,9 @@ public class Document {
     @Column(nullable = false)
     private String status; // "PENDING", "APPROVED", "REJECTED"
 
-<<<<<<< HEAD
-=======
     @Column
     private String uploadedBy; // "LANDLORD" or "TENANT" - who uploaded this document
 
->>>>>>> origin/phong28
     @Column(columnDefinition = "TEXT")
     private String note;
 

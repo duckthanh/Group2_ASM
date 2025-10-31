@@ -12,10 +12,7 @@ import com.x.group2_timtro.entity.User;
 import com.x.group2_timtro.service.AuthenticationService;
 import com.x.group2_timtro.service.UserService;
 import lombok.RequiredArgsConstructor;
-<<<<<<< HEAD
-=======
 import lombok.extern.slf4j.Slf4j;
->>>>>>> origin/phong28
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -56,7 +53,6 @@ public class AuthenticationController {
             return ResponseEntity.badRequest().build();
         }
     }
-<<<<<<< HEAD
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestParam String email) {
         try {
@@ -77,8 +73,7 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-}
-=======
+
 
     @PostMapping("/register")
     public ResponseEntity<CreateUserResponse> register(@RequestBody CreateUserRequest request) {
@@ -165,4 +160,3 @@ public class AuthenticationController {
         }
     }
 }
->>>>>>> origin/phong28

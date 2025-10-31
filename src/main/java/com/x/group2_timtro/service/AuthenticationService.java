@@ -32,10 +32,7 @@ import java.text.ParseException;
 import java.util.Optional;
 
 import static dev.samstevens.totp.util.Utils.getDataUriForImage;
-<<<<<<< HEAD
-=======
 
->>>>>>> origin/phong28
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -45,11 +42,8 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
-<<<<<<< HEAD
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
-=======
->>>>>>> origin/phong28
 
     public LoginResponse login(LoginRequest request) {
 
@@ -99,53 +93,6 @@ public class AuthenticationService {
     //2FA Methods
     public MfaSetupResponse generateMfaSetup(String email, String issuer) {
 
-<<<<<<< HEAD
-    public void forgotPassword(String email) {
-        log.info("Forgot password request for {}", email);
-
-        User user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new RuntimeException("Email không tồn tại trong hệ thống."));
-
-        // Generate short-lived reset token (15 minutes)
-        String token = jwtService.generateResetToken(email);
-        String resetLink = "http://localhost:3000/reset-password?token=" + token;
-
-        String subject = "Đặt lại mật khẩu - Timtro.com";
-        String content = """
-        Xin chào %s,
-
-        Nhấp vào liên kết sau để đặt lại mật khẩu của bạn:
-        %s
-
-        Liên kết này sẽ hết hạn sau 15 phút.
-
-        Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.
-        """.formatted(user.getUsername(), resetLink);
-
-        // Send via EmailService
-        emailService.sendMail(email, subject, content);
-        log.info("Reset link sent successfully to {}", email);
-    }
-
-    // Reset password: validate token and update password
-    public void resetPassword(String token, String newPassword) {
-        log.info("Resetting password using token...");
-
-        String email = jwtService.validateAndExtractEmail(token);
-        if (email == null) {
-            throw new RuntimeException("Token không hợp lệ hoặc đã hết hạn.");
-        }
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng."));
-
-        // ✅ Encrypt password properly
-        String hashedPassword = passwordEncoder.encode(newPassword);
-        user.setPassword(hashedPassword);
-        userRepository.save(user);
-
-        log.info("✅ Password reset successful for {}", email);
-=======
         SecretGenerator secretGenerator = new DefaultSecretGenerator();
         String secret = secretGenerator.generate();
 
@@ -176,96 +123,142 @@ public class AuthenticationService {
                 .build();
     }
 
-    public boolean verifyMfaCode(String secret, String code) {
+        public void forgotPassword (String email){
+            log.info("Forgot password request for {}", email);
 
-        TimeProvider timeProvider = new SystemTimeProvider();
-        CodeGenerator codeGenerator = new DefaultCodeGenerator();
-        
-        // Tạo verifier với time window (cho phép sai lệch +/- 1 period = 30 giây)
-        // Constructor: DefaultCodeVerifier(codeGenerator, timeProvider, discrepancy)
-        CodeVerifier verifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
+            User user = userRepository.findByEmailIgnoreCase(email)
+                    .orElseThrow(() -> new RuntimeException("Email không tồn tại trong hệ thống."));
 
-        boolean successful = verifier.isValidCode(secret, code);
+            // Generate short-lived reset token (15 minutes)
+            String token = jwtService.generateResetToken(email);
+            String resetLink = "http://localhost:3000/reset-password?token=" + token;
 
-        return successful;
+            String subject = "Đặt lại mật khẩu - Timtro.com";
+            String content = """
+                    Xin chào %s,
+                    
+                    Nhấp vào liên kết sau để đặt lại mật khẩu của bạn:
+                    %s
+                    
+                    Liên kết này sẽ hết hạn sau 15 phút.
+                    
+                    Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.
+                    """.formatted(user.getUsername(), resetLink);
+
+            // Send via EmailService
+            emailService.sendMail(email, subject, content);
+            log.info("Reset link sent successfully to {}", email);
+        }
+
+        // Reset password: validate token and update password
+        public void resetPassword(String token, String newPassword) {
+            log.info("Resetting password using token...");
+
+            String email = jwtService.validateAndExtractEmail(token);
+            if (email == null) {
+                throw new RuntimeException("Token không hợp lệ hoặc đã hết hạn.");
+            }
+
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng."));
+
+            // ✅ Encrypt password properly
+            String hashedPassword = passwordEncoder.encode(newPassword);
+            user.setPassword(hashedPassword);
+            userRepository.save(user);
+
+            log.info("✅ Password reset successful for {}", email);
+        }
+
+        public boolean verifyMfaCode (String secret, String code){
+
+            TimeProvider timeProvider = new SystemTimeProvider();
+            CodeGenerator codeGenerator = new DefaultCodeGenerator();
+
+            // Tạo verifier với time window (cho phép sai lệch +/- 1 period = 30 giây)
+            // Constructor: DefaultCodeVerifier(codeGenerator, timeProvider, discrepancy)
+            CodeVerifier verifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
+
+            boolean successful = verifier.isValidCode(secret, code);
+
+            return successful;
+        }
+
+        // Xác thực 2FA và trả về token
+        public LoginResponse verifyMfaAndLogin (String email, String code){
+            log.info("Verifying MFA for email: {}", email);
+
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+
+            if (!Boolean.TRUE.equals(user.getMfaEnabled())) {
+                log.error("User {} has not enabled 2FA", email);
+                throw new RuntimeException("User chưa bật 2FA");
+            }
+
+            log.info("User MFA status - enabled: {}, secret exists: {}",
+                    user.getMfaEnabled(),
+                    user.getMfaSecret() != null && !user.getMfaSecret().isEmpty());
+
+            // Xác thực mã OTP
+            boolean isValid = verifyMfaCode(user.getMfaSecret(), code);
+
+            log.info("MFA verification result for {}: {}", email, isValid);
+
+            if (!isValid) {
+                log.error("Invalid OTP code for user: {}", email);
+                throw new RuntimeException("Mã OTP không đúng");
+            }
+
+            // Tạo token
+            String accessToken = jwtService.generateAccessToken(user);
+            String refreshToken = jwtService.generateRefreshToken(user);
+
+            return LoginResponse.builder()
+                    .id(user.getId())
+                    .username(user.getName())
+                    .role(user.getRole())
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .mfaRequired(false)
+                    .build();
+        }
+
+        // Bật 2FA cho user
+        public void enableMfa (User user, String secret, String code){
+            log.info("Attempting to enable MFA for user: {}", user.getEmail());
+            log.debug("Secret length: {}, Code: {}", secret != null ? secret.length() : 0, code);
+
+            // Xác thực mã OTP trước khi bật
+            boolean isValid = verifyMfaCode(secret, code);
+            if (!isValid) {
+                log.error("Invalid OTP code when enabling MFA for user: {}", user.getEmail());
+                throw new RuntimeException("Mã OTP không đúng. Không thể bật 2FA");
+            }
+
+            // Lưu secret và bật 2FA
+            user.setMfaSecret(secret);
+            user.setMfaEnabled(true);
+            userRepository.save(user);
+
+            log.info("MFA enabled successfully for user: {}", user.getEmail());
+        }
+
+        // Tắt 2FA cho user
+        public void disableMfa (User user, String code){
+            if (!Boolean.TRUE.equals(user.getMfaEnabled())) {
+                throw new RuntimeException("2FA chưa được bật");
+            }
+
+            // Xác thực mã OTP trước khi tắt
+            boolean isValid = verifyMfaCode(user.getMfaSecret(), code);
+            if (!isValid) {
+                throw new RuntimeException("Mã OTP không đúng. Không thể tắt 2FA");
+            }
+
+            // Xóa secret và tắt 2FA
+            user.setMfaSecret(null);
+            user.setMfaEnabled(false);
+            userRepository.save(user);
+        }
     }
-
-    // Xác thực 2FA và trả về token
-    public LoginResponse verifyMfaAndLogin(String email, String code) {
-        log.info("Verifying MFA for email: {}", email);
-        
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
-
-        if (!Boolean.TRUE.equals(user.getMfaEnabled())) {
-            log.error("User {} has not enabled 2FA", email);
-            throw new RuntimeException("User chưa bật 2FA");
-        }
-
-        log.info("User MFA status - enabled: {}, secret exists: {}", 
-                user.getMfaEnabled(), 
-                user.getMfaSecret() != null && !user.getMfaSecret().isEmpty());
-        
-        // Xác thực mã OTP
-        boolean isValid = verifyMfaCode(user.getMfaSecret(), code);
-        
-        log.info("MFA verification result for {}: {}", email, isValid);
-        
-        if (!isValid) {
-            log.error("Invalid OTP code for user: {}", email);
-            throw new RuntimeException("Mã OTP không đúng");
-        }
-
-        // Tạo token
-        String accessToken = jwtService.generateAccessToken(user);
-        String refreshToken = jwtService.generateRefreshToken(user);
-
-        return LoginResponse.builder()
-                .id(user.getId())
-                .username(user.getName())
-                .role(user.getRole())
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .mfaRequired(false)
-                .build();
-    }
-
-    // Bật 2FA cho user
-    public void enableMfa(User user, String secret, String code) {
-        log.info("Attempting to enable MFA for user: {}", user.getEmail());
-        log.debug("Secret length: {}, Code: {}", secret != null ? secret.length() : 0, code);
-        
-        // Xác thực mã OTP trước khi bật
-        boolean isValid = verifyMfaCode(secret, code);
-        if (!isValid) {
-            log.error("Invalid OTP code when enabling MFA for user: {}", user.getEmail());
-            throw new RuntimeException("Mã OTP không đúng. Không thể bật 2FA");
-        }
-
-        // Lưu secret và bật 2FA
-        user.setMfaSecret(secret);
-        user.setMfaEnabled(true);
-        userRepository.save(user);
-        
-        log.info("MFA enabled successfully for user: {}", user.getEmail());
-    }
-
-    // Tắt 2FA cho user
-    public void disableMfa(User user, String code) {
-        if (!Boolean.TRUE.equals(user.getMfaEnabled())) {
-            throw new RuntimeException("2FA chưa được bật");
-        }
-
-        // Xác thực mã OTP trước khi tắt
-        boolean isValid = verifyMfaCode(user.getMfaSecret(), code);
-        if (!isValid) {
-            throw new RuntimeException("Mã OTP không đúng. Không thể tắt 2FA");
-        }
-
-        // Xóa secret và tắt 2FA
-        user.setMfaSecret(null);
-        user.setMfaEnabled(false);
-        userRepository.save(user);
->>>>>>> origin/phong28
-    }
-}

@@ -18,21 +18,9 @@ function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
-<<<<<<< HEAD
-  const [toast, setToast] = useState(null)
   
   const navigate = useNavigate()
 
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 4000)
-  }
-
-=======
-  
-  const navigate = useNavigate()
-
->>>>>>> origin/phong28
   const validateField = (name, value) => {
     switch (name) {
       case 'username':
@@ -128,25 +116,13 @@ function Register() {
       const loginResponse = await authAPI.login(formData.email, formData.password)
       localStorage.setItem('user', JSON.stringify(loginResponse))
       
-<<<<<<< HEAD
-      showToast('Đăng ký thành công! 🎉', 'success')
-=======
       customToast.success('Đăng ký thành công! 🎉')
->>>>>>> origin/phong28
       
       setTimeout(() => {
         window.location.href = '/profile'
       }, 1500)
       
     } catch (err) {
-<<<<<<< HEAD
-      const errorMessage = err.response?.data?.message || 'Đã có lỗi xảy ra'
-      
-      if (errorMessage.includes('email') || errorMessage.includes('Email')) {
-        setErrors(prev => ({ ...prev, email: 'Email đã được sử dụng.' }))
-      } else {
-        showToast(errorMessage, 'error')
-=======
       console.log('=== REGISTER ERROR DEBUG ===')
       console.log('Full error:', err)
       console.log('Error response:', err.response)
@@ -207,7 +183,6 @@ function Register() {
       // Other errors
       else {
         customToast.error(errorMessage)
->>>>>>> origin/phong28
       }
     } finally {
       setLoading(false)
@@ -216,14 +191,6 @@ function Register() {
 
   return (
     <div className="auth-new-page">
-<<<<<<< HEAD
-      {toast && (
-        <div className={`toast-new toast-${toast.type}`}>
-          <span className="toast-icon-new">{toast.type === 'success' ? '✓' : '⚠'}</span>
-          <span>{toast.message}</span>
-        </div>
-      )}
-
       <div className="auth-new-container">
         {/* Left Side - Illustration */}
         <div className="auth-new-left">
@@ -274,58 +241,6 @@ function Register() {
             <p>Tin tưởng và sử dụng dịch vụ của timtro.com</p>
           </div>
         </div>
-=======
-      <div className="auth-new-container">
-        {/* Left Side - Illustration */}
-        <div className="auth-new-left">
-          <div className="auth-illustration">
-            <div className="phone-mockup">
-              <div className="phone-content">
-                <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-                  <path d="M30 7.5L11.25 18.75V37.5L30 48.75L48.75 37.5V18.75L30 7.5Z" fill="#2563EB"/>
-                  <path d="M30 16.5L21 22.5V37.5L30 43.5L39 37.5V22.5L30 16.5Z" fill="white"/>
-                </svg>
-                <h2>TÌM TRỌ</h2>
-              </div>
-            </div>
-            
-            {/* Floating Avatars */}
-            <div className="avatar-float avatar-1">
-              <div className="avatar-circle"></div>
-            </div>
-            <div className="avatar-float avatar-2">
-              <div className="avatar-circle"></div>
-            </div>
-            <div className="avatar-float avatar-3">
-              <div className="avatar-circle"></div>
-            </div>
-            <div className="avatar-float avatar-4">
-              <div className="avatar-circle"></div>
-            </div>
-            <div className="avatar-float avatar-5">
-              <div className="avatar-circle"></div>
-            </div>
-            <div className="avatar-float avatar-6">
-              <svg width="40" height="40" viewBox="0 0 40 40" fill="#4ADE80">
-                <path d="M20 2L18 12L8 10L20 20L22 10L32 12L20 2Z"/>
-                <ellipse cx="20" cy="32" rx="6" ry="4" fill="#4ADE80"/>
-              </svg>
-            </div>
-            <div className="avatar-float avatar-7">
-              <svg width="40" height="50" viewBox="0 0 40 50" fill="#10B981">
-                <rect x="15" y="30" width="10" height="20" rx="2" fill="#8B4513"/>
-                <path d="M8 30C8 22 12 18 20 15C28 18 32 22 32 30H8Z" fill="#10B981"/>
-                <ellipse cx="20" cy="15" rx="8" ry="10" fill="#10B981"/>
-              </svg>
-            </div>
-          </div>
-
-          <div className="auth-stats">
-            <h3>HƠN <span className="highlight">50.000</span> CHỦ TRỌ</h3>
-            <p>Tin tưởng và sử dụng dịch vụ của timtro.com</p>
-          </div>
-        </div>
->>>>>>> origin/phong28
 
         {/* Right Side - Form */}
         <div className="auth-new-right">

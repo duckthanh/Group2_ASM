@@ -110,8 +110,6 @@ public class RoomService {
         if (request.getParkingFee() != null) room.setParkingFee(request.getParkingFee());
         if (request.getDeposit() != null) room.setDeposit(request.getDeposit());
         if (request.getDepositType() != null) room.setDepositType(request.getDepositType());
-<<<<<<< HEAD
-=======
 
         // Room quantity management
         if (request.getTotalRooms() != null) {
@@ -154,7 +152,6 @@ public class RoomService {
                 room.setAvailability("Còn trống");
             }
         }
->>>>>>> origin/phong28
 
         Room updatedRoom = roomRepository.save(room);
         return mapToResponse(updatedRoom);
@@ -468,34 +465,6 @@ public class RoomService {
 
     // Public method for other services to use
     public RoomResponse mapToRoomResponse(Room room) {
-<<<<<<< HEAD
-        return RoomResponse.builder()
-                .id(room.getId())
-                .name(room.getName())
-                .imageUrl(room.getImageUrl())
-                .additionalImages(room.getAdditionalImages())
-                .detail(room.getDetail())
-                .price(room.getPrice())
-                .location(room.getLocation())
-                .contact(room.getContact())
-                .isAvailable(room.getIsAvailable())
-                .ownerId(room.getOwner().getId())
-                .ownerUsername(room.getOwner().getUsername())
-                .createdAt(room.getCreatedAt())
-                .updatedAt(room.getUpdatedAt())
-                .roomType(room.getRoomType())
-                .area(room.getArea())
-                .capacity(room.getCapacity())
-                .amenities(room.getAmenities())
-                .availability(room.getAvailability())
-                .electricityCost(room.getElectricityCost())
-                .waterCost(room.getWaterCost())
-                .internetCost(room.getInternetCost())
-                .parkingFee(room.getParkingFee())
-                .deposit(room.getDeposit())
-                .depositType(room.getDepositType())
-                .build();
-=======
         try {
             Long ownerId = null;
             String ownerUsername = null;
@@ -543,7 +512,6 @@ public class RoomService {
             e.printStackTrace();
             throw e;
         }
->>>>>>> origin/phong28
     }
 }
 

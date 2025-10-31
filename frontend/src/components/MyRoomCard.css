@@ -43,31 +43,18 @@
   border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
-<<<<<<< HEAD
-  backdrop-filter: blur(8px);
-}
-
-.my-room-badge.status-hold {
-=======
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 
 .my-room-badge.status-pending {
->>>>>>> origin/phong28
   background: rgba(251, 191, 36, 0.9);
   color: #78350F;
 }
 
-<<<<<<< HEAD
-.my-room-badge.status-deposited {
-  background: rgba(59, 130, 246, 0.9);
-  color: #1E3A8A;
-=======
 .my-room-badge.status-confirmed {
   background: rgba(16, 185, 129, 0.9);
   color: #064E3B;
->>>>>>> origin/phong28
 }
 
 .my-room-badge.status-active {
@@ -85,14 +72,11 @@
   color: #7F1D1D;
 }
 
-<<<<<<< HEAD
-=======
 .my-room-badge.status-rejected {
   background: rgba(185, 28, 28, 0.9);
   color: #FEF2F2;
 }
 
->>>>>>> origin/phong28
 .my-room-countdown {
   position: absolute;
   top: 12px;
@@ -100,10 +84,7 @@
   padding: 6px 10px;
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.75);
-<<<<<<< HEAD
-=======
   -webkit-backdrop-filter: blur(8px);
->>>>>>> origin/phong28
   backdrop-filter: blur(8px);
   color: white;
   font-size: 12px;
@@ -285,8 +266,6 @@
   font-weight: 500;
 }
 
-<<<<<<< HEAD
-=======
 /* Status Info */
 .my-room-status-info {
   display: flex;
@@ -308,7 +287,6 @@
   color: #065F46;
 }
 
->>>>>>> origin/phong28
 /* Cancel Info */
 .my-room-cancel-info {
   display: flex;
@@ -353,9 +331,6 @@
   background: #2563EB;
 }
 
-<<<<<<< HEAD
-/* CTA Button */
-=======
 /* CTA Buttons */
 .my-room-actions {
   display: flex;
@@ -364,7 +339,6 @@
   margin-top: auto;
 }
 
->>>>>>> origin/phong28
 .my-room-cta {
   width: 100%;
   padding: 14px;
@@ -374,14 +348,10 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
-<<<<<<< HEAD
-  margin-top: auto;
-=======
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
->>>>>>> origin/phong28
 }
 
 .my-room-cta.btn-primary {
@@ -407,8 +377,6 @@
   color: #2563EB;
 }
 
-<<<<<<< HEAD
-=======
 .my-room-cta.btn-cancel {
   background: white;
   color: #DC2626;
@@ -437,7 +405,6 @@
   box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
 }
 
->>>>>>> origin/phong28
 /* Responsive */
 @media (max-width: 768px) {
   .my-room-card-image {

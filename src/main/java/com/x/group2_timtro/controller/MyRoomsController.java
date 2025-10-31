@@ -3,10 +3,7 @@ package com.x.group2_timtro.controller;
 import com.x.group2_timtro.dto.request.*;
 import com.x.group2_timtro.dto.response.MyRoomDetailResponse;
 import com.x.group2_timtro.dto.response.MyRoomResponse;
-<<<<<<< HEAD
-=======
 import com.x.group2_timtro.dto.response.MyPostedRoomResponse;
->>>>>>> origin/phong28
 import com.x.group2_timtro.service.MyRoomsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -255,8 +252,6 @@ public class MyRoomsController {
             ));
         }
     }
-<<<<<<< HEAD
-=======
 
     /**
      * Upload QR payment image (Landlord only)
@@ -341,6 +336,5 @@ public class MyRoomsController {
             ));
         }
     }
->>>>>>> origin/phong28
 }
 

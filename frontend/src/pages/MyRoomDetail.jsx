@@ -4,21 +4,12 @@ import {
   ArrowLeft, MapPin, Maximize2, Users, Calendar, Clock, 
   CreditCard, FileText, Phone, Mail, AlertCircle, Download,
   CheckCircle, XCircle, MessageSquare, Upload, Image as ImageIcon,
-<<<<<<< HEAD
-  User
-} from 'lucide-react'
-import toast from 'react-hot-toast'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
-import { myRoomsAPI } from '../services/api'
-=======
   User, X, Edit2
 } from 'lucide-react'
 import { customToast } from '../utils/customToast.jsx'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { myRoomsAPI, uploadAPI } from '../services/api'
->>>>>>> origin/phong28
 import './MyRoomDetail.css'
 
 function MyRoomDetail({ currentUser, onLogout }) {
@@ -32,14 +23,6 @@ function MyRoomDetail({ currentUser, onLogout }) {
   const [showIssueModal, setShowIssueModal] = useState(false)
   const [issueForm, setIssueForm] = useState({ title: '', description: '', photos: [] })
 
-<<<<<<< HEAD
-  useEffect(() => {
-    if (!currentUser) {
-      navigate('/login')
-      return
-    }
-    loadRoomDetail()
-=======
   // Modal states
   const [showSignContractModal, setShowSignContractModal] = useState(false)
   const [showCancelModal, setShowCancelModal] = useState(false)
@@ -69,20 +52,11 @@ function MyRoomDetail({ currentUser, onLogout }) {
     if (currentUser && bookingId) {
       loadRoomDetail()
     }
->>>>>>> origin/phong28
   }, [bookingId, currentUser])
 
   const loadRoomDetail = async () => {
     try {
       setLoading(true)
-<<<<<<< HEAD
-      const data = await myRoomsAPI.getMyRoomDetail(bookingId)
-      setRoom(data)
-    } catch (error) {
-      console.error('Failed to load room detail:', error)
-      toast.error('Không thể tải thông tin phòng')
-      navigate('/account/rooms')
-=======
       console.log('Loading room detail with bookingId:', bookingId)
       const data = await myRoomsAPI.getMyRoomDetail(bookingId)
       console.log('Room detail loaded:', data)
@@ -98,7 +72,6 @@ function MyRoomDetail({ currentUser, onLogout }) {
       setTimeout(() => {
         navigate('/landlord/booking-requests')
       }, 2000)
->>>>>>> origin/phong28
     } finally {
       setLoading(false)
     }
@@ -111,51 +84,6 @@ function MyRoomDetail({ currentUser, onLogout }) {
         method: 'BANK_TRANSFER',
         note: 'Thanh toán tiền cọc'
       })
-<<<<<<< HEAD
-      toast.success('Đã thanh toán tiền cọc thành công')
-      setShowPaymentModal(false)
-      loadRoomDetail()
-    } catch (error) {
-      toast.error('Thanh toán thất bại')
-    }
-  }
-
-  const handleSignContract = async () => {
-    if (!window.confirm('Bạn xác nhận muốn ký hợp đồng này?')) return
-    
-    try {
-      await myRoomsAPI.signContract(bookingId)
-      toast.success('Đã ký hợp đồng thành công')
-      loadRoomDetail()
-    } catch (error) {
-      toast.error(error.response?.data?.error || 'Không thể ký hợp đồng')
-    }
-  }
-
-  const handleCancelBooking = async () => {
-    const reason = window.prompt('Vui lòng nhập lý do hủy:')
-    if (!reason) return
-
-    try {
-      await myRoomsAPI.cancelBooking(bookingId, reason)
-      toast.success('Đã hủy đặt phòng')
-      navigate('/account/rooms')
-    } catch (error) {
-      toast.error('Không thể hủy đặt phòng')
-    }
-  }
-
-  const handleRenewLease = async () => {
-    const months = window.prompt('Số tháng muốn gia hạn:')
-    if (!months || isNaN(months)) return
-
-    try {
-      await myRoomsAPI.renewLease(bookingId, parseInt(months))
-      toast.success(`Đã gia hạn ${months} tháng`)
-      loadRoomDetail()
-    } catch (error) {
-      toast.error('Không thể gia hạn hợp đồng')
-=======
       customToast.success('Đã thanh toán tiền cọc thành công! 💰')
       setShowPaymentModal(false)
       loadRoomDetail()
@@ -227,7 +155,6 @@ function MyRoomDetail({ currentUser, onLogout }) {
       customToast.error('Không thể gia hạn hợp đồng')
     } finally {
       setProcessing(false)
->>>>>>> origin/phong28
     }
   }
 
@@ -235,18 +162,11 @@ function MyRoomDetail({ currentUser, onLogout }) {
     e.preventDefault()
     try {
       await myRoomsAPI.createIssue(bookingId, issueForm)
-<<<<<<< HEAD
-      toast.success('Đã gửi báo cáo sự cố')
-=======
       customToast.success('Đã gửi báo cáo sự cố! 📢')
->>>>>>> origin/phong28
       setShowIssueModal(false)
       setIssueForm({ title: '', description: '', photos: [] })
       loadRoomDetail()
     } catch (error) {
-<<<<<<< HEAD
-      toast.error('Không thể gửi báo cáo')
-=======
       customToast.error('Không thể gửi báo cáo')
     }
   }
@@ -309,17 +229,12 @@ function MyRoomDetail({ currentUser, onLogout }) {
       loadRoomDetail()
     } catch (error) {
       customToast.error('Không thể xác nhận thanh toán')
->>>>>>> origin/phong28
     }
   }
 
   const getStatusBadge = (status) => {
     const badges = {
       HOLD: { label: 'Giữ chỗ', className: 'badge-hold' },
-<<<<<<< HEAD
-      DEPOSITED: { label: 'Đã đặt cọc', className: 'badge-deposited' },
-=======
->>>>>>> origin/phong28
       ACTIVE: { label: 'Đang thuê', className: 'badge-active' },
       ENDED: { label: 'Đã trả phòng', className: 'badge-ended' },
       CANCELED: { label: 'Đã hủy', className: 'badge-canceled' }
@@ -380,18 +295,6 @@ function MyRoomDetail({ currentUser, onLogout }) {
           </div>
         )}
 
-<<<<<<< HEAD
-        {room.status === 'DEPOSITED' && !room.deposit?.paid && (
-          <div className="warning-banner">
-            <AlertCircle size={20} />
-            <div>
-              <strong>Chưa thanh toán tiền cọc!</strong>
-              <p>Vui lòng hoàn tất thanh toán để tiếp tục</p>
-            </div>
-          </div>
-        )}
-=======
->>>>>>> origin/phong28
 
         {/* Main Content */}
         <div className="detail-content">
@@ -592,8 +495,6 @@ function MyRoomDetail({ currentUser, onLogout }) {
 
               {activeTab === 'payments' && (
                 <div className="payments-tab">
-<<<<<<< HEAD
-=======
                   {/* QR Payment Section - Landlord only */}
                   {isLandlord && (
                     <div className="qr-payment-section" style={{ marginBottom: '24px', padding: '20px', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
@@ -692,7 +593,6 @@ function MyRoomDetail({ currentUser, onLogout }) {
                     </div>
                   )}
 
->>>>>>> origin/phong28
                   {room.payments && room.payments.length > 0 ? (
                     <div className="payments-table">
                       <table>
@@ -739,8 +639,6 @@ function MyRoomDetail({ currentUser, onLogout }) {
 
               {activeTab === 'documents' && (
                 <div className="documents-tab">
-<<<<<<< HEAD
-=======
                   {/* Upload button for tenant */}
                   {!isLandlord && (
                     <button 
@@ -753,24 +651,11 @@ function MyRoomDetail({ currentUser, onLogout }) {
                     </button>
                   )}
 
->>>>>>> origin/phong28
                   {room.documents && room.documents.length > 0 ? (
                     <div className="documents-grid">
                       {room.documents.map(doc => (
                         <div key={doc.id} className="document-card">
                           <FileText size={32} />
-<<<<<<< HEAD
-                          <div>
-                            <h4>{doc.fileName || doc.documentType}</h4>
-                            <span className={`doc-status status-${doc.status.toLowerCase()}`}>
-                              {doc.status === 'APPROVED' ? 'Đã duyệt' :
-                               doc.status === 'PENDING' ? 'Chờ duyệt' : 'Từ chối'}
-                            </span>
-                          </div>
-                          <a href={doc.documentUrl} className="btn-view" target="_blank" rel="noreferrer">
-                            Xem
-                          </a>
-=======
                           <div style={{ flex: 1 }}>
                             <h4>{doc.fileName || doc.documentType}</h4>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
@@ -810,20 +695,12 @@ function MyRoomDetail({ currentUser, onLogout }) {
                               </button>
                             )}
                           </div>
->>>>>>> origin/phong28
                         </div>
                       ))}
                     </div>
                   ) : (
                     <div className="empty-content">
                       <p>Chưa có tài liệu nào</p>
-<<<<<<< HEAD
-                      <button className="btn-upload">
-                        <Upload size={16} />
-                        Tải lên tài liệu
-                      </button>
-=======
->>>>>>> origin/phong28
                     </div>
                   )}
                 </div>
@@ -865,100 +742,6 @@ function MyRoomDetail({ currentUser, onLogout }) {
 
           {/* Right Column - Actions */}
           <div className="detail-sidebar">
-<<<<<<< HEAD
-            {/* Landlord Card */}
-            <div className="sidebar-card">
-              <h3>Thông tin chủ trọ</h3>
-              <div className="landlord-info">
-                <div className="landlord-avatar">
-                  <User size={32} />
-                </div>
-                <div>
-                  <h4>{room.landlord.name}</h4>
-                  {room.landlord.phone && (
-                    <a href={`tel:${room.landlord.phone}`} className="landlord-contact">
-                      <Phone size={14} />
-                      {room.landlord.phone}
-                    </a>
-                  )}
-                  {room.landlord.email && (
-                    <a href={`mailto:${room.landlord.email}`} className="landlord-contact">
-                      <Mail size={14} />
-                      {room.landlord.email}
-                    </a>
-                  )}
-                </div>
-              </div>
-              <button className="btn-contact">
-                <MessageSquare size={16} />
-                Liên hệ
-              </button>
-            </div>
-
-            {/* Actions Card */}
-            <div className="sidebar-card">
-              <h3>Hành động</h3>
-              <div className="actions-list">
-                {room.status === 'HOLD' && (
-                  <>
-                    <button className="action-btn primary" onClick={() => setShowPaymentModal(true)}>
-                      <CreditCard size={16} />
-                      Đặt cọc ngay
-                    </button>
-                    <button className="action-btn danger" onClick={handleCancelBooking}>
-                      <XCircle size={16} />
-                      Hủy giữ chỗ
-                    </button>
-                  </>
-                )}
-
-                {room.status === 'DEPOSITED' && (
-                  <>
-                    {!room.deposit?.paid && (
-                      <button className="action-btn primary" onClick={handlePayDeposit}>
-                        <CreditCard size={16} />
-                        Thanh toán cọc
-                      </button>
-                    )}
-                    {room.deposit?.paid && room.contract?.status === 'PENDING' && (
-                      <button className="action-btn primary" onClick={handleSignContract}>
-                        <FileText size={16} />
-                        Ký hợp đồng
-                      </button>
-                    )}
-                    <button className="action-btn danger" onClick={handleCancelBooking}>
-                      <XCircle size={16} />
-                      Hủy đặt phòng
-                    </button>
-                  </>
-                )}
-
-                {room.status === 'ACTIVE' && (
-                  <>
-                    <button className="action-btn primary" onClick={() => setShowPaymentModal(true)}>
-                      <CreditCard size={16} />
-                      Thanh toán tiền nhà
-                    </button>
-                    <button className="action-btn" onClick={handleRenewLease}>
-                      <Calendar size={16} />
-                      Gia hạn hợp đồng
-                    </button>
-                    <button className="action-btn" onClick={() => setShowIssueModal(true)}>
-                      <AlertCircle size={16} />
-                      Báo sự cố
-                    </button>
-                  </>
-                )}
-
-                {room.contract?.pdfUrl && (
-                  <a href={room.contract.pdfUrl} className="action-btn" target="_blank" rel="noreferrer">
-                    <Download size={16} />
-                    Tải hợp đồng
-                  </a>
-                )}
-              </div>
-            </div>
-=======
             {/* Contact Card - Show tenant info if landlord, landlord info if tenant */}
             {!isLandlord && room.landlord && (
               <div className="sidebar-card">
@@ -1083,7 +866,6 @@ function MyRoomDetail({ currentUser, onLogout }) {
                 </div>
               </div>
             )}
->>>>>>> origin/phong28
           </div>
         </div>
       </div>
@@ -1125,8 +907,6 @@ function MyRoomDetail({ currentUser, onLogout }) {
         </div>
       )}
 
-<<<<<<< HEAD
-=======
       {/* Sign Contract Modal */}
       {showSignContractModal && (
         <div className="modal-overlay-new" onClick={() => setShowSignContractModal(false)}>
@@ -1416,7 +1196,6 @@ function MyRoomDetail({ currentUser, onLogout }) {
         </div>
       )}
 
->>>>>>> origin/phong28
       <Footer />
     </div>
   )
@@ -1424,7 +1203,3 @@ function MyRoomDetail({ currentUser, onLogout }) {
 
 export default MyRoomDetail
 
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/phong28

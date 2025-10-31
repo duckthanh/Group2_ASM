@@ -8,10 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-<<<<<<< HEAD
-=======
 import java.util.Map;
->>>>>>> origin/phong28
 
 @RestController
 @RequestMapping("/api/saved-rooms")
@@ -29,11 +26,7 @@ public class SavedRoomController {
             SavedRoomResponse response = savedRoomService.saveRoom(roomId, userEmail);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-<<<<<<< HEAD
-            return ResponseEntity.badRequest().body(e.getMessage());
-=======
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
->>>>>>> origin/phong28
         }
     }
 
@@ -62,43 +55,15 @@ public class SavedRoomController {
     }
 
     @GetMapping("/{roomId}/check")
-<<<<<<< HEAD
-    public ResponseEntity<?> checkIfRoomSaved(
-=======
     public ResponseEntity<?> checkIfSaved(
->>>>>>> origin/phong28
             @PathVariable Long roomId,
             Authentication authentication) {
         try {
             String userEmail = authentication.getName();
-<<<<<<< HEAD
-            boolean isSaved = savedRoomService.isRoomSaved(roomId, userEmail);
-            return ResponseEntity.ok(new SavedCheckResponse(isSaved));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    // Inner class for saved check response
-    public static class SavedCheckResponse {
-        private boolean saved;
-
-        public SavedCheckResponse(boolean saved) {
-            this.saved = saved;
-        }
-
-        public boolean isSaved() {
-            return saved;
-        }
-
-        public void setSaved(boolean saved) {
-            this.saved = saved;
-=======
             boolean saved = savedRoomService.isRoomSaved(roomId, userEmail);
             return ResponseEntity.ok(Map.of("saved", saved));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
->>>>>>> origin/phong28
         }
     }
 }

@@ -2,11 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom'
 import { 
   Heart, Share2, Flag, MapPin, Home, Users, Maximize, 
-<<<<<<< HEAD
-  Phone, MessageCircle, Calendar, Clock, ChevronLeft, ChevronRight,
-=======
   Phone, MessageCircle, Clock, ChevronLeft, ChevronRight,
->>>>>>> origin/phong28
   ZoomIn, X, Copy, Check, Star, DollarSign, Zap, Wifi,
   AirVent, Droplets, Car, UtensilsCrossed, Sofa, Edit
 } from 'lucide-react'
@@ -15,11 +11,7 @@ import Footer from '../components/Footer'
 import RentRoom from '../components/RentRoom'
 import EditRoom from '../components/EditRoom'
 import ImageGallery from '../components/ImageGallery'
-<<<<<<< HEAD
-import { roomAPI, savedRoomAPI, roomReportAPI, viewingScheduleAPI } from '../services/api'
-=======
 import { roomAPI, savedRoomAPI, roomReportAPI } from '../services/api'
->>>>>>> origin/phong28
 import toast from 'react-hot-toast'
 import './RoomDetail.css'
 
@@ -41,23 +33,6 @@ function RoomDetail({ currentUser, onLogout }) {
 
   // Edit Room modal state
   const [showEditModal, setShowEditModal] = useState(false)
-<<<<<<< HEAD
-
-  // Booking form state
-  const [showBookingForm, setShowBookingForm] = useState(false)
-  const [bookingDate, setBookingDate] = useState('')
-  const [bookingTime, setBookingTime] = useState('')
-  const [bookingName, setBookingName] = useState('')
-  const [bookingPhone, setBookingPhone] = useState('')
-
-  useEffect(() => {
-    fetchRoom()
-    checkIfRoomSaved()
-    // Scroll spy
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [id])
-=======
 
   useEffect(() => {
     fetchRoom()
@@ -102,41 +77,7 @@ function RoomDetail({ currentUser, onLogout }) {
     
     return images
   }
->>>>>>> origin/phong28
 
-  const handleScroll = () => {
-    const sections = ['overview', 'amenities', 'costs', 'schedule', 'map', 'similar']
-    const scrollPosition = window.scrollY + 200
-
-    for (const section of sections) {
-      const element = document.getElementById(section)
-      if (element) {
-        const { offsetTop, offsetHeight } = element
-        if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-          setActiveSection(section)
-          break
-        }
-      }
-    }
-  }
-
-  // Get all images (main + additional)
-  const getAllImages = () => {
-    if (!room) return []
-    const images = []
-    if (room.imageUrl) images.push(room.imageUrl)
-    
-    if (room.additionalImages) {
-      try {
-        const additionalImagesArray = JSON.parse(room.additionalImages)
-        images.push(...additionalImagesArray)
-      } catch (e) {
-        console.error('Error parsing additional images:', e)
-      }
-    }
-    
-    return images
-  }
 
   const fetchRoom = async () => {
     setLoading(true)
@@ -194,16 +135,12 @@ function RoomDetail({ currentUser, onLogout }) {
       }
     } catch (err) {
       console.error('Error saving room:', err)
-<<<<<<< HEAD
-      toast.error('Có lỗi xảy ra')
-=======
       const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message
       if (errorMessage === 'Room already saved') {
         toast.error('Bạn đã lưu phòng này rồi!')
       } else {
         toast.error(errorMessage || 'Có lỗi xảy ra')
       }
->>>>>>> origin/phong28
     }
   }
 
@@ -245,37 +182,6 @@ function RoomDetail({ currentUser, onLogout }) {
     }
   }
 
-<<<<<<< HEAD
-  const handleBooking = async (e) => {
-    e.preventDefault()
-    if (!currentUser) {
-      toast.error('Vui lòng đăng nhập để đặt lịch')
-      navigate('/login')
-      return
-    }
-
-    try {
-      await viewingScheduleAPI.createSchedule(id, {
-        viewingDate: bookingDate,
-        viewingTime: bookingTime,
-        visitorName: bookingName,
-        visitorPhone: bookingPhone,
-        notes: ''
-      })
-      toast.success('Đặt lịch xem phòng thành công!')
-      setShowBookingForm(false)
-      setBookingDate('')
-      setBookingTime('')
-      setBookingName('')
-      setBookingPhone('')
-    } catch (err) {
-      console.error('Error creating schedule:', err)
-      toast.error('Có lỗi xảy ra khi đặt lịch')
-    }
-  }
-
-=======
->>>>>>> origin/phong28
   const handleRentNow = () => {
     if (!currentUser) {
       toast.error('Vui lòng đăng nhập để thuê phòng')
@@ -509,161 +415,6 @@ function RoomDetail({ currentUser, onLogout }) {
                     <Users size={16} />
                     {room.capacity ? `${room.capacity} người` : 'N/A'}
                   </span>
-<<<<<<< HEAD
-                </div>
-                <p className="room-updated">Cập nhật {room.updatedAt ? new Date(room.updatedAt).toLocaleDateString('vi-VN') : 'N/A'}</p>
-              </div>
-
-              {/* Price & Status */}
-              <div className="room-price-section">
-                <div className="price-main">
-                  <span className="price-amount">{formatPrice(room.price)}đ</span>
-                  <span className="price-unit">/tháng</span>
-                </div>
-                <div className="price-actions">
-                  <button className="btn-schedule" onClick={() => setShowBookingForm(true)}>
-                    <Calendar size={20} />
-                    Đặt lịch xem
-                  </button>
-                </div>
-              </div>
-
-              {/* Description */}
-              <div className="room-section">
-                <h2 className="section-title">Mô tả chi tiết</h2>
-                <p className="room-description">
-                  {room.detail || 'Chưa có mô tả chi tiết'}
-                </p>
-              </div>
-
-              {/* Amenities */}
-              <div className="room-section" id="amenities">
-                <h2 className="section-title">Tiện nghi</h2>
-                <div className="amenities-grid">
-                  {amenitiesList.length > 0 ? (
-                    amenitiesList.map((amenity, index) => {
-                      const amenityData = amenitiesMap[amenity.trim()]
-                      const Icon = amenityData?.icon || Check
-                      return (
-                        <div key={index} className="amenity-item">
-                          <Icon size={20} className="amenity-icon" />
-                          <span>{amenityData?.label || amenity.trim()}</span>
-                        </div>
-                      )
-                    })
-                  ) : (
-                    <p className="empty-text">Chưa cập nhật tiện nghi</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Costs & Terms */}
-              <div className="room-section" id="costs">
-                <h2 className="section-title">Chi phí & điều khoản</h2>
-                <div className="costs-table">
-                  <div className="cost-row">
-                    <span className="cost-label">Tiền phòng</span>
-                    <span className="cost-value">{formatPrice(room.price)}đ/tháng</span>
-                  </div>
-                  <div className="cost-row">
-                    <span className="cost-label">Tiền điện</span>
-                    <span className="cost-value">
-                      {room.electricityCost ? `${formatPrice(room.electricityCost)}đ/kWh` : 'Chưa cập nhật'}
-                    </span>
-                  </div>
-                  <div className="cost-row">
-                    <span className="cost-label">Tiền nước</span>
-                    <span className="cost-value">
-                      {room.waterCost ? `${formatPrice(room.waterCost)}đ/m³` : 'Chưa cập nhật'}
-                    </span>
-                  </div>
-                  <div className="cost-row">
-                    <span className="cost-label">Internet</span>
-                    <span className="cost-value">
-                      {room.internetCost ? `${formatPrice(room.internetCost)}đ/tháng` : 'Chưa cập nhật'}
-                    </span>
-                  </div>
-                  <div className="cost-row">
-                    <span className="cost-label">Phí giữ xe</span>
-                    <span className="cost-value">
-                      {room.parkingFee ? `${formatPrice(room.parkingFee)}đ/tháng` : 'Chưa cập nhật'}
-                    </span>
-                  </div>
-                  <div className="cost-row">
-                    <span className="cost-label">Tiền cọc</span>
-                    <span className="cost-value">
-                      {room.deposit 
-                        ? room.depositType === 'MONTHS' 
-                          ? `${room.deposit} tháng`
-                          : `${formatPrice(room.deposit)}đ`
-                        : 'Chưa cập nhật'
-                      }
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Booking Schedule */}
-              {showBookingForm && (
-                <div className="room-section" id="schedule">
-                  <h2 className="section-title">Đặt lịch xem phòng</h2>
-                  <form className="booking-form" onSubmit={handleBooking}>
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Ngày xem</label>
-                        <input 
-                          type="date" 
-                          value={bookingDate}
-                          onChange={(e) => setBookingDate(e.target.value)}
-                          required
-                          min={new Date().toISOString().split('T')[0]}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Giờ xem</label>
-                        <select 
-                          value={bookingTime}
-                          onChange={(e) => setBookingTime(e.target.value)}
-                          required
-                        >
-                          <option value="">Chọn giờ</option>
-                          <option value="08:00">08:00 - 09:00</option>
-                          <option value="09:00">09:00 - 10:00</option>
-                          <option value="10:00">10:00 - 11:00</option>
-                          <option value="14:00">14:00 - 15:00</option>
-                          <option value="15:00">15:00 - 16:00</option>
-                          <option value="16:00">16:00 - 17:00</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Họ tên</label>
-                        <input 
-                          type="text" 
-                          placeholder="Nhập họ tên"
-                          value={bookingName}
-                          onChange={(e) => setBookingName(e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Số điện thoại</label>
-                        <input 
-                          type="tel" 
-                          placeholder="Nhập số điện thoại"
-                          value={bookingPhone}
-                          onChange={(e) => setBookingPhone(e.target.value)}
-                          required
-                        />
-                      </div>
-                    </div>
-                    <button type="submit" className="btn-submit-booking">
-                      Xác nhận đặt lịch
-                    </button>
-                  </form>
-=======
->>>>>>> origin/phong28
                 </div>
                 <p className="room-updated">Cập nhật {room.updatedAt ? new Date(room.updatedAt).toLocaleDateString('vi-VN') : 'N/A'}</p>
               </div>
@@ -1068,19 +819,6 @@ function RoomDetail({ currentUser, onLogout }) {
           <span className="cta-unit">/tháng</span>
         </div>
         <div className="cta-actions">
-<<<<<<< HEAD
-          <button className="btn-cta call" onClick={handleRentNow}>
-            <Home size={18} />
-            Thuê ngay
-          </button>
-          <button className="btn-cta message" onClick={handleDeposit}>
-            <DollarSign size={18} />
-            Đặt cọc
-          </button>
-          <button className="btn-cta schedule" onClick={() => setShowBookingForm(true)}>
-            <Calendar size={18} />
-            Xem lịch
-=======
           <button 
             className="btn-cta call" 
             onClick={handleRentNow}
@@ -1104,7 +842,6 @@ function RoomDetail({ currentUser, onLogout }) {
           >
             <DollarSign size={18} />
             {room.isAvailable ? 'Đặt cọc' : 'Hết phòng'}
->>>>>>> origin/phong28
           </button>
         </div>
       </div>

@@ -39,25 +39,6 @@ public class SecurityConfiguration {
                         .requestMatchers("/uploads/**").permitAll()
                         // Auth endpoints - public
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/create-admin").permitAll()
-<<<<<<< HEAD
-                        // User endpoints - For testing purposes, permit all for now
-                        .requestMatchers("/api/users/**").permitAll() 
-                        // Room endpoints - For testing purposes, permit all for now
-                        .requestMatchers("/api/rooms/**").permitAll()
-                        // My Rooms endpoints - For testing purposes, permit all for now
-                        .requestMatchers("/api/me/rooms/**").permitAll()
-                        // File upload endpoints - For testing purposes, permit all for now
-                        .requestMatchers("/api/upload/**").permitAll()
-                        // Booking endpoints - For testing purposes, permit all for now
-                        .requestMatchers("/api/bookings/**").permitAll()
-                        // Saved Rooms endpoints - For testing purposes, permit all for now
-                        .requestMatchers("/api/saved-rooms/**").permitAll()
-                        // Reports endpoints - For testing purposes, permit all for now
-                        .requestMatchers("/api/reports/**").permitAll()
-                        // Viewing Schedules endpoints - For testing purposes, permit all for now
-                        .requestMatchers("/api/viewing-schedules/**").permitAll()
-                        // Tất cả request khác cần authenticated (still keep this for safety)
-=======
                         // MFA endpoints - verify cần public (chưa có token), các endpoint khác cần authenticated
                         .requestMatchers(HttpMethod.POST, "/api/auth/mfa/verify").permitAll()
                         .requestMatchers("/api/auth/mfa/**").authenticated()
@@ -80,7 +61,6 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.PUT, "/api/bookings/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/bookings/**").authenticated()
                         // Tất cả request khác cần authenticated
->>>>>>> origin/phong28
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer((oauth2) -> oauth2

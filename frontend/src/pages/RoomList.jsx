@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
-<<<<<<< HEAD
-=======
 import { customToast } from '../utils/customToast.jsx'
->>>>>>> origin/phong28
 import { Search, MapPin, SlidersHorizontal, Plus, Home, Users, Maximize, Phone, Eye, Trash2 } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
@@ -98,10 +95,6 @@ function RoomList({ currentUser, onLogout }) {
     setSelectedRoom(null)
   }
 
-<<<<<<< HEAD
-  const handleSuccess = () => {
-    fetchRooms()
-=======
   const handleSuccess = async () => {
     console.log('🎉 handleSuccess called - refreshing room list...')
     // Reset về trạng thái ban đầu để thấy phòng mới
@@ -110,7 +103,6 @@ function RoomList({ currentUser, onLogout }) {
     setCurrentPage(1) // Reset về trang đầu tiên
     setSortBy('default') // Reset sorting
     await fetchRooms() // Fetch all available rooms
->>>>>>> origin/phong28
   }
 
   const handleSearch = async (e) => {
@@ -138,15 +130,9 @@ function RoomList({ currentUser, onLogout }) {
     } catch (err) {
       console.error('Error filtering rooms:', err)
       if (err.response?.status === 500) {
-<<<<<<< HEAD
-        alert('Lỗi server. Vui lòng kiểm tra backend có đang chạy không.')
-      } else if (err.message === 'Network Error') {
-        alert('Không thể kết nối đến server.')
-=======
         customToast.error('Lỗi server. Vui lòng kiểm tra backend có đang chạy không.')
       } else if (err.message === 'Network Error') {
         customToast.error('Không thể kết nối đến server.')
->>>>>>> origin/phong28
       } else {
         customToast.error('Có lỗi khi lọc: ' + (err.response?.data?.message || err.message))
       }
@@ -264,15 +250,9 @@ function RoomList({ currentUser, onLogout }) {
             {/* Popular keywords */}
             <div className="search-suggestions">
               <span className="suggestions-label">Gợi ý:</span>
-<<<<<<< HEAD
-              <button className="suggestion-chip" onClick={() => setSearchKeyword('gần FTU')}>gần FTU</button>
-              <button className="suggestion-chip" onClick={() => setSearchKeyword('có ban công')}>có ban công</button>
-              <button className="suggestion-chip" onClick={() => setSearchKeyword('dưới 3tr')}>dưới 3tr</button>
-=======
               <button className="suggestion-chip" onClick={() => setSearchKeyword('gần FPT')}>Gần FPT</button>
               <button className="suggestion-chip" onClick={() => setSearchKeyword('thôn 4')}>Thôn 4</button>
               <button className="suggestion-chip" onClick={() => setSearchKeyword('gần chợ hòa lạc')}>Gần chợ hòa lạc</button>
->>>>>>> origin/phong28
             </div>
           </div>
         </div>
@@ -335,9 +315,6 @@ function RoomList({ currentUser, onLogout }) {
                           alt={room.name}
                           className="room-image-new"
                         />
-<<<<<<< HEAD
-                        <div className="room-badge-new">Còn trống</div>
-=======
                         <div 
                           className="room-badge-new"
                           style={{
@@ -354,7 +331,6 @@ function RoomList({ currentUser, onLogout }) {
                         >
                           {room.isAvailable ? '✓ Còn Trống' : '✕ Hết Phòng'}
                         </div>
->>>>>>> origin/phong28
                       </Link>
 
                       {/* Room Info */}

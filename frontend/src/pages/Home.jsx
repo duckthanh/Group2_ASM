@@ -3,12 +3,8 @@ import { useNavigate, Link } from 'react-router-dom'
 import { Heart } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-<<<<<<< HEAD
-import { roomAPI } from '../services/api'
-=======
 import { roomAPI, savedRoomAPI } from '../services/api'
 import toast from 'react-hot-toast'
->>>>>>> origin/phong28
 import '../styles/Contact.css'
 import '../styles/About.css'
 

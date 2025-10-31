@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.x.group2_timtro.dto.request.*;
 import com.x.group2_timtro.dto.response.MyRoomDetailResponse;
 import com.x.group2_timtro.dto.response.MyRoomResponse;
-<<<<<<< HEAD
-=======
 import com.x.group2_timtro.dto.response.MyPostedRoomResponse;
->>>>>>> origin/phong28
 import com.x.group2_timtro.entity.*;
 import com.x.group2_timtro.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -60,15 +57,6 @@ public class MyRoomsService {
      */
     public MyRoomDetailResponse getMyRoomDetail(Long userId, String bookingId) {
         // Verify user exists
-<<<<<<< HEAD
-        userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Booking booking = bookingRepository.findByBookingId(bookingId)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
-
-        if (booking.getTenant().getId() != userId) {
-=======
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -104,7 +92,6 @@ public class MyRoomsService {
         boolean isLandlord = userId.equals(booking.getRoom().getOwner().getId());
         
         if (!isTenant && !isLandlord && !isAdmin) {
->>>>>>> origin/phong28
             throw new RuntimeException("Unauthorized access to booking");
         }
 
@@ -345,8 +332,6 @@ public class MyRoomsService {
         document.setDocumentUrl(documentUrl);
         document.setFileName(fileName);
         document.setStatus("PENDING");
-<<<<<<< HEAD
-=======
         document.setUploadedBy("TENANT");
         documentRepository.save(document);
     }
@@ -424,7 +409,6 @@ public class MyRoomsService {
         if (request.getNote() != null) {
             document.setNote(request.getNote());
         }
->>>>>>> origin/phong28
         documentRepository.save(document);
     }
 
@@ -504,11 +488,8 @@ public class MyRoomsService {
                 .capacity(room.getCapacity())
                 .imageUrl(room.getImageUrl())
                 .detail(room.getDetail())
-<<<<<<< HEAD
-=======
                 .paymentQrImageUrl(booking.getPaymentQrImageUrl()) // From booking, not room
                 .paymentDescription(booking.getPaymentDescription()) // From booking, not room
->>>>>>> origin/phong28
                 .build();
 
         // Deposit info
@@ -572,10 +553,7 @@ public class MyRoomsService {
                         .documentUrl(d.getDocumentUrl())
                         .fileName(d.getFileName())
                         .status(d.getStatus())
-<<<<<<< HEAD
-=======
                         .uploadedBy(d.getUploadedBy())
->>>>>>> origin/phong28
                         .createdAt(d.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
@@ -677,8 +655,6 @@ public class MyRoomsService {
 
         return timeline;
     }
-<<<<<<< HEAD
-=======
 
     /**
      * Get all posted rooms (rooms owned by current user)
@@ -722,6 +698,5 @@ public class MyRoomsService {
                 })
                 .collect(Collectors.toList());
     }
->>>>>>> origin/phong28
 }
 

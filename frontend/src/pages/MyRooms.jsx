@@ -1,57 +1,30 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-<<<<<<< HEAD
-import { Search, Filter, Home, AlertCircle } from 'lucide-react'
-import toast from 'react-hot-toast'
-import Navbar from '../components/Navbar'
-import Footer from '../components/Footer'
-import MyRoomCard from '../components/MyRoomCard'
-=======
 import { Search, Filter, Home, AlertCircle, X } from 'lucide-react'
 import { customToast } from '../utils/customToast.jsx'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import MyRoomCard from '../components/MyRoomCard'
 import PostedRoomCard from '../components/PostedRoomCard'
->>>>>>> origin/phong28
 import { myRoomsAPI } from '../services/api'
 import './MyRooms.css'
 
 function MyRooms({ currentUser, onLogout }) {
   const navigate = useNavigate()
-<<<<<<< HEAD
-  const [activeTab, setActiveTab] = useState('ALL')
-  const [rooms, setRooms] = useState([])
-=======
   const [viewMode, setViewMode] = useState('RENTED') // 'RENTED' or 'POSTED'
   const [activeTab, setActiveTab] = useState('ALL')
   const [rooms, setRooms] = useState([])
   const [postedRooms, setPostedRooms] = useState([])
->>>>>>> origin/phong28
   const [loading, setLoading] = useState(true)
   const [searchKeyword, setSearchKeyword] = useState('')
   const [counts, setCounts] = useState({
     ALL: 0,
-<<<<<<< HEAD
-    HOLD: 0,
-    DEPOSITED: 0,
-=======
     PENDING: 0,
->>>>>>> origin/phong28
     ACTIVE: 0,
     ENDED: 0,
     CANCELED: 0
   })
 
-<<<<<<< HEAD
-  useEffect(() => {
-    if (!currentUser) {
-      navigate('/login')
-      return
-    }
-    loadRooms()
-  }, [currentUser, activeTab])
-=======
   // Modal states
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [showReturnModal, setShowReturnModal] = useState(false)
@@ -68,31 +41,10 @@ function MyRooms({ currentUser, onLogout }) {
       }
     }
   }, [currentUser, activeTab, viewMode])
->>>>>>> origin/phong28
 
   const loadRooms = async () => {
     try {
       setLoading(true)
-<<<<<<< HEAD
-      const status = activeTab === 'ALL' ? null : activeTab
-      const data = await myRoomsAPI.getMyRooms(status, searchKeyword)
-      setRooms(data)
-      
-      // Calculate counts
-      const allRooms = activeTab === 'ALL' ? data : await myRoomsAPI.getMyRooms(null, null)
-      const newCounts = {
-        ALL: allRooms.length,
-        HOLD: allRooms.filter(r => r.status === 'HOLD').length,
-        DEPOSITED: allRooms.filter(r => r.status === 'DEPOSITED').length,
-        ACTIVE: allRooms.filter(r => r.status === 'ACTIVE').length,
-        ENDED: allRooms.filter(r => r.status === 'ENDED').length,
-        CANCELED: allRooms.filter(r => r.status === 'CANCELED').length
-      }
-      setCounts(newCounts)
-    } catch (error) {
-      console.error('Failed to load rooms:', error)
-      toast.error('Không thể tải danh sách phòng')
-=======
       
       // Always fetch all rooms first
       const allRooms = await myRoomsAPI.getMyRooms(null, searchKeyword)
@@ -154,7 +106,6 @@ function MyRooms({ currentUser, onLogout }) {
     } catch (error) {
       console.error('Failed to load posted rooms:', error)
       customToast.error('Không thể tải danh sách phòng đã đăng')
->>>>>>> origin/phong28
     } finally {
       setLoading(false)
     }
@@ -162,29 +113,14 @@ function MyRooms({ currentUser, onLogout }) {
 
   const handleSearch = async (e) => {
     e.preventDefault()
-<<<<<<< HEAD
-    loadRooms()
-=======
     if (viewMode === 'RENTED') {
       loadRooms()
     }
->>>>>>> origin/phong28
   }
 
   const handleAction = async (action, room) => {
     switch (action) {
       case 'cancel':
-<<<<<<< HEAD
-        if (window.confirm('Bạn có chắc muốn hủy đặt phòng này?')) {
-          try {
-            await myRoomsAPI.cancelBooking(room.bookingId, 'Hủy bởi người dùng')
-            toast.success('Đã hủy đặt phòng')
-            loadRooms()
-          } catch (error) {
-            toast.error('Không thể hủy đặt phòng')
-          }
-        }
-=======
         setSelectedRoom(room)
         setCancelReason('')
         setShowCancelModal(true)
@@ -193,7 +129,6 @@ function MyRooms({ currentUser, onLogout }) {
       case 'return':
         setSelectedRoom(room)
         setShowReturnModal(true)
->>>>>>> origin/phong28
         break
       
       case 'contact-landlord':
@@ -217,12 +152,6 @@ function MyRooms({ currentUser, onLogout }) {
     }
   }
 
-<<<<<<< HEAD
-  const tabs = [
-    { key: 'ALL', label: 'Tất cả', count: counts.ALL },
-    { key: 'HOLD', label: 'Giữ chỗ', count: counts.HOLD },
-    { key: 'DEPOSITED', label: 'Đã đặt cọc', count: counts.DEPOSITED },
-=======
   const handleConfirmCancel = async () => {
     if (!selectedRoom) return
     
@@ -264,7 +193,6 @@ function MyRooms({ currentUser, onLogout }) {
   const tabs = [
     { key: 'ALL', label: 'Tất cả', count: counts.ALL },
     { key: 'PENDING', label: 'Chờ xác nhận', count: counts.PENDING },
->>>>>>> origin/phong28
     { key: 'ACTIVE', label: 'Đang thuê', count: counts.ACTIVE },
     { key: 'ENDED', label: 'Đã trả phòng', count: counts.ENDED },
     { key: 'CANCELED', label: 'Đã hủy', count: counts.CANCELED }
@@ -280,50 +208,13 @@ function MyRooms({ currentUser, onLogout }) {
           <div>
             <h1 className="my-rooms-title">Phòng Của Tôi</h1>
             <p className="my-rooms-subtitle">
-<<<<<<< HEAD
-              Quản lý tất cả phòng trọ bạn đã đặt và đang thuê
-=======
               {viewMode === 'RENTED' 
                 ? 'Quản lý tất cả phòng trọ bạn đã đặt và đang thuê'
                 : 'Quản lý tất cả phòng trọ bạn đã đăng'}
->>>>>>> origin/phong28
             </p>
           </div>
         </div>
 
-<<<<<<< HEAD
-        {/* Search & Filter */}
-        <div className="my-rooms-search-bar">
-          <form onSubmit={handleSearch} className="search-form">
-            <div className="search-input-wrapper">
-              <Search size={20} />
-              <input
-                type="text"
-                placeholder="Tìm theo tên phòng, địa chỉ, chủ trọ..."
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-              />
-            </div>
-            <button type="submit" className="btn-search">
-              Tìm kiếm
-            </button>
-          </form>
-        </div>
-
-        {/* Tabs */}
-        <div className="my-rooms-tabs">
-          {tabs.map(tab => (
-            <button
-              key={tab.key}
-              className={`tab-btn ${activeTab === tab.key ? 'active' : ''}`}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              {tab.label}
-              <span className="tab-count">{tab.count}</span>
-            </button>
-          ))}
-        </div>
-=======
         {/* View Mode Toggle */}
         <div className="view-mode-toggle" style={{
           display: 'flex',
@@ -410,7 +301,6 @@ function MyRooms({ currentUser, onLogout }) {
             </div>
           </>
         )}
->>>>>>> origin/phong28
 
         {/* Rooms Grid */}
         <div className="my-rooms-content">
@@ -419,38 +309,6 @@ function MyRooms({ currentUser, onLogout }) {
               <div className="spinner"></div>
               <p>Đang tải...</p>
             </div>
-<<<<<<< HEAD
-          ) : rooms.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon">
-                <Home size={64} />
-              </div>
-              <h3>Chưa có phòng nào</h3>
-              <p>
-                {activeTab === 'ALL' 
-                  ? 'Bạn chưa đặt phòng nào. Khám phá và tìm phòng phù hợp ngay!'
-                  : `Không có phòng nào trong trạng thái "${tabs.find(t => t.key === activeTab)?.label}"`
-                }
-              </p>
-              <button 
-                className="btn-find-room"
-                onClick={() => navigate('/rooms/phong-tro')}
-              >
-                <Search size={18} />
-                Tìm phòng ngay
-              </button>
-            </div>
-          ) : (
-            <div className="my-rooms-grid">
-              {rooms.map(room => (
-                <MyRoomCard 
-                  key={room.bookingId} 
-                  room={room}
-                  onAction={handleAction}
-                />
-              ))}
-            </div>
-=======
           ) : viewMode === 'RENTED' ? (
             // Rented rooms view
             rooms.length === 0 ? (
@@ -513,13 +371,10 @@ function MyRooms({ currentUser, onLogout }) {
                 ))}
               </div>
             )
->>>>>>> origin/phong28
           )}
         </div>
       </div>
 
-<<<<<<< HEAD
-=======
       {/* Cancel Booking Modal */}
       {showCancelModal && selectedRoom && (
         <div className="modal-overlay-new" onClick={() => setShowCancelModal(false)}>
@@ -622,7 +477,6 @@ function MyRooms({ currentUser, onLogout }) {
         </div>
       )}
 
->>>>>>> origin/phong28
       <Footer />
     </div>
   )
