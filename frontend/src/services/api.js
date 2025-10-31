@@ -40,8 +40,8 @@ export const authAPI = {
     return response.data
   },
 
-  verifyMfa: async (email, password, code) => {
-    const response = await api.post('/auth/mfa/verify', { email, password, code })
+  verifyMfa: async (email, code) => {
+    const response = await api.post('/auth/mfa/verify', { email, code })
     return response.data
   },
 }

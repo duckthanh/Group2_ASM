@@ -176,6 +176,17 @@ function Profile({ currentUser, onLogout }) {
   const handleInitiateMfaSetup = async () => {
     setLoadingMfa(true)
     try {
+      // Check if user has valid token
+      const user = JSON.parse(localStorage.getItem('user') || '{}')
+      if (!user.accessToken) {
+        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!')
+        setTimeout(() => {
+          onLogout()
+          navigate('/login')
+        }, 2000)
+        return
+      }
+      
       const response = await mfaAPI.setupInitiate()
       setMfaSecret(response.secret)
       setQrCodeDataUri(response.qrCodeDataUri)
@@ -183,7 +194,15 @@ function Profile({ currentUser, onLogout }) {
       toast.success('Quét mã QR bằng Google Authenticator')
     } catch (err) {
       console.error('Error initiating MFA setup:', err)
-      toast.error('Không thể tạo mã QR. Vui lòng thử lại!')
+      if (err.response?.status === 401) {
+        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!')
+        setTimeout(() => {
+          onLogout()
+          navigate('/login')
+        }, 2000)
+      } else {
+        toast.error('Không thể tạo mã QR. Vui lòng thử lại!')
+      }
     } finally {
       setLoadingMfa(false)
     }
