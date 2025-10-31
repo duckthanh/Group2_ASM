@@ -11,6 +11,12 @@ function Login({ onLogin }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState(null)
+
+
+  // 2FA States
+  const [showMfaInput, setShowMfaInput] = useState(false)
+  const [mfaCode, setMfaCode] = useState('')
+  const [tempUserEmail, setTempUserEmail] = useState('')
   
   const navigate = useNavigate()
   const location = useLocation()
