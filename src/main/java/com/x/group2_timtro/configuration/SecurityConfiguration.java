@@ -39,6 +39,8 @@ public class SecurityConfiguration {
                         .requestMatchers("/uploads/**").permitAll()
                         // Auth endpoints - public
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/create-admin","/api/auth/forgot-password","/api/auth/reset-password").permitAll()
+                        // public access for top booking room
+                        .requestMatchers(HttpMethod.GET, "/api/analytics/top-booked-rooms").permitAll()
                         // MFA endpoints - verify cần public (chưa có token), các endpoint khác cần authenticated
                         .requestMatchers(HttpMethod.POST, "/api/auth/mfa/verify").permitAll()
                         .requestMatchers("/api/auth/mfa/**").authenticated()
