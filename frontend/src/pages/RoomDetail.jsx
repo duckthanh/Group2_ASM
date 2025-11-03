@@ -187,6 +187,11 @@ function RoomDetail({ currentUser, onLogout }) {
       navigate('/login')
       return
     }
+    // Check if user is the owner
+    if (currentUser.id === room?.ownerId) {
+      toast.error('Bạn không thể thuê phòng của chính mình')
+      return
+    }
     setIsDeposit(false)
     setShowRentModal(true)
   }
@@ -195,6 +200,11 @@ function RoomDetail({ currentUser, onLogout }) {
     if (!currentUser) {
       toast.error('Vui lòng đăng nhập để đặt cọc')
       navigate('/login')
+      return
+    }
+    // Check if user is the owner
+    if (currentUser.id === room?.ownerId) {
+      toast.error('Bạn không thể thuê phòng của chính mình')
       return
     }
     setIsDeposit(true)

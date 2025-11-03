@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Authentication</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #0f0;
+        }
+        .section {
+            background: #000;
+            border: 1px solid #0f0;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .error { color: #f00; }
+        .success { color: #0f0; }
+        .warning { color: #ff0; }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #0c0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Authentication Debug Tool</h1>
+    
+    <div class="section">
+        <h2>LocalStorage User Data:</h2>
+        <pre id="userData"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>User ID:</h2>
+        <pre id="userId"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>JWT Token:</h2>
+        <pre id="jwtToken"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>Test API Calls:</h2>
+        <button onclick="testGetMyRooms()">Test GET /api/me/rooms</button>
+        <button onclick="testGetPostedRooms()">Test GET /api/me/rooms/posted</button>
+        <button onclick="testGetAvailableRooms()">Test GET /api/rooms/available</button>
+        <button onclick="testGetSavedRooms()">Test GET /api/saved-rooms</button>
+        <pre id="apiResults"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>Actions:</h2>
+        <button onclick="clearStorage()">Clear LocalStorage</button>
+        <button onclick="location.reload()">Refresh Page</button>
+    </div>
+
+    <script>
+        // Display user data on load
+        window.onload = function() {
+            displayUserData();
+        }
+
+        function displayUserData() {
+            try {
+                const userStr = localStorage.getItem('user');
+                const user = JSON.parse(userStr || '{}');
+                
+                document.getElementById('userData').innerHTML = 
+                    userStr ? JSON.stringify(user, null, 2) : '<span class="error">NO USER DATA IN LOCALSTORAGE</span>';
+                
+                if (user.id) {
+                    document.getElementById('userId').innerHTML = 
+                        '<span class="success">✅ ' + user.id + '</span>';
+                } else {
+                    document.getElementById('userId').innerHTML = 
+                        '<span class="error">❌ No user ID found</span>';
+                }
+                
+                if (user.accessToken) {
+                    document.getElementById('jwtToken').innerHTML = 
+                        '<span class="success">✅ ' + user.accessToken.substring(0, 50) + '...</span>';
+                } else {
+                    document.getElementById('jwtToken').innerHTML = 
+                        '<span class="error">❌ No JWT token found</span>';
+                }
+            } catch (error) {
+                document.getElementById('userData').innerHTML = 
+                    '<span class="error">ERROR: ' + error.message + '</span>';
+            }
+        }
+
+        async function testGetMyRooms() {
+            const result = document.getElementById('apiResults');
+            result.innerHTML = '<span class="warning">⏳ Testing GET /api/me/rooms...</span>';
+            
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const response = await fetch('http://localhost:8080/api/me/rooms', {
+                    headers: {
+                        'Authorization': 'Bearer ' + user.accessToken,
+                        'X-User-Id': user.id,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = '<span class="success">✅ SUCCESS:\n' + 
+                        JSON.stringify(data, null, 2) + '</span>';
+                } else {
+                    result.innerHTML = '<span class="error">❌ ERROR ' + response.status + ':\n' + 
+                        JSON.stringify(data, null, 2) + '</span>';
+                }
+            } catch (error) {
+                result.innerHTML = '<span class="error">❌ EXCEPTION:\n' + error.message + '</span>';
+            }
+        }
+
+        async function testGetPostedRooms() {
+            const result = document.getElementById('apiResults');
+            result.innerHTML = '<span class="warning">⏳ Testing GET /api/me/rooms/posted...</span>';
+            
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const response = await fetch('http://localhost:8080/api/me/rooms/posted', {
+                    headers: {
+                        'Authorization': 'Bearer ' + user.accessToken,
+                        'X-User-Id': user.id,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = '<span class="success">✅ SUCCESS:\n' + 
+                        JSON.stringify(data, null, 2) + '</span>';
+                } else {
+                    result.innerHTML = '<span class="error">❌ ERROR ' + response.status + ':\n' + 
+                        JSON.stringify(data, null, 2) + '</span>';
+                }
+            } catch (error) {
+                result.innerHTML = '<span class="error">❌ EXCEPTION:\n' + error.message + '</span>';
+            }
+        }
+
+        async function testGetAvailableRooms() {
+            const result = document.getElementById('apiResults');
+            result.innerHTML = '<span class="warning">⏳ Testing GET /api/rooms/available...</span>';
+            
+            try {
+                const response = await fetch('http://localhost:8080/api/rooms/available');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = '<span class="success">✅ SUCCESS: Found ' + data.length + ' rooms\n' + 
+                        JSON.stringify(data.slice(0, 2), null, 2) + '\n... (showing first 2)</span>';
+                } else {
+                    result.innerHTML = '<span class="error">❌ ERROR ' + response.status + ':\n' + 
+                        JSON.stringify(data, null, 2) + '</span>';
+                }
+            } catch (error) {
+                result.innerHTML = '<span class="error">❌ EXCEPTION:\n' + error.message + '</span>';
+            }
+        }
+
+        async function testGetSavedRooms() {
+            const result = document.getElementById('apiResults');
+            result.innerHTML = '<span class="warning">⏳ Testing GET /api/saved-rooms...</span>';
+            
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const response = await fetch('http://localhost:8080/api/saved-rooms', {
+                    headers: {
+                        'Authorization': 'Bearer ' + user.accessToken,
+                        'X-User-Id': user.id,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.innerHTML = '<span class="success">✅ SUCCESS:\n' + 
+                        JSON.stringify(data, null, 2) + '</span>';
+                } else {
+                    result.innerHTML = '<span class="error">❌ ERROR ' + response.status + ':\n' + 
+                        JSON.stringify(data, null, 2) + '</span>';
+                }
+            } catch (error) {
+                result.innerHTML = '<span class="error">❌ EXCEPTION:\n' + error.message + '</span>';
+            }
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            alert('LocalStorage cleared! Refreshing...');
+            location.reload();
+        }
+    </script>
+</body>
+</html>
+

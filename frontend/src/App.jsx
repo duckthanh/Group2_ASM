@@ -4,6 +4,7 @@ import toast, { Toaster } from 'react-hot-toast'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
 import RoomList from './pages/RoomList'
 import RoomDetail from './pages/RoomDetail'
 import Profile from './pages/Profile'
@@ -124,6 +125,14 @@ function App() {
             currentUser ? 
             <Navigate to="/" replace /> : 
             <Register />
+          } 
+        />
+        <Route 
+          path="/forgot-password" 
+          element={
+            currentUser ? 
+            <Navigate to="/" replace /> : 
+            <ForgotPassword />
           } 
         />
         <Route

@@ -33,6 +33,7 @@ import static dev.samstevens.totp.util.Utils.getDataUriForImage;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@SuppressWarnings("null")
 public class AuthenticationService {
 
     private final JwtService jwtService;

@@ -3,6 +3,7 @@ package com.x.group2_timtro.repository;
 import com.x.group2_timtro.entity.Room;
 import com.x.group2_timtro.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,5 +21,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     // Search theo location và name
     List<Room> findByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(
         String name, String location);
+    
+    // Find all rooms with owner eagerly fetched
+    @Query("SELECT DISTINCT r FROM Room r LEFT JOIN FETCH r.owner")
+    List<Room> findAllWithOwner();
 }
-
