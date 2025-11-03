@@ -20,7 +20,19 @@ spring:
       enabled: true
       max-file-size: 10MB
       max-request-size: 10MB
+#  mail:
+#    host: smtp.gmail.com
+#    port: 587
+#    username: khung123450@gmail.com
+#    password: epvlhmwnjxcqhlal
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#          starttls:
+#            enable: true
 
 jwt:
   secret-key: eqS5fqwmlhALPxmsrbNZOX8/INdAm9RQcaT9brFuk3VOMRrj1ITddcm+QwSWVLhP4arkHnya6naMKSNVUiPJb0p+0SjhkKKmXPTuJtsL96w=
+
 

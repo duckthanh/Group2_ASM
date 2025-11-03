@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+# 🏠 WEBSITE TÌM TRỌ - GROUP 6
+=======
 # 🏠 TÌM TRỌ - Hệ thống quản lý phòng trọ
+>>>>>>> origin/phong28
 
 ## 📖 Giới thiệu
 

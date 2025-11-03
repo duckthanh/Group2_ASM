@@ -53,6 +53,27 @@ public class AuthenticationController {
             return ResponseEntity.badRequest().build();
         }
     }
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestParam String email) {
+        try {
+            authenticationService.forgotPassword(email);
+            return ResponseEntity.ok("Email khôi phục đã được gửi!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestParam String token,
+                                                @RequestParam String newPassword) {
+        try {
+            authenticationService.resetPassword(token, newPassword);
+            return ResponseEntity.ok("Mật khẩu đã được đặt lại thành công!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
 
     @PostMapping("/register")
     public ResponseEntity<CreateUserResponse> register(@RequestBody CreateUserRequest request) {
