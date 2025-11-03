@@ -326,6 +326,13 @@
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
+.btn-2fa:disabled {
+  background: #94A3B8;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 /* ===== WARNING BOX ===== */
 .security-warning {
   display: flex;
@@ -492,6 +499,17 @@
 .btn-qr-action.secondary:hover {
   background: #E2E8F0;
   color: #0F172A;
+}
+
+.btn-qr-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.btn-qr-action.primary:disabled {
+  background: #94A3B8;
 }
 
 /* ===== EMPTY STATE ===== */

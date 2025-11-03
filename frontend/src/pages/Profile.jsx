@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import GlowEffects from '../components/GlowEffects'
-import { userAPI, savedRoomAPI } from '../services/api'
+import { userAPI, savedRoomAPI, mfaAPI } from '../services/api'
 import toast from 'react-hot-toast'
 import './Profile.css'
 
@@ -22,11 +22,23 @@ function Profile({ currentUser, onLogout }) {
   const [loadingSavedRooms, setLoadingSavedRooms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  
+  // 2FA States
+  const [mfaEnabled, setMfaEnabled] = useState(false)
+  const [showQrSetup, setShowQrSetup] = useState(false)
+  const [qrCodeDataUri, setQrCodeDataUri] = useState('')
+  const [mfaSecret, setMfaSecret] = useState('')
+  const [verificationCode, setVerificationCode] = useState('')
+  const [loadingMfa, setLoadingMfa] = useState(false)
+  const [showDisableConfirm, setShowDisableConfirm] = useState(false)
+  const [disableCode, setDisableCode] = useState('')
+  
   const navigate = useNavigate()
 
   useEffect(() => {
     if (currentUser) {
       loadUserInfo()
+      loadMfaStatus()
     }
   }, [currentUser])
 
@@ -36,6 +48,10 @@ function Profile({ currentUser, onLogout }) {
     // Load saved rooms khi vào tab saved-rooms
     if (activeTab === 'saved-rooms') {
       loadSavedRooms()
+    }
+    // Load MFA status khi vào tab security
+    if (activeTab === 'security') {
+      loadMfaStatus()
     }
   }, [activeTab])
 
@@ -143,6 +159,107 @@ function Profile({ currentUser, onLogout }) {
       setMessage(err.response?.data || 'Mật khẩu hiện tại không đúng!')
     } finally {
       setLoading(false)
+    }
+  }
+
+  // ==================== 2FA Functions ====================
+
+  const loadMfaStatus = async () => {
+    try {
+      const status = await mfaAPI.getStatus()
+      setMfaEnabled(status)
+    } catch (err) {
+      console.error('Error loading MFA status:', err)
+    }
+  }
+
+  const handleInitiateMfaSetup = async () => {
+    setLoadingMfa(true)
+    try {
+      // Check if user has valid token
+      const user = JSON.parse(localStorage.getItem('user') || '{}')
+      if (!user.accessToken) {
+        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!')
+        setTimeout(() => {
+          onLogout()
+          navigate('/login')
+        }, 2000)
+        return
+      }
+      
+      const response = await mfaAPI.setupInitiate()
+      setMfaSecret(response.secret)
+      setQrCodeDataUri(response.qrCodeDataUri)
+      setShowQrSetup(true)
+      toast.success('Quét mã QR bằng Google Authenticator')
+    } catch (err) {
+      console.error('Error initiating MFA setup:', err)
+      if (err.response?.status === 401) {
+        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!')
+        setTimeout(() => {
+          onLogout()
+          navigate('/login')
+        }, 2000)
+      } else {
+        toast.error('Không thể tạo mã QR. Vui lòng thử lại!')
+      }
+    } finally {
+      setLoadingMfa(false)
+    }
+  }
+
+  const handleEnableMfa = async () => {
+    if (!verificationCode || verificationCode.length !== 6) {
+      toast.error('Vui lòng nhập mã xác minh 6 số')
+      return
+    }
+
+    setLoadingMfa(true)
+    try {
+      await mfaAPI.enable(mfaSecret, verificationCode)
+      toast.success('Đã bật 2FA thành công!')
+      setMfaEnabled(true)
+      setShowQrSetup(false)
+      setVerificationCode('')
+      setQrCodeDataUri('')
+      setMfaSecret('')
+    } catch (err) {
+      console.error('Error enabling MFA:', err)
+      toast.error('Mã xác minh không đúng. Vui lòng thử lại!')
+    } finally {
+      setLoadingMfa(false)
+    }
+  }
+
+  const handleCancelMfaSetup = () => {
+    setShowQrSetup(false)
+    setVerificationCode('')
+    setQrCodeDataUri('')
+    setMfaSecret('')
+  }
+
+  const handleRegenerateQr = async () => {
+    await handleInitiateMfaSetup()
+  }
+
+  const handleDisableMfa = async () => {
+    if (!disableCode || disableCode.length !== 6) {
+      toast.error('Vui lòng nhập mã xác minh 6 số')
+      return
+    }
+
+    setLoadingMfa(true)
+    try {
+      await mfaAPI.disable(disableCode)
+      toast.success('Đã tắt 2FA thành công!')
+      setMfaEnabled(false)
+      setShowDisableConfirm(false)
+      setDisableCode('')
+    } catch (err) {
+      console.error('Error disabling MFA:', err)
+      toast.error('Mã xác minh không đúng. Vui lòng thử lại!')
+    } finally {
+      setLoadingMfa(false)
     }
   }
 
@@ -271,45 +388,148 @@ function Profile({ currentUser, onLogout }) {
                   <div className="security-option-content">
                     <h3>Xác thực 2 yếu tố</h3>
                     <p>Thêm lớp bảo mật bổ sung</p>
+                    {mfaEnabled && (
+                      <span style={{color: '#4CAF50', fontSize: '14px', marginTop: '5px', display: 'block'}}>
+                        ✓ Đã bật
+                      </span>
+                    )}
                   </div>
-                  <button className="btn-2fa">Bật 2FA</button>
+                  {!mfaEnabled ? (
+                    <button 
+                      className="btn-2fa" 
+                      onClick={handleInitiateMfaSetup}
+                      disabled={loadingMfa}
+                    >
+                      {loadingMfa ? 'Đang xử lý...' : 'Bật 2FA'}
+                    </button>
+                  ) : (
+                    <button 
+                      className="btn-2fa" 
+                      onClick={() => setShowDisableConfirm(true)}
+                      style={{background: '#f44336'}}
+                    >
+                      Tắt 2FA
+                    </button>
+                  )}
                 </div>
 
-                <div className="security-warning">
-                  <div className="warning-icon">⚠️</div>
-                  <div className="warning-content">
-                    <h4>Tăng cường bảo mật</h4>
-                    <p>Bật xác thực hai yếu tố để bảo mật tài khoản của bạn.</p>
-                    <ul>
-                      <li>Bảo vệ khỏi truy cập trái phép</li>
-                      <li>Bảo mật thông tin cá nhân</li>
-                      <li>Yên tâm khi sử dụng nền tảng</li>
-                    </ul>
+                {!mfaEnabled && !showQrSetup && (
+                  <div className="security-warning">
+                    <div className="warning-icon">⚠️</div>
+                    <div className="warning-content">
+                      <h4>Tăng cường bảo mật</h4>
+                      <p>Bật xác thực hai yếu tố để bảo mật tài khoản của bạn.</p>
+                      <ul>
+                        <li>Bảo vệ khỏi truy cập trái phép</li>
+                        <li>Bảo mật thông tin cá nhân</li>
+                        <li>Yên tâm khi sử dụng nền tảng</li>
+                      </ul>
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div className="qr-section">
-                  <div className="qr-code-box">
-                    <div className="qr-placeholder">
-                      <p>QR Code</p>
-                      <p style={{fontSize: '12px', color: '#999'}}>Quét mã để kích hoạt 2FA</p>
+                {mfaEnabled && !showDisableConfirm && (
+                  <div className="security-warning" style={{background: '#e8f5e9', border: '1px solid #4CAF50'}}>
+                    <div className="warning-icon">✓</div>
+                    <div className="warning-content">
+                      <h4>2FA đã được kích hoạt</h4>
+                      <p>Tài khoản của bạn được bảo vệ bằng xác thực 2 yếu tố.</p>
+                      <p style={{marginTop: '10px', fontSize: '14px', color: '#666'}}>
+                        Bạn sẽ cần nhập mã xác minh từ ứng dụng Authenticator mỗi khi đăng nhập.
+                      </p>
                     </div>
                   </div>
-                  <div className="qr-instructions">
-                    <h4>Nhập mã xác minh</h4>
-                    <input 
-                      type="text" 
-                      placeholder="123456"
-                      className="code-input"
-                    />
-                    <p className="auth-app-info">Google Authenticator / Microsoft Authenticator</p>
-                    <div className="qr-actions">
-                      <button className="btn-qr-action secondary">Tạo lại mã</button>
-                      <button className="btn-qr-action secondary">Hủy</button>
-                      <button className="btn-qr-action primary">Xác thực</button>
+                )}
+
+                {showQrSetup && qrCodeDataUri && (
+                  <div className="qr-section">
+                    <div className="qr-code-box">
+                      <img 
+                        src={qrCodeDataUri} 
+                        alt="QR Code for 2FA" 
+                        style={{width: '100%', height: 'auto', maxWidth: '250px'}}
+                      />
+                    </div>
+                    <div className="qr-instructions">
+                      <h4>Nhập mã xác minh</h4>
+                      <input 
+                        type="text" 
+                        placeholder="123456"
+                        className="code-input"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        maxLength="6"
+                      />
+                      <p className="auth-app-info">
+                        Quét mã QR bằng Google Authenticator hoặc Microsoft Authenticator, 
+                        sau đó nhập mã 6 số hiển thị trong ứng dụng.
+                      </p>
+                      <div className="qr-actions">
+                        <button 
+                          className="btn-qr-action secondary" 
+                          onClick={handleRegenerateQr}
+                          disabled={loadingMfa}
+                        >
+                          Tạo lại mã
+                        </button>
+                        <button 
+                          className="btn-qr-action secondary" 
+                          onClick={handleCancelMfaSetup}
+                          disabled={loadingMfa}
+                        >
+                          Hủy
+                        </button>
+                        <button 
+                          className="btn-qr-action primary" 
+                          onClick={handleEnableMfa}
+                          disabled={loadingMfa || verificationCode.length !== 6}
+                        >
+                          {loadingMfa ? 'Đang xác thực...' : 'Xác thực'}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
+
+                {showDisableConfirm && (
+                  <div className="qr-section" style={{background: '#fff3e0', padding: '20px', borderRadius: '8px'}}>
+                    <div style={{marginBottom: '20px'}}>
+                      <h4 style={{color: '#f57c00', marginBottom: '10px'}}>Tắt xác thực 2 yếu tố</h4>
+                      <p style={{color: '#666', marginBottom: '15px'}}>
+                        Nhập mã xác minh từ ứng dụng Authenticator để tắt 2FA
+                      </p>
+                      <input 
+                        type="text" 
+                        placeholder="123456"
+                        className="code-input"
+                        value={disableCode}
+                        onChange={(e) => setDisableCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        maxLength="6"
+                        style={{width: '100%', marginBottom: '15px'}}
+                      />
+                      <div className="qr-actions">
+                        <button 
+                          className="btn-qr-action secondary" 
+                          onClick={() => {
+                            setShowDisableConfirm(false)
+                            setDisableCode('')
+                          }}
+                          disabled={loadingMfa}
+                        >
+                          Hủy
+                        </button>
+                        <button 
+                          className="btn-qr-action primary" 
+                          onClick={handleDisableMfa}
+                          disabled={loadingMfa || disableCode.length !== 6}
+                          style={{background: '#f44336'}}
+                        >
+                          {loadingMfa ? 'Đang xử lý...' : 'Xác nhận tắt'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
