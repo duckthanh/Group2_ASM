@@ -13,6 +13,7 @@ import UserManagement from './pages/UserManagement'
 import MyRooms from './pages/MyRooms'
 import MyRoomDetail from './pages/MyRoomDetail'
 import BookingRequests from './pages/BookingRequests'
+import AdminRevenue from './pages/AdminRevenue';
 import './App.css'
 
 function App() {
@@ -184,7 +185,10 @@ function App() {
             path="/reset-password"
             element={<ResetPassword />}
           />
-        </Routes>
+        <Route path="/admin/revenue" 
+        element={<AdminRevenue />}
+         />
+      </Routes>
       </Router>
     </>
   )
