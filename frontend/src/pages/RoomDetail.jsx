@@ -78,6 +78,7 @@ function RoomDetail({ currentUser, onLogout }) {
     return images
   }
 
+
   const fetchRoom = async () => {
     setLoading(true)
     try {
@@ -694,6 +695,104 @@ function RoomDetail({ currentUser, onLogout }) {
                   >
                     <DollarSign size={18} />
                     {room.isAvailable ? 'Đặt cọc' : 'Hết phòng'}
+                  </button>
+                </div>
+                <p className="contact-note">
+                  <Phone size={14} />
+                  Liên hệ: {room.contact}
+                </p>
+              </div>
+
+              {/* Map */}
+              <div className="map-card" id="map">
+                <h3>Vị trí</h3>
+                <div className="map-placeholder">
+                  <MapPin size={48} />
+                  <p>{room.location}</p>
+                  <a 
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(room.location)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-directions"
+                  >
+                    Chỉ đường
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column (30%) */}
+            <div className="room-detail-right">
+              {/* Scroll Spy Navigation */}
+              <div className="scroll-spy-nav">
+                <button 
+                  className={activeSection === 'overview' ? 'active' : ''}
+                  onClick={() => scrollToSection('overview')}
+                >
+                  Tổng quan
+                </button>
+                <button 
+                  className={activeSection === 'amenities' ? 'active' : ''}
+                  onClick={() => scrollToSection('amenities')}
+                >
+                  Tiện nghi
+                </button>
+                <button 
+                  className={activeSection === 'costs' ? 'active' : ''}
+                  onClick={() => scrollToSection('costs')}
+                >
+                  Chi phí
+                </button>
+                <button 
+                  className={activeSection === 'schedule' ? 'active' : ''}
+                  onClick={() => scrollToSection('schedule')}
+                >
+                  Lịch xem
+                </button>
+              </div>
+
+              {/* Owner Info Card */}
+              <div className="owner-info-card">
+                <div className="owner-card-header">
+                  <h3>Thông tin chủ trọ</h3>
+                  {canManageRoom() && (
+                    <button className="btn-edit-room" onClick={handleEditRoom}>
+                      <Edit size={16} />
+                      Sửa phòng
+                    </button>
+                  )}
+                </div>
+                <div className="host-info">
+                  <div className="host-avatar">
+                    {room.ownerUsername?.charAt(0).toUpperCase() || 'H'}
+                  </div>
+                  <div className="host-details">
+                    <p className="host-name">{room.ownerUsername || 'Chủ trọ'}</p>
+                    <p className="host-phone">
+                      <Phone size={14} />
+                      {room.contact}
+                    </p>
+                    {room.ownerEmail && (
+                      <p className="host-email">
+                        <MessageCircle size={14} />
+                        {room.ownerEmail}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Contact Card */}
+              <div className="contact-card">
+                <h3>Liên hệ chủ trọ</h3>
+                <div className="contact-actions">
+                  <button className="btn-contact call" onClick={handleRentNow}>
+                    <Home size={18} />
+                    Thuê ngay
+                  </button>
+                  <button className="btn-contact message" onClick={handleDeposit}>
+                    <DollarSign size={18} />
+                    Đặt cọc
                   </button>
                 </div>
                 <p className="contact-note">

@@ -1203,4 +1203,3 @@ function MyRoomDetail({ currentUser, onLogout }) {
 
 export default MyRoomDetail
 
-

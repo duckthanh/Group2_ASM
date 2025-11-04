@@ -1,15 +1,18 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useSearchParams, Link, useNavigate } from 'react-router-dom'
 import './AuthNew.css'
 
-function ForgotPassword() {
-  const [email, setEmail] = useState('')
-  const [error, setError] = useState('')
+function ResetPassword() {
+  const [searchParams] = useSearchParams()
+  const token = searchParams.get('token')
+  const navigate = useNavigate()
+
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [toast, setToast] = useState(null)
   const [success, setSuccess] = useState(false)
-  
-  const navigate = useNavigate()
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type })
@@ -20,31 +23,38 @@ function ForgotPassword() {
     e.preventDefault()
     setError('')
 
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      setError('Email không hợp lệ')
+    // Validation
+    if (password.length < 6) {
+      setError('Mật khẩu phải có ít nhất 6 ký tự')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setError('Mật khẩu xác nhận không khớp!')
+      showToast('Mật khẩu xác nhận không khớp!', 'error')
       return
     }
 
     setLoading(true)
 
     try {
-      // Call real API
-      const res = await fetch(`http://localhost:8080/api/auth/forgot-password?email=${encodeURIComponent(email)}`, {
-        method: "POST"
-      })
+      const res = await fetch(
+        `http://localhost:8080/api/auth/reset-password?token=${encodeURIComponent(token)}&newPassword=${encodeURIComponent(password)}`,
+        {
+          method: 'POST'
+        }
+      )
 
       const message = await res.text()
 
       if (res.ok) {
         setSuccess(true)
-        showToast(message || 'Email đặt lại mật khẩu đã được gửi! 📧', 'success')
+        showToast('Mật khẩu đã được đặt lại thành công! ✅', 'success')
         
-        // Navigate back to login after 3 seconds
+        // Navigate to login after 3 seconds
         setTimeout(() => navigate('/login'), 3000)
       } else {
-        setError(message || 'Không tìm thấy email này trong hệ thống')
+        setError(message || 'Đặt lại mật khẩu thất bại. Vui lòng thử lại.')
         showToast(message || 'Có lỗi xảy ra', 'error')
       }
     } catch (err) {
@@ -111,8 +121,8 @@ function ForgotPassword() {
           </div>
 
           <div className="auth-stats">
-            <h3>KHÔI PHỤC MẬT KHẨU</h3>
-            <p>Nhập email của bạn để nhận link đặt lại mật khẩu</p>
+            <h3>ĐẶT LẠI MẬT KHẨU</h3>
+            <p>Nhập mật khẩu mới để bảo vệ tài khoản của bạn</p>
           </div>
         </div>
 
@@ -128,7 +138,7 @@ function ForgotPassword() {
 
             {!success ? (
               <>
-                <h2 className="auth-new-title">Quên Mật Khẩu?</h2>
+                <h2 className="auth-new-title">Đặt Lại Mật Khẩu 🔒</h2>
                 
                 {error && (
                   <div className="alert-new alert-error-new">
@@ -141,14 +151,29 @@ function ForgotPassword() {
 
                 <form onSubmit={handleSubmit} className="auth-new-form">
                   <div className="form-group-new">
+                    <label className="label-new">Mật khẩu mới</label>
                     <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       className="input-new"
-                      placeholder="Nhập email của bạn"
+                      placeholder="Nhập mật khẩu mới (ít nhất 6 ký tự)"
                       required
                       autoFocus
+                      minLength={6}
+                    />
+                  </div>
+
+                  <div className="form-group-new">
+                    <label className="label-new">Xác nhận mật khẩu</label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="input-new"
+                      placeholder="Nhập lại mật khẩu mới"
+                      required
+                      minLength={6}
                     />
                   </div>
 
@@ -156,10 +181,10 @@ function ForgotPassword() {
                     {loading ? (
                       <>
                         <span className="spinner-new"></span>
-                        <span>Đang gửi...</span>
+                        <span>Đang xử lý...</span>
                       </>
                     ) : (
-                      'Gửi Email Khôi Phục'
+                      'Xác Nhận Đặt Lại Mật Khẩu'
                     )}
                   </button>
                 </form>
@@ -180,17 +205,26 @@ function ForgotPassword() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   margin: '0 auto 24px',
-                  fontSize: '40px'
+                  fontSize: '40px',
+                  color: 'white'
                 }}>
                   ✓
                 </div>
-                <h2 className="auth-new-title" style={{ marginBottom: '16px' }}>Email Đã Được Gửi!</h2>
+                <h2 className="auth-new-title" style={{ marginBottom: '16px' }}>Mật Khẩu Đã Được Đặt Lại!</h2>
                 <p style={{ color: '#64748B', fontSize: '15px', lineHeight: '1.6' }}>
-                  Vui lòng kiểm tra email <strong>{email}</strong> để đặt lại mật khẩu của bạn.
+                  Mật khẩu của bạn đã được thay đổi thành công.<br/>
+                  Bạn có thể đăng nhập bằng mật khẩu mới ngay bây giờ.
                 </p>
                 <p style={{ color: '#94A3B8', fontSize: '14px', marginTop: '12px' }}>
                   Đang chuyển về trang đăng nhập...
                 </p>
+                <Link 
+                  to="/login" 
+                  className="btn-new btn-primary-new" 
+                  style={{ marginTop: '20px', display: 'inline-block', textDecoration: 'none' }}
+                >
+                  Đăng Nhập Ngay
+                </Link>
               </div>
             )}
           </div>
@@ -206,4 +240,4 @@ function ForgotPassword() {
   )
 }
 
-export default ForgotPassword
+export default ResetPassword

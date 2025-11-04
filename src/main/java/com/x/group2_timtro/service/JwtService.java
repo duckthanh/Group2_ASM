@@ -38,17 +38,7 @@ public String generateAccessToken(User user) {
             .jwtID(UUID.randomUUID().toString())
             .build();
 
-    Payload payload = new Payload(claimsSet.toJSONObject());
-
-    //chu ki
-    JWSObject jwsObject = new JWSObject(header, payload);
-    try {
-        jwsObject.sign(new MACSigner(secretKey));
-    } catch (JOSEException e) {
-        throw new RuntimeException(e);
-    }
-
-    return jwsObject.serialize();
+    return signToken(header, claimsSet);
 }
 
 public String generateRefreshToken(User user) {
@@ -66,18 +56,57 @@ public String generateRefreshToken(User user) {
             .jwtID(UUID.randomUUID().toString())
             .build();
 
-    Payload payload = new Payload(claimsSet.toJSONObject());
+    return signToken(header, claimsSet);
+}
 
-    //chu ki
-    JWSObject jwsObject = new JWSObject(header, payload);
-    try {
-        jwsObject.sign(new MACSigner(secretKey));
-        }   catch (JOSEException e) {
-                 throw new RuntimeException(e);
-     }
+    //reset token
+    public String generateResetToken(String email) {
+        try {
+            JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+            Date issueTime = new Date();
+
+            JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                    .subject(email)
+                    .issueTime(issueTime)
+                    .expirationTime(new Date(issueTime.toInstant().plus(15, ChronoUnit.MINUTES).toEpochMilli()))
+                    .jwtID(UUID.randomUUID().toString())
+                    .build();
+
+            JWSObject jwsObject = new JWSObject(header, new Payload(claimsSet.toJSONObject()));
+            jwsObject.sign(new MACSigner(secretKey));
             return jwsObject.serialize();
 
+        } catch (JOSEException e) {
+            throw new RuntimeException("Failed to generate reset token", e);
+        }
     }
 
+    // Verify and extract email from reset token
+    public String validateAndExtractEmail(String token) {
+        try {
+            JWSObject jwsObject = JWSObject.parse(token);
+            JWTClaimsSet claims = JWTClaimsSet.parse(jwsObject.getPayload().toJSONObject());
+
+            Date exp = claims.getExpirationTime();
+            if (exp.before(new Date())) {
+                throw new RuntimeException("Token đã hết hạn.");
+            }
+
+            return claims.getSubject();
+        } catch (Exception e) {
+            throw new RuntimeException("Token không hợp lệ hoặc đã hết hạn.");
+        }
+    }
+
+    private String signToken(JWSHeader header, JWTClaimsSet claimsSet) {
+        Payload payload = new Payload(claimsSet.toJSONObject());
+        JWSObject jwsObject = new JWSObject(header, payload);
+        try {
+            jwsObject.sign(new MACSigner(secretKey));
+            return jwsObject.serialize();
+        } catch (JOSEException e) {
+            throw new RuntimeException("Cannot sign JWT token", e);
+        }
+    }
 
 }

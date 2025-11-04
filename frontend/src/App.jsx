@@ -5,6 +5,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import RoomList from './pages/RoomList'
 import RoomDetail from './pages/RoomDetail'
 import Profile from './pages/Profile'
@@ -183,6 +184,14 @@ function App() {
             <Navigate to="/" replace />
           }
         />
+        <Route
+            path="/forgot-password"
+            element={currentUser ? <Navigate to="/" replace /> : <ForgotPassword />}
+          />
+          <Route
+            path="/reset-password"
+            element={<ResetPassword />}
+          />
         </Routes>
       </Router>
     </>

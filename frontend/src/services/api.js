@@ -27,6 +27,21 @@ api.interceptors.request.use((config) => {
   return Promise.reject(error)
 })
 
+// Handle token expiration and 401 errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // Token expired or invalid - clear localStorage and reload
+      console.error('Token expired or unauthorized. Logging out...')
+      localStorage.removeItem('user')
+      localStorage.removeItem('token')
+      window.location.href = '/login'
+    }
+    return Promise.reject(error)
+  }
+)
+
 // Helper function to add user ID header
 const getUserId = () => {
   try {
@@ -398,6 +413,43 @@ export const myRoomsAPI = {
     const response = await api.get('/me/rooms/posted', {
       headers: { 'X-User-Id': userId }
     })
+    return response.data
+  },
+}
+
+
+
+// Viewing Schedules API
+export const viewingScheduleAPI = {
+  createSchedule: async (roomId, scheduleData) => {
+    const response = await api.post(`/viewing-schedules/rooms/${roomId}`, scheduleData)
+    return response.data
+  },
+
+  getMySchedules: async () => {
+    const response = await api.get('/viewing-schedules/my-schedules')
+    return response.data
+  },
+
+  getRoomSchedules: async (roomId) => {
+    const response = await api.get(`/viewing-schedules/rooms/${roomId}`)
+    return response.data
+  },
+
+  getSchedulesByStatus: async (status) => {
+    const response = await api.get(`/viewing-schedules/status/${status}`)
+    return response.data
+  },
+
+  updateScheduleStatus: async (scheduleId, status) => {
+    const response = await api.put(`/viewing-schedules/${scheduleId}/status`, null, {
+      params: { status }
+    })
+    return response.data
+  },
+
+  deleteSchedule: async (scheduleId) => {
+    const response = await api.delete(`/viewing-schedules/${scheduleId}`)
     return response.data
   },
 }
