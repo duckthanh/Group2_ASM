@@ -759,6 +759,14 @@ html, body {
   box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
 }
 
+/* Fix icon alignment in all buttons */
+button svg,
+.btn svg,
+a svg {
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
 .btn-ghost {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.2);

@@ -738,6 +738,12 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.btn-contact svg {
+  flex-shrink: 0;
+  vertical-align: middle;
 }
 
 .btn-contact.call {
@@ -867,6 +873,12 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.btn-cta svg {
+  flex-shrink: 0;
+  vertical-align: middle;
 }
 
 .btn-cta.call {

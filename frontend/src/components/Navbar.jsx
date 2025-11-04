@@ -1,7 +1,7 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { customToast } from '../utils/customToast.jsx'
-import { Search, Home, Building2, Info, Mail, User, LogOut, Users, Menu, X, Key, ClipboardCheck } from 'lucide-react'
+import { Search, Home, Building2, Info, Mail, User, LogOut, Users, Menu, X, Key, ClipboardCheck, BarChart3 } from 'lucide-react'
 
 function Navbar({ currentUser, onLogout }) {
   const [showUserDropdown, setShowUserDropdown] = useState(false)
@@ -167,8 +167,32 @@ function Navbar({ currentUser, onLogout }) {
                     <ClipboardCheck size={18} />
                     Yêu cầu thuê phòng
                   </Link>
-                  {(currentUser.role === 'ADMIN' || currentUser.role === 'HOST') && (
-                    <Link to="/admin/users" className="navbar-dropdown-item">
+                  {currentUser.role === 'ADMIN' && (
+                    <>
+                      <Link 
+                        to="/admin/dashboard" 
+                        className="navbar-dropdown-item"
+                        onClick={() => setShowUserDropdown(false)}
+                      >
+                        <BarChart3 size={18} />
+                        Dashboard Analytics
+                      </Link>
+                      <Link 
+                        to="/admin/users" 
+                        className="navbar-dropdown-item"
+                        onClick={() => setShowUserDropdown(false)}
+                      >
+                        <Users size={18} />
+                        Quản lý người dùng
+                      </Link>
+                    </>
+                  )}
+                  {currentUser.role === 'HOST' && (
+                    <Link 
+                      to="/admin/users" 
+                      className="navbar-dropdown-item"
+                      onClick={() => setShowUserDropdown(false)}
+                    >
                       <Users size={18} />
                       Quản lý người dùng
                     </Link>

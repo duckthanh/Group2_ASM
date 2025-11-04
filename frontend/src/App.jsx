@@ -13,6 +13,7 @@ import UserManagement from './pages/UserManagement'
 import MyRooms from './pages/MyRooms'
 import MyRoomDetail from './pages/MyRoomDetail'
 import BookingRequests from './pages/BookingRequests'
+import Dashboard from './pages/Dashboard'
 import './App.css'
 
 function App() {
@@ -181,6 +182,14 @@ function App() {
           element={
             currentUser && currentUser.role === 'ADMIN' ?
             <UserManagement currentUser={currentUser} onLogout={handleLogout} /> :
+            <Navigate to="/" replace />
+          }
+        />
+        <Route
+          path="/admin/dashboard"
+          element={
+            currentUser && currentUser.role === 'ADMIN' ?
+            <Dashboard currentUser={currentUser} onLogout={handleLogout} /> :
             <Navigate to="/" replace />
           }
         />
