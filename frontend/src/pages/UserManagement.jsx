@@ -4,6 +4,7 @@ import { Search, UserCog, Users as UsersIcon, Shield, Edit2, Trash2, X } from 'l
 import { customToast } from '../utils/customToast.jsx'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import Pagination from '../components/Pagination'
 import { userAPI } from '../services/api'
 
 function UserManagement({ currentUser, onLogout }) {
@@ -326,37 +327,11 @@ function UserManagement({ currentUser, onLogout }) {
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="pagination-new">
-                <button
-                  className="pagination-btn-new"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                >
-                  ← Trước
-                </button>
-                
-                <div className="pagination-numbers-new">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                    <button
-                      key={number}
-                      className={`pagination-number-new ${currentPage === number ? 'active' : ''}`}
-                      onClick={() => handlePageChange(number)}
-                    >
-                      {number}
-                    </button>
-                  ))}
-                </div>
-                
-                <button
-                  className="pagination-btn-new"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                >
-                  Sau →
-                </button>
-              </div>
-            )}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </>
         )}
       </main>

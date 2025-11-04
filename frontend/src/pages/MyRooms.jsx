@@ -6,6 +6,7 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import MyRoomCard from '../components/MyRoomCard'
 import PostedRoomCard from '../components/PostedRoomCard'
+import Pagination from '../components/Pagination'
 import { myRoomsAPI } from '../services/api'
 import './MyRooms.css'
 
@@ -24,6 +25,11 @@ function MyRooms({ currentUser, onLogout }) {
     ENDED: 0,
     CANCELED: 0
   })
+  
+  // Pagination states
+  const [currentPageRented, setCurrentPageRented] = useState(1)
+  const [currentPagePosted, setCurrentPagePosted] = useState(1)
+  const ITEMS_PER_PAGE = 9
 
   // Modal states
   const [showCancelModal, setShowCancelModal] = useState(false)
@@ -41,6 +47,15 @@ function MyRooms({ currentUser, onLogout }) {
       }
     }
   }, [currentUser, activeTab, viewMode])
+  
+  // Reset to page 1 when changing tabs or search
+  useEffect(() => {
+    setCurrentPageRented(1)
+  }, [activeTab, searchKeyword])
+  
+  useEffect(() => {
+    setCurrentPagePosted(1)
+  }, [viewMode])
 
   const loadRooms = async () => {
     try {
@@ -197,6 +212,18 @@ function MyRooms({ currentUser, onLogout }) {
     { key: 'ENDED', label: 'Đã trả phòng', count: counts.ENDED },
     { key: 'CANCELED', label: 'Đã hủy', count: counts.CANCELED }
   ]
+  
+  // Pagination calculations
+  const currentPage = viewMode === 'RENTED' ? currentPageRented : currentPagePosted
+  const setCurrentPage = viewMode === 'RENTED' ? setCurrentPageRented : setCurrentPagePosted
+  
+  const currentRooms = viewMode === 'RENTED' ? rooms : postedRooms
+  const totalPages = Math.max(1, Math.ceil(currentRooms.length / ITEMS_PER_PAGE))
+  
+  // Get current page items
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE
+  const currentItems = currentRooms.slice(indexOfFirstItem, indexOfLastItem)
 
   return (
     <div className="my-rooms-page">
@@ -311,66 +338,79 @@ function MyRooms({ currentUser, onLogout }) {
             </div>
           ) : viewMode === 'RENTED' ? (
             // Rented rooms view
-            rooms.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-icon">
-                  <Home size={64} />
+            <>
+              {rooms.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-icon">
+                    <Home size={64} />
+                  </div>
+                  <h3>Chưa có phòng nào</h3>
+                  <p>
+                    {activeTab === 'ALL' 
+                      ? 'Bạn chưa đặt phòng nào. Khám phá và tìm phòng phù hợp ngay!'
+                      : `Không có phòng nào trong trạng thái "${tabs.find(t => t.key === activeTab)?.label}"`
+                    }
+                  </p>
+                  <button 
+                    className="btn-find-room"
+                    onClick={() => navigate('/rooms/phong-tro')}
+                  >
+                    <Search size={18} />
+                    Tìm phòng ngay
+                  </button>
                 </div>
-                <h3>Chưa có phòng nào</h3>
-                <p>
-                  {activeTab === 'ALL' 
-                    ? 'Bạn chưa đặt phòng nào. Khám phá và tìm phòng phù hợp ngay!'
-                    : `Không có phòng nào trong trạng thái "${tabs.find(t => t.key === activeTab)?.label}"`
-                  }
-                </p>
-                <button 
-                  className="btn-find-room"
-                  onClick={() => navigate('/rooms/phong-tro')}
-                >
-                  <Search size={18} />
-                  Tìm phòng ngay
-                </button>
-              </div>
-            ) : (
-              <div className="my-rooms-grid">
-                {rooms.map(room => (
-                  <MyRoomCard 
-                    key={room.bookingId} 
-                    room={room}
-                    onAction={handleAction}
-                  />
-                ))}
-              </div>
-            )
+              ) : (
+                <div className="my-rooms-grid">
+                  {currentItems.map(room => (
+                    <MyRoomCard 
+                      key={room.bookingId} 
+                      room={room}
+                      onAction={handleAction}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
             // Posted rooms view
-            postedRooms.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-icon">
-                  <Home size={64} />
+            <>
+              {postedRooms.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-icon">
+                    <Home size={64} />
+                  </div>
+                  <h3>Chưa có phòng đã đăng</h3>
+                  <p>
+                    Bạn chưa đăng phòng nào. Hãy đăng phòng để cho thuê!
+                  </p>
+                  <button 
+                    className="btn-find-room"
+                    onClick={() => navigate('/account/rooms/add')}
+                  >
+                    <Home size={18} />
+                    Đăng phòng ngay
+                  </button>
                 </div>
-                <h3>Chưa có phòng đã đăng</h3>
-                <p>
-                  Bạn chưa đăng phòng nào. Hãy đăng phòng để cho thuê!
-                </p>
-                <button 
-                  className="btn-find-room"
-                  onClick={() => navigate('/account/rooms/add')}
-                >
-                  <Home size={18} />
-                  Đăng phòng ngay
-                </button>
-              </div>
-            ) : (
-              <div className="my-rooms-grid">
-                {postedRooms.map(room => (
-                  <PostedRoomCard 
-                    key={room.id} 
-                    room={room}
-                  />
-                ))}
-              </div>
-            )
+              ) : (
+                <div className="my-rooms-grid">
+                  {currentItems.map(room => (
+                    <PostedRoomCard 
+                      key={room.id} 
+                      room={room}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+          
+          {/* Pagination - Always show except when loading */}
+          {!loading && currentRooms.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           )}
         </div>
       </div>

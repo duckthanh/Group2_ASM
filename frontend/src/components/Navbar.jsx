@@ -149,7 +149,7 @@ function Navbar({ currentUser, onLogout }) {
                 <div className="navbar-dropdown-menu">
                   <button onClick={handleProfileClick} className="navbar-dropdown-item">
                     <User size={18} />
-                    Hồ sơ của tôi
+                    Thông tin cá nhân
                   </button>
                   <Link 
                     to="/account/rooms" 

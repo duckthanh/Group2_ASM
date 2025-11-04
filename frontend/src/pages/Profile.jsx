@@ -10,6 +10,8 @@ import './Profile.css'
 function Profile({ currentUser, onLogout }) {
   const [activeTab, setActiveTab] = useState('info') // info, card, identity, security, password, saved-rooms
   const [userInfo, setUserInfo] = useState({
+    username: '',
+    email: '',
     phoneNumber: '',
     address: ''
   })
@@ -87,6 +89,8 @@ function Profile({ currentUser, onLogout }) {
     try {
       const data = await userAPI.getUserById(currentUser.id)
       setUserInfo({
+        username: data.username || currentUser.username || '',
+        email: data.email || currentUser.email || '',
         phoneNumber: data.phoneNumber || '',
         address: data.address || ''
       })
@@ -115,12 +119,28 @@ function Profile({ currentUser, onLogout }) {
     setMessage('')
     
     try {
-      await userAPI.updateUser(currentUser.id, userInfo)
+      const response = await userAPI.updateUser(currentUser.id, userInfo)
+      
+      // Update localStorage and current user state
+      const updatedUser = {
+        ...currentUser,
+        username: userInfo.username,
+        email: userInfo.email
+      }
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+      
       setMessage('Cập nhật thông tin thành công!')
-      setTimeout(() => setMessage(''), 3000)
+      toast.success('Cập nhật thông tin thành công!')
+      
+      // Reload page to reflect changes in Navbar
+      setTimeout(() => {
+        window.location.reload()
+      }, 1500)
     } catch (err) {
       console.error('Error updating user:', err)
-      setMessage('Có lỗi xảy ra. Vui lòng thử lại!')
+      const errorMsg = err.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại!'
+      setMessage(errorMsg)
+      toast.error(errorMsg)
     } finally {
       setLoading(false)
     }
@@ -283,7 +303,7 @@ function Profile({ currentUser, onLogout }) {
                 <button className="avatar-edit-btn">✏️</button>
               </div>
               <h2 className="profile-name">{currentUser.username}</h2>
-              <p className="profile-update-text">Cập nhật thông tin hồ sơ của bạn</p>
+              <p className="profile-update-text">Cập nhật thông tin cá nhân của bạn</p>
             </div>
 
             <nav className="profile-menu">
@@ -292,7 +312,7 @@ function Profile({ currentUser, onLogout }) {
                 onClick={() => setActiveTab('info')}
               >
                 <span className="menu-icon">👤</span>
-                Thông tin hồ sơ
+                Thông tin cá nhân
               </button>
               <button 
                 className={`profile-menu-item ${activeTab === 'card' ? 'active' : ''}`}
@@ -336,7 +356,7 @@ function Profile({ currentUser, onLogout }) {
           <div className="profile-content">
             {activeTab === 'info' && (
               <div className="profile-section">
-                <h2 className="section-title-profile">Thông tin hồ sơ</h2>
+                <h2 className="section-title-profile">Thông tin cá nhân</h2>
                 
                 {message && (
                   <div className={`message-box ${message.includes('thành công') ? 'success' : 'error'}`}>
@@ -347,11 +367,25 @@ function Profile({ currentUser, onLogout }) {
                 <form onSubmit={handleSaveInfo} className="profile-form">
                   <div className="form-group-profile">
                     <label>Tên người dùng</label>
-                    <input type="text" value={currentUser.username} readOnly />
+                    <input 
+                      type="text" 
+                      name="username"
+                      value={userInfo.username}
+                      onChange={handleInfoChange}
+                      placeholder="Nhập tên người dùng"
+                      required
+                    />
                   </div>
                   <div className="form-group-profile">
                     <label>Email</label>
-                    <input type="email" value={currentUser.email} readOnly />
+                    <input 
+                      type="email" 
+                      name="email"
+                      value={userInfo.email}
+                      onChange={handleInfoChange}
+                      placeholder="Nhập email"
+                      required
+                    />
                   </div>
                   <div className="form-group-profile">
                     <label>Số điện thoại</label>
