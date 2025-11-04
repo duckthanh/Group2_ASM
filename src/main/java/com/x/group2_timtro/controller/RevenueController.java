@@ -1,31 +1,40 @@
 package com.x.group2_timtro.controller;
 
 import com.x.group2_timtro.dto.response.DailyRevenueResponse;
-import com.x.group2_timtro.dto.response.MonthlyRevenueResponse;
+import com.x.group2_timtro.entity.Payment;
 import com.x.group2_timtro.service.RevenueService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/revenue")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class RevenueController {
 
     private final RevenueService revenueService;
 
-    // 📅 Get all available months with payments
-    @GetMapping("/months")
+     @GetMapping("/months")
     public ResponseEntity<List<String>> getAvailableMonths() {
-        List<String> months = revenueService.getAvailableMonths();
-        return ResponseEntity.ok(months);
+        return ResponseEntity.ok(revenueService.getAvailableMonths());
     }
 
-    // 💰 Get daily revenue for specific month
     @GetMapping("/daily/{month}")
     public ResponseEntity<List<DailyRevenueResponse>> getDailyRevenueByMonth(@PathVariable String month) {
-        List<DailyRevenueResponse> revenues = revenueService.getDailyRevenueByMonth(month);
-        return ResponseEntity.ok(revenues);
+        return ResponseEntity.ok(revenueService.getDailyRevenueByMonth(month));
+    }
+
+    @GetMapping("/payments/{month}")
+    public ResponseEntity<Page<Payment>> getPaymentsByMonth(
+            @PathVariable String month,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(revenueService.getPaymentsByMonth(month, page, size));
     }
 }

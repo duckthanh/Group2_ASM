@@ -4,6 +4,8 @@ import com.x.group2_timtro.dto.response.MonthlyRevenueResponse;
 import com.x.group2_timtro.dto.response.DailyRevenueResponse;
 import com.x.group2_timtro.entity.Booking;
 import com.x.group2_timtro.entity.Payment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,18 +16,19 @@ import java.util.List;
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findByBooking(Booking booking);
+
     List<Payment> findByBookingOrderByCreatedAtDesc(Booking booking);
+
     List<Payment> findByStatus(String status);
 
-@Query(value = """
+     @Query(value = """
         SELECT DISTINCT DATE_FORMAT(paid_at, '%Y-%m') AS month
         FROM payments
         WHERE status = 'PAID'
         ORDER BY month DESC
     """, nativeQuery = true)
-    List<String> findDistinctMonths();
+    java.util.List<String> findDistinctMonths();
 
-    // 💰 Get daily revenue for a specific month (native SQL)
     @Query(value = """
         SELECT 
             DAY(paid_at) AS day,
@@ -36,7 +39,17 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
         GROUP BY DAY(paid_at)
         ORDER BY day
     """, nativeQuery = true)
-    List<Object[]> findDailyRevenueByMonthNative(@Param("month") String month);
+    java.util.List<Object[]> findDailyRevenueByMonthNative(@Param("month") String month);
+
+    // 📋 Get payments in a month (with pagination)
+    @Query(value = """
+        SELECT p.*
+        FROM payments p
+        WHERE p.status = 'PAID'
+          AND DATE_FORMAT(p.paid_at, '%Y-%m') = :month
+        ORDER BY p.paid_at DESC
+    """, nativeQuery = true)
+    Page<Payment> findPaymentsByMonth(@Param("month") String month, Pageable pageable);
 }
 
 
