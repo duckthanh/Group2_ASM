@@ -39,7 +39,7 @@ public class Payment {
     @Column
     private String paymentMethod; // "CASH", "BANK_TRANSFER", "MOMO", "VNPAY"
 
-    @Column
+    @Column(name = "paid_at")
     private LocalDateTime paidAt; // Thời gian thanh toán
 
     @Column

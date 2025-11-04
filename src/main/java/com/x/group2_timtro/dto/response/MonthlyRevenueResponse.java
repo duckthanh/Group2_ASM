@@ -1,33 +1,12 @@
 package com.x.group2_timtro.dto.response;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class MonthlyRevenueResponse {
-    private String month;
-    private Double totalRevenue;
-
-    public MonthlyRevenueResponse(String month, Double totalRevenue) {
-        this.month = month;
-        this.totalRevenue = totalRevenue;
-    }
-
-    public MonthlyRevenueResponse() {}
-
-    public String getMonth() {
-        return month;
-    }
-
-    public void setMonth(String month) {
-        this.month = month;
-    }
-
-    public Double getTotalRevenue() {
-        return totalRevenue;
-    }
-
-    public void setTotalRevenue(Double totalRevenue) {
-        this.totalRevenue = totalRevenue;
-    }
+    private String month;         // Format: YYYY-MM
+    private Double totalRevenue;  // Total revenue of that month
 }
