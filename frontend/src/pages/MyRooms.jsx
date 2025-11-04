@@ -385,7 +385,7 @@ function MyRooms({ currentUser, onLogout }) {
                   </p>
                   <button 
                     className="btn-find-room"
-                    onClick={() => navigate('/account/rooms/add')}
+                    onClick={() => navigate('/rooms/phong-tro')}
                   >
                     <Home size={18} />
                     Đăng phòng ngay
