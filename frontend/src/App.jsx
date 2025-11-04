@@ -193,9 +193,16 @@ function App() {
             path="/reset-password"
             element={<ResetPassword />}
           />
-        <Route path="/admin/revenue" 
-        element={<AdminRevenue />}
-         />
+        <Route
+          path="/admin/revenue"
+          element={
+            currentUser && currentUser.role === "ADMIN" ? (
+              <AdminRevenue currentUser={currentUser} onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
       </Routes>
       </Router>
     </>
