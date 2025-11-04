@@ -1,5 +1,5 @@
 -- Select database first (change 'timtro' to your actual database name)
-USE timtro;
+USE tim_tro;
 
 -- Add payment QR image URL to rooms table
 ALTER TABLE rooms 

@@ -11,12 +11,16 @@ const api = axios.create({
 
 // Add JWT token to all requests
 api.interceptors.request.use((config) => {
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
-  if (user.accessToken) {
-    config.headers.Authorization = `Bearer ${user.accessToken}`
-    console.log('JWT Token added to request:', user.accessToken.substring(0, 20) + '...')
-  } else {
-    console.log('No JWT token found in localStorage')
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    if (user && user.accessToken) {
+      config.headers.Authorization = `Bearer ${user.accessToken}`
+      console.log('JWT Token added to request:', user.accessToken.substring(0, Math.min(20, user.accessToken.length)) + '...')
+    } else {
+      console.warn('No JWT token found in localStorage')
+    }
+  } catch (error) {
+    console.error('Error reading user from localStorage:', error)
   }
   return config
 }, (error) => {
@@ -40,8 +44,18 @@ api.interceptors.response.use(
 
 // Helper function to add user ID header
 const getUserId = () => {
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
-  return user.id
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
+    if (!user.id) {
+      console.warn('User ID not found in localStorage')
+      return null
+    }
+    console.log('User ID:', user.id)
+    return user.id
+  } catch (error) {
+    console.error('Error getting user ID:', error)
+    return null
+  }
 }
 
 export const authAPI = {
@@ -320,6 +334,9 @@ export const savedRoomAPI = {
 export const myRoomsAPI = {
   getMyRooms: async (status, searchKeyword) => {
     const userId = getUserId()
+    if (!userId) {
+      throw new Error('User not logged in. Please login first.')
+    }
     const params = {}
     if (status) params.status = status
     if (searchKeyword) params.q = searchKeyword
@@ -390,6 +407,9 @@ export const myRoomsAPI = {
   // Get posted rooms (rooms owned by current user)
   getMyPostedRooms: async () => {
     const userId = getUserId()
+    if (!userId) {
+      throw new Error('User not logged in. Please login first.')
+    }
     const response = await api.get('/me/rooms/posted', {
       headers: { 'X-User-Id': userId }
     })

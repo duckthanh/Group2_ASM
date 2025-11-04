@@ -129,6 +129,14 @@ function App() {
             <Register />
           } 
         />
+        <Route 
+          path="/forgot-password" 
+          element={
+            currentUser ? 
+            <Navigate to="/" replace /> : 
+            <ForgotPassword />
+          } 
+        />
         <Route
           path="/rooms/phong-tro"
           element={<RoomList currentUser={currentUser} onLogout={handleLogout} />}

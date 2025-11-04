@@ -39,5 +39,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
         ORDER BY COUNT(b.id) DESC
         """)
     List<RoomBookingStatsResponse> findTopBookedRooms();
+    
+    // Find all rooms with owner eagerly fetched
+    @Query("SELECT DISTINCT r FROM Room r LEFT JOIN FETCH r.owner")
+    List<Room> findAllWithOwner();
 }
-
