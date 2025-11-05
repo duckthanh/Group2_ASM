@@ -14,4 +14,5 @@ public class RoomBookingStatsResponse {
     private String location;
     private Double price;
     private Long totalBookings;
+    
 }
