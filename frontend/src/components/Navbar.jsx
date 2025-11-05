@@ -14,6 +14,7 @@ import {
   X,
   Key,
   ClipboardCheck,
+  Coins
 } from "lucide-react";
 
 function Navbar({ currentUser, onLogout }) {
@@ -142,6 +143,19 @@ function Navbar({ currentUser, onLogout }) {
             <Mail size={18} />
             Liên hệ
           </a>
+          {currentUser && (
+            <Link
+              to={`/revenue/${currentUser.id}`}
+              className={`navbar-link ${
+                isActive(`/doanh-thu/${currentUser.id}`)
+                  ? "navbar-link-active"
+                  : ""
+              }`}
+            >
+              <Coins size={18} />
+              Doanh thu
+            </Link>
+          )}
         </nav>
 
         {/* Right side */}
@@ -208,7 +222,7 @@ function Navbar({ currentUser, onLogout }) {
                         className="navbar-dropdown-item"
                       >
                         <Users size={18} />
-                        Doanh thu
+                        Giao Dịch
                       </Link>
                     </>
                   )}

@@ -219,7 +219,6 @@ function AdminRevenue({ currentUser, onLogout }) {
 
 export default AdminRevenue;
 
-// 🎨 Inline CSS — clean, modern layout
 const styles = {
   container: {
     width: "90%",
