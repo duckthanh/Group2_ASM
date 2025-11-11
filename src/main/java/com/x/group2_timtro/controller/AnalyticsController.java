@@ -26,11 +26,9 @@ public class AnalyticsController {
     @GetMapping("/user/{userId}/rooms")
     public ResponseEntity<?> getRoomStatsByOwner(@PathVariable Long userId) {
         List<RoomBookingStatsResponse> stats = roomAnalyticsService.getRoomStatsByOwner(userId);
-
         Map<String, Object> response = new HashMap<>();
         response.put("totalRooms", stats.size());
         response.put("rooms", stats);
-
         return ResponseEntity.ok(response);
     }
 
