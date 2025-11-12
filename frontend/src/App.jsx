@@ -20,6 +20,7 @@ import MyRoomDetail from "./pages/MyRoomDetail";
 import BookingRequests from "./pages/BookingRequests";
 import AdminRevenue from "./pages/AdminRevenue";
 import MyRoomAnalytics from "./pages/MyRoomAnalytics";
+import Dashboard from "./pages/Dashboard";
 import "./App.css";
 
 function App() {
@@ -137,7 +138,9 @@ function App() {
           />
           <Route
             path="/register"
-            element={currentUser ? <Navigate to="/" replace /> : <Register />}
+            element={
+              currentUser ? <Navigate to="/" replace /> : <Register />
+            }
           />
           <Route
             path="/forgot-password"
@@ -145,17 +148,14 @@ function App() {
               currentUser ? <Navigate to="/" replace /> : <ForgotPassword />
             }
           />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route
             path="/rooms/phong-tro"
-            element={
-              <RoomList currentUser={currentUser} onLogout={handleLogout} />
-            }
+            element={<RoomList currentUser={currentUser} onLogout={handleLogout} />}
           />
           <Route
             path="/room/:id"
-            element={
-              <RoomDetail currentUser={currentUser} onLogout={handleLogout} />
-            }
+            element={<RoomDetail currentUser={currentUser} onLogout={handleLogout} />}
           />
           <Route
             path="/profile"
@@ -217,12 +217,15 @@ function App() {
             }
           />
           <Route
-            path="/forgot-password"
+            path="/admin/dashboard"
             element={
-              currentUser ? <Navigate to="/" replace /> : <ForgotPassword />
+              currentUser && currentUser.role === "ADMIN" ? (
+                <Dashboard currentUser={currentUser} onLogout={handleLogout} />
+              ) : (
+                <Navigate to="/" replace />
+              )
             }
           />
-          <Route path="/reset-password" element={<ResetPassword />} />
           <Route
             path="/admin/revenue"
             element={

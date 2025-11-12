@@ -3,14 +3,12 @@ import { useNavigate, Link } from 'react-router-dom'
 import { Heart } from 'lucide-react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { roomAPI, savedRoomAPI } from '../services/api'
+import { savedRoomAPI } from '../services/api'
 import toast from 'react-hot-toast'
 import '../styles/Contact.css'
 import '../styles/About.css'
 
 function Home({ currentUser, onLogout }) {
-  const [rooms, setRooms] = useState([])
-  const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('rent') // 'rent' or 'roommate'
   const [searchKeyword, setSearchKeyword] = useState('')
   const [savedRooms, setSavedRooms] = useState({}) // Track saved status { roomId: true/false }
@@ -20,37 +18,8 @@ function Home({ currentUser, onLogout }) {
     message: ''
   })
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [topRooms, setTopRooms] = useState([])
   const navigate = useNavigate()
-
-  useEffect(() => {
-    fetchRooms()
-    if (currentUser) {
-      checkSavedRooms()
-    }
-    
-    // Xử lý scroll xuống phần liên hệ hoặc giới thiệu nếu có hash
-    const hash = window.location.hash
-    if (hash === '#contact' || hash === '#about') {
-      setTimeout(() => {
-        const section = document.getElementById(hash.replace('#', ''))
-        if (section) {
-          section.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }
-      }, 300)
-    }
-  }, [currentUser])
-
-  const fetchRooms = async () => {
-    setLoading(true)
-    try {
-      const data = await roomAPI.getAvailableRooms()
-      setRooms(data.slice(0, 6)) // Lấy 6 phòng nổi bật
-    } catch (err) {
-      console.error('Error fetching rooms:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const checkSavedRooms = async () => {
     try {
@@ -142,13 +111,11 @@ function Home({ currentUser, onLogout }) {
     }, 5000)
   }
 
-  // top 9 booked room
-  const [topRooms, setTopRooms] = useState([])
-
   useEffect(() => {
-    fetchRooms()
     fetchTopBookedRooms()
     if (currentUser) checkSavedRooms()
+    
+    // Xử lý scroll xuống phần liên hệ hoặc giới thiệu nếu có hash
     const hash = window.location.hash
     if (hash === '#contact' || hash === '#about') {
       setTimeout(() => {
@@ -214,61 +181,7 @@ function Home({ currentUser, onLogout }) {
           </div>
         </section>
 
-        {/* Featured Rooms */}
-        <section className="featured-section">
-          <h2 className="section-title">Phòng trọ nổi bật</h2>
-          <p className="section-subtitle">Khám phá hàng nghìn lựa chọn phòng trọ chất lượng với giá cả phù hợp</p>
-
-          {loading ? (
-              <div style={{textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)'}}>
-                Đang tải...
-              </div>
-          ) : rooms.length > 0 ? (
-              <div className="home-room-grid">
-                {rooms.map((room) => (
-                    <div key={room.id} className="home-room-card-new">
-                      <div className="home-room-image-new">
-                        <img src={room.imageUrl || 'https://via.placeholder.com/400x300?text=Phòng+Trọ'}
-                             alt={room.name}/>
-                        <button
-                            className="btn-favorite"
-                            onClick={(e) => handleSaveRoom(e, room.id)}
-                            style={{
-                              background: savedRooms[room.id] ? '#EF4444' : 'rgba(255, 255, 255, 0.9)',
-                              color: savedRooms[room.id] ? 'white' : '#EF4444'
-                            }}
-                        >
-                          <Heart
-                              size={18}
-                              fill={savedRooms[room.id] ? 'currentColor' : 'none'}
-                          />
-                        </button>
-                        <button className="btn-share">📤</button>
-                      </div>
-                      <div className="home-room-content-new">
-                        <h3 className="home-room-title-new">{room.name}</h3>
-                        <p className="home-room-location-new">📍 {room.location}</p>
-                        <div className="home-room-price-new">
-                          {formatPrice(room.price)} đ/tháng
-                        </div>
-                        <div style={{marginTop: '12px'}}>
-                          <Link to={`/room/${room.id}`} className="btn-view-detail">
-                            👁️ Xem chi tiết
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                ))}
-              </div>
-          ) : (
-              <div className="empty-state">
-                <div className="empty-icon">🏠</div>
-                <h3>Chưa có phòng trọ nổi bật</h3>
-                <p>Hiện tại chưa có phòng trọ nào.</p>
-              </div>
-          )}
-        </section>
-
+        {/* Best Choice Section */}
         <section className="featured-section">
           <h2 className="section-title">Best Choice 🏆</h2>
           <p className="section-subtitle">Những lựa chọn hàng đầu được các khách hàng tin tưởng</p>

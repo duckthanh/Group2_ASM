@@ -186,24 +186,28 @@
 }
 
 .social-links a {
-  width: 36px;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  width: 40px;
+  height: 40px;
+  background: white;
+  border: 2px solid rgba(255, 255, 255, 0.5);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .social-links a:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: #f0f9ff;
   transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+  border-color: white;
 }
 
 .social-links a svg {
-  filter: brightness(0) invert(1);
+  /* Giữ màu xanh gốc của SVG để dễ nhìn */
+  filter: none;
 }
 
 /* Footer Bottom */

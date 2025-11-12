@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { authAPI } from '../services/api'
 import './AuthNew.css'
 
 function ForgotPassword() {
@@ -9,7 +8,7 @@ function ForgotPassword() {
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState(null)
   const [success, setSuccess] = useState(false)
-  
+
   const navigate = useNavigate()
 
   const showToast = (message, type = 'success') => {
@@ -18,13 +17,6 @@ function ForgotPassword() {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const res = await fetch(`http://localhost:8080/api/auth/forgot-password?email=${encodeURIComponent(email)}`, {
-        method: "POST"
-      });
     e.preventDefault()
     setError('')
 
@@ -38,40 +30,32 @@ function ForgotPassword() {
     setLoading(true)
 
     try {
-      // Call API to send reset password email
-      // await authAPI.forgotPassword(email)
-      
-      // Simulate API call for now
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      setSuccess(true)
-      showToast('Email đặt lại mật khẩu đã được gửi! 📧', 'success')
-      
-      // Navigate back to login after 3 seconds
-      setTimeout(() => navigate('/login'), 3000)
-      
+      // Call real API
+      const res = await fetch(`http://localhost:8080/api/auth/forgot-password?email=${encodeURIComponent(email)}`, {
+        method: "POST"
+      })
+
+      const message = await res.text()
+
+      if (res.ok) {
+        setSuccess(true)
+        showToast(message || 'Email đặt lại mật khẩu đã được gửi! 📧', 'success')
+
+        // Navigate back to login after 3 seconds
+        setTimeout(() => navigate('/login'), 3000)
+      } else {
+        setError(message || 'Không tìm thấy email này trong hệ thống')
+        showToast(message || 'Có lỗi xảy ra', 'error')
+      }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Không tìm thấy email này trong hệ thống'
+      const errorMessage = 'Lỗi khi gửi yêu cầu đến máy chủ'
       setError(errorMessage)
+      showToast(errorMessage, 'error')
     } finally {
       setLoading(false)
     }
-  
+  }
 
-      const message = await res.text();
-
-      if (res.ok) {
-        setSent(true);
-        showToast(message, "success");
-      } else {
-        showToast(message, "error");
-      }
-    } catch {
-      showToast("Lỗi khi gửi yêu cầu đến máy chủ.", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
   return (
     <div className="auth-new-page">
       {toast && (
@@ -94,7 +78,7 @@ function ForgotPassword() {
                 <h2>TÌM TRỌ</h2>
               </div>
             </div>
-            
+
             {/* Floating Avatars */}
             <div className="avatar-float avatar-1">
               <div className="avatar-circle"></div>
@@ -141,11 +125,11 @@ function ForgotPassword() {
                 <path d="M25 14L18 18V32L25 36L32 32V18L25 14Z" fill="white"/>
               </svg>
             </div>
-          
+
             {!success ? (
               <>
                 <h2 className="auth-new-title">Quên Mật Khẩu?</h2>
-                
+
                 {error && (
                   <div className="alert-new alert-error-new">
                     <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
@@ -175,7 +159,7 @@ function ForgotPassword() {
                         <span>Đang gửi...</span>
                       </>
                     ) : (
-                      'Gửi'
+                      'Gửi Email Khôi Phục'
                     )}
                   </button>
                 </form>
@@ -187,9 +171,9 @@ function ForgotPassword() {
               </>
             ) : (
               <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <div style={{ 
-                  width: '80px', 
-                  height: '80px', 
+                <div style={{
+                  width: '80px',
+                  height: '80px',
                   background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
                   borderRadius: '50%',
                   display: 'flex',

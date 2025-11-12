@@ -8,6 +8,7 @@ import CreateRoom from '../components/CreateRoom'
 import RentRoom from '../components/RentRoom'
 import RoomFilter from '../components/RoomFilter'
 import DeleteConfirmModal from '../components/DeleteConfirmModal'
+import Pagination from '../components/Pagination'
 import { roomAPI } from '../services/api'
 
 function RoomList({ currentUser, onLogout }) {
@@ -398,37 +399,11 @@ function RoomList({ currentUser, onLogout }) {
                 </div>
 
                 {/* Pagination */}
-                {sortedRooms.length > 0 && (
-                  <div className="pagination-new">
-                    <button
-                      className="pagination-btn-new"
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      ← Trước
-                    </button>
-                    
-                    <div className="pagination-numbers-new">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                        <button
-                          key={number}
-                          className={`pagination-number-new ${currentPage === number ? 'active' : ''}`}
-                          onClick={() => handlePageChange(number)}
-                        >
-                          {number}
-                        </button>
-                      ))}
-                    </div>
-                    
-                    <button
-                      className="pagination-btn-new"
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                    >
-                      Sau →
-                    </button>
-                  </div>
-                )}
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
               </>
             ) : (
               <div className="empty-state-new">

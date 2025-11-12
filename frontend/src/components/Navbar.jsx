@@ -14,7 +14,8 @@ import {
   X,
   Key,
   ClipboardCheck,
-  Coins
+  Coins,
+  BarChart3,
 } from "lucide-react";
 
 function Navbar({ currentUser, onLogout }) {
@@ -147,7 +148,7 @@ function Navbar({ currentUser, onLogout }) {
             <Link
               to={`/revenue/${currentUser.id}`}
               className={`navbar-link ${
-                isActive(`/doanh-thu/${currentUser.id}`)
+                isActive(`/revenue/${currentUser.id}`)
                   ? "navbar-link-active"
                   : ""
               }`}
@@ -191,7 +192,7 @@ function Navbar({ currentUser, onLogout }) {
                     className="navbar-dropdown-item"
                   >
                     <User size={18} />
-                    Hồ sơ của tôi
+                    Thông tin cá nhân
                   </button>
                   <Link
                     to="/account/rooms"
@@ -209,22 +210,44 @@ function Navbar({ currentUser, onLogout }) {
                     <ClipboardCheck size={18} />
                     Yêu cầu thuê phòng
                   </Link>
-                  {(currentUser.role === "ADMIN" ||
-                    currentUser.role === "HOST") && (
+
+                  {currentUser.role === "ADMIN" && (
                     <>
-                      <Link to="/admin/users" className="navbar-dropdown-item">
+                      <Link
+                        to="/admin/dashboard"
+                        className="navbar-dropdown-item"
+                        onClick={() => setShowUserDropdown(false)}
+                      >
+                        <BarChart3 size={18} />
+                        Dashboard Analytics
+                      </Link>
+                      <Link
+                        to="/admin/users"
+                        className="navbar-dropdown-item"
+                        onClick={() => setShowUserDropdown(false)}
+                      >
                         <Users size={18} />
                         Quản lý người dùng
                       </Link>
-
                       <Link
                         to="/admin/revenue"
                         className="navbar-dropdown-item"
+                        onClick={() => setShowUserDropdown(false)}
                       >
                         <Users size={18} />
                         Giao Dịch
                       </Link>
                     </>
+                  )}
+                  {currentUser.role === "HOST" && (
+                    <Link
+                      to="/admin/users"
+                      className="navbar-dropdown-item"
+                      onClick={() => setShowUserDropdown(false)}
+                    >
+                      <Users size={18} />
+                      Quản lý người dùng
+                    </Link>
                   )}
 
                   <div className="navbar-dropdown-divider"></div>

@@ -76,6 +76,21 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Update username if provided
+        if (request.getUsername() != null && !request.getUsername().isEmpty()) {
+            user.setUsername(request.getUsername());
+        }
+        
+        // Update email if provided and check uniqueness
+        if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+            // Check if email is already taken by another user
+            if (!request.getEmail().equals(user.getEmail()) && 
+                userRepository.existsByEmail(request.getEmail())) {
+                throw new RuntimeException("Email đã được sử dụng bởi người dùng khác");
+            }
+            user.setEmail(request.getEmail());
+        }
+        
         if (request.getPhoneNumber() != null) {
             user.setPhoneNumber(request.getPhoneNumber());
         }

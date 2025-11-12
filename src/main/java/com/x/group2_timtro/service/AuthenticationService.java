@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 
 
 import java.text.ParseException;
-import java.util.Optional;
 
 import static dev.samstevens.totp.util.Utils.getDataUriForImage;
 

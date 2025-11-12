@@ -24,7 +24,13 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     List<Room> findByNameContainingIgnoreCaseAndLocationContainingIgnoreCase(
         String name, String location);
 
-    //  Top booked rooms for analytics
+    
+    // Find all rooms with owner eagerly fetched
+    @Query("SELECT DISTINCT r FROM Room r LEFT JOIN FETCH r.owner")
+    List<Room> findAllWithOwner();
+
+
+    // Top booked rooms for analytics
     @Query("""
         SELECT new com.x.group2_timtro.dto.response.RoomBookingStatsResponse(
             r.id,
@@ -40,10 +46,11 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
         ORDER BY COUNT(b.id) DESC
         """)
     List<RoomBookingStatsResponse> findTopBookedRooms();
-    
+
+
     // Find all rooms with owner eagerly fetched
-    @Query("SELECT DISTINCT r FROM Room r LEFT JOIN FETCH r.owner")
-    List<Room> findAllWithOwner();
+//    @Query("SELECT DISTINCT r FROM Room r LEFT JOIN FETCH r.owner")
+//    List<Room> findAllWithOwner();
 
      @Query(value = """
         SELECT r.id AS id,

@@ -25,6 +25,7 @@ public class ViewingScheduleService {
     private final UserRepository userRepository;
 
     @Transactional
+    @SuppressWarnings("null")
     public ViewingScheduleResponse createSchedule(Long roomId, CreateViewingScheduleRequest request, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -58,6 +59,7 @@ public class ViewingScheduleService {
                 .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("null")
     public List<ViewingScheduleResponse> getRoomSchedules(Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
@@ -76,6 +78,7 @@ public class ViewingScheduleService {
     }
 
     @Transactional
+    @SuppressWarnings("null")
     public ViewingScheduleResponse updateScheduleStatus(Long scheduleId, String status) {
         ViewingSchedule schedule = viewingScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new RuntimeException("Schedule not found"));
@@ -93,6 +96,7 @@ public class ViewingScheduleService {
     }
 
     @Transactional
+    @SuppressWarnings("null")
     public void deleteSchedule(Long scheduleId, String userEmail) {
         ViewingSchedule schedule = viewingScheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new RuntimeException("Schedule not found"));

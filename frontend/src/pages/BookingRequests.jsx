@@ -4,6 +4,7 @@ import { customToast } from '../utils/customToast.jsx';
 import { bookingAPI } from '../services/api';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import Pagination from '../components/Pagination';
 import './BookingRequests.css';
 
 function BookingRequests({ currentUser, onLogout }) {
@@ -12,9 +13,14 @@ function BookingRequests({ currentUser, onLogout }) {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('pending'); // 'pending', 'all'
   const [processingId, setProcessingId] = useState(null);
+  
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [bookingsPerPage] = useState(10);
 
   useEffect(() => {
     loadBookings();
+    setCurrentPage(1); // Reset to first page when filter changes
   }, [filter]);
 
   const loadBookings = async () => {
@@ -102,6 +108,17 @@ function BookingRequests({ currentUser, onLogout }) {
     navigate(`/account/rooms/${bookingId}`);
   };
 
+  // Pagination
+  const indexOfLastBooking = currentPage * bookingsPerPage;
+  const indexOfFirstBooking = indexOfLastBooking - bookingsPerPage;
+  const currentBookings = bookings.slice(indexOfFirstBooking, indexOfLastBooking);
+  const totalPages = Math.ceil(bookings.length / bookingsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   if (loading) {
     return (
       <div className="booking-requests-container">
@@ -153,8 +170,9 @@ function BookingRequests({ currentUser, onLogout }) {
           </p>
         </div>
       ) : (
+        <>
         <div className="bookings-list">
-          {bookings.map((booking) => (
+          {currentBookings.map((booking) => (
             <div key={booking.id} className="booking-card">
               <div className="booking-header">
                 <div className="booking-main-info">
@@ -303,6 +321,16 @@ function BookingRequests({ currentUser, onLogout }) {
             </div>
           ))}
         </div>
+        
+        {/* Pagination */}
+        {bookings.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
+        </>
       )}
       </div>
       <Footer />

@@ -357,11 +357,11 @@
 }
 
 .github-icon {
-  color: #ffffff;
+  color: #24292e; /* Màu xám đen của GitHub */
 }
 
 .github-icon:hover {
-  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 25px rgba(36, 41, 46, 0.4);
 }
 
 .linkedin-icon {

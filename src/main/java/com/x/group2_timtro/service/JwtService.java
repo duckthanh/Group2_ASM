@@ -38,17 +38,7 @@ public String generateAccessToken(User user) {
             .jwtID(UUID.randomUUID().toString())
             .build();
 
-    Payload payload = new Payload(claimsSet.toJSONObject());
-
-    //chu ki
-    JWSObject jwsObject = new JWSObject(header, payload);
-    try {
-        jwsObject.sign(new MACSigner(secretKey));
-    } catch (JOSEException e) {
-        throw new RuntimeException(e);
-    }
-
-    return jwsObject.serialize();
+    return signToken(header, claimsSet);
 }
 
 public String generateRefreshToken(User user) {
@@ -66,18 +56,8 @@ public String generateRefreshToken(User user) {
             .jwtID(UUID.randomUUID().toString())
             .build();
 
-    Payload payload = new Payload(claimsSet.toJSONObject());
-
-    //chu ki
-    JWSObject jwsObject = new JWSObject(header, payload);
-    try {
-        jwsObject.sign(new MACSigner(secretKey));
-        }   catch (JOSEException e) {
-                 throw new RuntimeException(e);
-     }
-            return jwsObject.serialize();
-
-    }
+    return signToken(header, claimsSet);
+}
 
     //reset token
     public String generateResetToken(String email) {
@@ -118,7 +98,6 @@ public String generateRefreshToken(User user) {
         }
     }
 
-    // Utility: Sign any JWT
     private String signToken(JWSHeader header, JWTClaimsSet claimsSet) {
         Payload payload = new Payload(claimsSet.toJSONObject());
         JWSObject jwsObject = new JWSObject(header, payload);
@@ -129,6 +108,5 @@ public String generateRefreshToken(User user) {
             throw new RuntimeException("Cannot sign JWT token", e);
         }
     }
-
 
 }
