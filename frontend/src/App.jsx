@@ -20,7 +20,6 @@ import MyRoomDetail from "./pages/MyRoomDetail";
 import BookingRequests from "./pages/BookingRequests";
 import AdminRevenue from "./pages/AdminRevenue";
 import MyRoomAnalytics from "./pages/MyRoomAnalytics";
-import Dashboard from "./pages/Dashboard";
 import "./App.css";
 
 function App() {
@@ -211,16 +210,6 @@ function App() {
                   currentUser={currentUser}
                   onLogout={handleLogout}
                 />
-              ) : (
-                <Navigate to="/" replace />
-              )
-            }
-          />
-          <Route
-            path="/admin/dashboard"
-            element={
-              currentUser && currentUser.role === "ADMIN" ? (
-                <Dashboard currentUser={currentUser} onLogout={handleLogout} />
               ) : (
                 <Navigate to="/" replace />
               )

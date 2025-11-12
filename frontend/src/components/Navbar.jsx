@@ -15,7 +15,6 @@ import {
   Key,
   ClipboardCheck,
   Coins,
-  BarChart3,
 } from "lucide-react";
 
 function Navbar({ currentUser, onLogout }) {
@@ -213,14 +212,6 @@ function Navbar({ currentUser, onLogout }) {
 
                   {currentUser.role === "ADMIN" && (
                     <>
-                      <Link
-                        to="/admin/dashboard"
-                        className="navbar-dropdown-item"
-                        onClick={() => setShowUserDropdown(false)}
-                      >
-                        <BarChart3 size={18} />
-                        Dashboard Analytics
-                      </Link>
                       <Link
                         to="/admin/users"
                         className="navbar-dropdown-item"
