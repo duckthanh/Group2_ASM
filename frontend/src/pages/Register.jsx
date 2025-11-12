@@ -263,14 +263,14 @@ function Register() {
               </div>
 
               <div className="form-group-new">
-                <label className="label-new">Email / Số điện thoại</label>
+                <label className="label-new">Email</label>
                 <input
                   type="email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
                   className={`input-new ${errors.email ? 'input-error-new' : ''}`}
-                  placeholder="Nhập vào Email hoặc Số điện thoại"
+                  placeholder="Nhập vào Email"
                   required
                 />
                 {errors.email && <span className="error-text-new">{errors.email}</span>}

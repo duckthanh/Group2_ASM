@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { customToast } from '../utils/customToast.jsx'
 import { authAPI } from '../services/api'
 import './AuthNew.css'
 
@@ -11,20 +10,21 @@ function Login({ onLogin }) {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [toast, setToast] = useState(null)
+
+
+  // 2FA States
+  const [showMfaInput, setShowMfaInput] = useState(false)
+  const [mfaCode, setMfaCode] = useState('')
+  const [tempUserEmail, setTempUserEmail] = useState('')
   
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Load remembered email when component mounts
-  useEffect(() => {
-    const savedEmail = localStorage.getItem('rememberedEmail')
-    const savedRememberMe = localStorage.getItem('rememberMe')
-    
-    if (savedEmail && savedRememberMe === 'true') {
-      setEmail(savedEmail)
-      setRememberMe(true)
-    }
-  }, [])
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 4000)
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -38,22 +38,26 @@ function Login({ onLogin }) {
     setLoading(true)
 
     try {
-      const user = await authAPI.login(email, password)
+      const response = await authAPI.login(email, password)
       
-      // Save or remove email based on rememberMe checkbox
-      if (rememberMe) {
-        localStorage.setItem('rememberMe', 'true')
-        localStorage.setItem('rememberedEmail', email)
+      // Check if 2FA is required
+      if (response.mfaRequired) {
+        setTempUserEmail(email)
+        setShowMfaInput(true)
+        setError('')
+        showToast('Vui lòng nhập mã xác thực 2FA', 'info')
       } else {
-        localStorage.removeItem('rememberMe')
-        localStorage.removeItem('rememberedEmail')
+        // Normal login without 2FA
+        if (rememberMe) {
+          localStorage.setItem('rememberMe', 'true')
+        }
+        
+        onLogin(response)
+        showToast('Đăng nhập thành công! 🎉', 'success')
+        
+        const from = location.state?.from?.pathname || '/'
+        setTimeout(() => navigate(from), 1000)
       }
-      
-      onLogin(user)
-      customToast.success('Đăng nhập thành công! 🎉')
-      
-      const from = location.state?.from?.pathname || '/'
-      setTimeout(() => navigate(from), 1000)
       
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Email hoặc mật khẩu không đúng'
@@ -63,8 +67,53 @@ function Login({ onLogin }) {
     }
   }
 
+  const handleMfaSubmit = async (e) => {
+    e.preventDefault()
+    
+    if (mfaCode.length !== 6) {
+      setError('Vui lòng nhập mã xác minh 6 số')
+      returngit
+    }
+
+    setError('')
+    setLoading(true)
+
+    try {
+      const response = await authAPI.verifyMfa(tempUserEmail, mfaCode)
+      
+      if (rememberMe) {
+        localStorage.setItem('rememberMe', 'true')
+      }
+      
+      onLogin(response)
+      showToast('Đăng nhập thành công! 🎉', 'success')
+      
+      const from = location.state?.from?.pathname || '/'
+      setTimeout(() => navigate(from), 1000)
+      
+    } catch (err) {
+      setError('Mã OTP không đúng. Vui lòng thử lại!')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleBackToLogin = () => {
+    setShowMfaInput(false)
+    setMfaCode('')
+    setTempUserEmail('')
+    setError('')
+  }
+
   return (
     <div className="auth-new-page">
+      {toast && (
+        <div className={`toast-new toast-${toast.type}`}>
+          <span className="toast-icon-new">{toast.type === 'success' ? '✓' : '⚠'}</span>
+          <span>{toast.message}</span>
+        </div>
+      )}
+
       <div className="auth-new-container">
         {/* Left Side - Illustration */}
         <div className="auth-new-left">
@@ -137,6 +186,7 @@ function Login({ onLogin }) {
               </div>
             )}
 
+            {!showMfaInput ? (
             <form onSubmit={handleSubmit} className="auth-new-form">
               <div className="form-group-new">
                 <input
@@ -202,6 +252,58 @@ function Login({ onLogin }) {
                 )}
               </button>
             </form>
+            ) : (
+            <form onSubmit={handleMfaSubmit} className="auth-new-form">
+              <p className="auth-subtitle" style={{marginBottom: '20px', textAlign: 'center'}}>
+                Nhập mã xác thực 6 số từ ứng dụng Authenticator
+              </p>
+              
+              <div className="form-group-new">
+                <input
+                  type="text"
+                  value={mfaCode}
+                  onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  className="input-new"
+                  placeholder="000000"
+                  maxLength="6"
+                  required
+                  style={{
+                    fontSize: '24px',
+                    letterSpacing: '8px',
+                    textAlign: 'center'
+                  }}
+                />
+                <small style={{display: 'block', marginTop: '8px', textAlign: 'center', color: '#999'}}>
+                  Google Authenticator / Microsoft Authenticator
+                </small>
+              </div>
+
+              <button type="submit" className="btn-new btn-primary-new" disabled={loading || mfaCode.length !== 6}>
+                {loading ? (
+                  <>
+                    <span className="spinner-new"></span>
+                    <span>Đang xác thực...</span>
+                  </>
+                ) : (
+                  'Xác thực'
+                )}
+              </button>
+
+              <button 
+                type="button" 
+                onClick={handleBackToLogin}
+                className="btn-new"
+                style={{
+                  marginTop: '10px',
+                  background: 'transparent',
+                  border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}
+                disabled={loading}
+              >
+                Quay lại
+              </button>
+            </form>
+            )}
 
             <div className="divider-new">
               <span>Hoặc đăng nhập bằng</span>

@@ -12,10 +12,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class BookingService {
 
     private final BookingRepository bookingRepository;
@@ -30,6 +32,11 @@ public class BookingService {
 
         Room room = roomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new RuntimeException("Room not found"));
+
+        // Check if user is trying to rent their own room
+        if (Objects.equals(room.getOwner().getId(), userId)) {
+            throw new RuntimeException("Chủ trọ không thể thuê phòng của chính mình");
+        }
 
         if (!room.getIsAvailable()) {
             throw new RuntimeException("Room is not available");

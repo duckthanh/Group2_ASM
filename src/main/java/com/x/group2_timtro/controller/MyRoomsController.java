@@ -26,14 +26,21 @@ public class MyRoomsController {
      */
     @GetMapping
     public ResponseEntity<?> getMyRooms(
-            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader(value = "X-User-Id", required = false) Long userId,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String q
     ) {
         try {
+            if (userId == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "error", "User ID is required. Please login first."
+                ));
+            }
             List<MyRoomResponse> rooms = myRoomsService.getMyRooms(userId, status, q);
             return ResponseEntity.ok(rooms);
         } catch (Exception e) {
+            System.err.println("Error in getMyRooms: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(Map.of(
                     "error", e.getMessage()
             ));
@@ -325,12 +332,19 @@ public class MyRoomsController {
      */
     @GetMapping("/posted")
     public ResponseEntity<?> getMyPostedRooms(
-            @RequestHeader("X-User-Id") Long userId
+            @RequestHeader(value = "X-User-Id", required = false) Long userId
     ) {
         try {
+            if (userId == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "error", "User ID is required. Please login first."
+                ));
+            }
             List<MyPostedRoomResponse> rooms = myRoomsService.getMyPostedRooms(userId);
             return ResponseEntity.ok(rooms);
         } catch (Exception e) {
+            System.err.println("Error in getMyPostedRooms: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(Map.of(
                     "error", e.getMessage()
             ));
