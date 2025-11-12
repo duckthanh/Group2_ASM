@@ -16,10 +16,12 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class MyRoomsService {
 
     private final BookingRepository bookingRepository;
@@ -108,6 +110,11 @@ public class MyRoomsService {
 
         Room room = roomRepository.findById(request.getRoomId())
                 .orElseThrow(() -> new RuntimeException("Room not found"));
+
+        // Check if user is trying to rent their own room
+        if (Objects.equals(room.getOwner().getId(), userId)) {
+            throw new RuntimeException("Chủ trọ không thể thuê phòng của chính mình");
+        }
 
         if (!room.getIsAvailable()) {
             throw new RuntimeException("Room is not available");
@@ -229,6 +236,24 @@ public class MyRoomsService {
         booking.setLeaseEnd(leaseEnd);
         
         bookingRepository.save(booking);
+        
+        // Decrease available rooms count when tenant moves in
+        Room room = booking.getRoom();
+        Integer currentAvailable = room.getAvailableRooms() != null ? room.getAvailableRooms() : 1;
+        
+        // Decrease availableRooms by 1, but not below 0
+        if (currentAvailable > 0) {
+            room.setAvailableRooms(currentAvailable - 1);
+            
+            // If no rooms available, mark as unavailable
+            if (room.getAvailableRooms() == 0) {
+                room.setIsAvailable(false);
+                room.setAvailability("Hết phòng");
+            }
+            
+            roomRepository.save(room);
+            System.out.println("Room occupied: Available rooms decreased from " + currentAvailable + " to " + (currentAvailable - 1));
+        }
     }
 
     /**
@@ -283,8 +308,28 @@ public class MyRoomsService {
             throw new RuntimeException("Unauthorized access to booking");
         }
 
+        // Update booking status
         booking.setStatus("ENDED");
         bookingRepository.save(booking);
+        
+        // Increase available rooms count when tenant returns the room
+        Room room = booking.getRoom();
+        Integer currentAvailable = room.getAvailableRooms() != null ? room.getAvailableRooms() : 0;
+        Integer totalRooms = room.getTotalRooms() != null ? room.getTotalRooms() : 1;
+        
+        // Increase availableRooms by 1, but not exceed totalRooms
+        if (currentAvailable < totalRooms) {
+            room.setAvailableRooms(currentAvailable + 1);
+            
+            // If room was full, mark as available again
+            if (currentAvailable == 0) {
+                room.setIsAvailable(true);
+                room.setAvailability("Còn trống");
+            }
+            
+            roomRepository.save(room);
+            System.out.println("Room returned: Available rooms increased from " + currentAvailable + " to " + (currentAvailable + 1));
+        }
     }
 
     /**

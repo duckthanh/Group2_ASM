@@ -72,7 +72,7 @@ function Login({ onLogin }) {
     
     if (mfaCode.length !== 6) {
       setError('Vui lòng nhập mã xác minh 6 số')
-      return
+      returngit
     }
 
     setError('')

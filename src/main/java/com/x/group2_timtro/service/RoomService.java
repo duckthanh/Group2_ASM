@@ -12,12 +12,14 @@ import com.x.group2_timtro.repository.RoomRepository;
 import com.x.group2_timtro.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class RoomService {
 
     private final RoomRepository roomRepository;
@@ -178,14 +180,27 @@ public class RoomService {
         roomRepository.delete(room);
     }
 
+    @Transactional(readOnly = true)
     public RoomResponse getRoomById(Long roomId) {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
+        // Initialize owner within transaction
+        if (room.getOwner() != null) {
+            room.getOwner().getUsername();
+        }
         return mapToResponse(room);
     }
 
+    @Transactional(readOnly = true)
     public List<RoomResponse> getAllRooms() {
-        return roomRepository.findAll().stream()
+        List<Room> rooms = roomRepository.findAllWithOwner();
+        // Initialize owners within transaction
+        rooms.forEach(room -> {
+            if (room.getOwner() != null) {
+                room.getOwner().getUsername();
+            }
+        });
+        return rooms.stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -194,12 +209,13 @@ public class RoomService {
         return roomRepository.count();
     }
 
+    @Transactional(readOnly = true)
     public String debugAllRooms() {
         StringBuilder sb = new StringBuilder();
         sb.append("=== DEBUGGING ALL ROOMS ===\n");
         
         try {
-            List<Room> allRooms = roomRepository.findAll();
+            List<Room> allRooms = roomRepository.findAllWithOwner();
             sb.append("Total rooms: ").append(allRooms.size()).append("\n\n");
             
             for (Room room : allRooms) {
@@ -225,12 +241,20 @@ public class RoomService {
         return sb.toString();
     }
 
+    @Transactional(readOnly = true)
     public List<RoomResponse> getAvailableRooms() {
         try {
             System.out.println("=== GET ALL ROOMS DEBUG ===");
-            // Changed to show ALL rooms, not just available ones
-            List<Room> rooms = roomRepository.findAll();
+            // Changed to show ALL rooms, not just available ones - with owner eagerly fetched
+            List<Room> rooms = roomRepository.findAllWithOwner();
             System.out.println("Found " + rooms.size() + " rooms in database");
+            
+            // Initialize owners within transaction to avoid LazyInitializationException
+            rooms.forEach(room -> {
+                if (room.getOwner() != null) {
+                    room.getOwner().getUsername(); // Initialize lazy proxy
+                }
+            });
             
             List<RoomResponse> responses = rooms.stream()
                     .map(room -> {
@@ -264,8 +288,15 @@ public class RoomService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<RoomResponse> searchRooms(String keyword, String location) {
-        List<Room> rooms = roomRepository.findAll();
+        List<Room> rooms = roomRepository.findAllWithOwner();
+        // Initialize owners within transaction
+        rooms.forEach(room -> {
+            if (room.getOwner() != null) {
+                room.getOwner().getUsername();
+            }
+        });
         
         // Normalize keyword: chuyển lowercase và trim, nhưng GIỮ khoảng trắng
         String normalizedKeyword = keyword != null && !keyword.isEmpty() 
@@ -329,9 +360,16 @@ public class RoomService {
         return textNoSpace.contains(keywordNoSpace);
     }
 
+    @Transactional(readOnly = true)
     public List<RoomResponse> filterRooms(RoomFilterRequest filter) {
-        // Changed to show ALL rooms, including unavailable ones
-        List<Room> rooms = roomRepository.findAll();
+        // Changed to show ALL rooms, including unavailable ones - with owner eagerly fetched
+        List<Room> rooms = roomRepository.findAllWithOwner();
+        // Initialize owners within transaction
+        rooms.forEach(room -> {
+            if (room.getOwner() != null) {
+                room.getOwner().getUsername();
+            }
+        });
 
         System.out.println("=== FILTER DEBUG ===");
         System.out.println("Total rooms: " + rooms.size());

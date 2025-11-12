@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class SavedRoomService {
 
     private final SavedRoomRepository savedRoomRepository;

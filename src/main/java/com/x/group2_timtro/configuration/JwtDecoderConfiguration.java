@@ -22,6 +22,7 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+@SuppressWarnings("null")
 public class JwtDecoderConfiguration implements JwtDecoder {
 
     @Value("${jwt.secret-key}")
